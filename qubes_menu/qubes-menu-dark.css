@@ -1,0 +1,160 @@
+@define-color highlight-blue-1 #4488df;
+@define-color highlight-blue-2 #326fbe;
+@define-color left-background #2e2e2e;
+@define-color right-background #3e3e3e;
+@define-color outer-background #232323;
+@define-color text-color #e4e3e3;
+
+. {
+font-family: SourceSansPro;
+  font-size: 100%;
+}
+
+#main_notebook {
+    padding-top: 20px;
+    background: @left-background;
+    border-width: 0 7px 0 0;
+    border-color: @outer-background;
+}
+
+.left_pane  {
+  background: @left-background;
+  color: @text-color;
+  border-width: 0px;
+}
+
+.toplevel_left_pane {
+  padding-left: 20px;
+}
+
+.right_pane  {
+  background: @right-background;
+  color: @text-color;
+  padding-top: 10px;
+  border-width: 0;
+  box-shadow: inset 1px 0 1px #000;
+}
+
+#main_notebook header {
+    background: @outer-background;
+    border-width: 0;
+}
+
+#main_notebook image:hover {
+    background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
+}
+
+
+.vm_buttons {
+  background: @left-background;
+  opacity: 0.9;
+  border-width: 2px 0px 0px 0px;
+  border-color: @left-background;
+  border-radius: 0px;
+  margin: 4px 10px 4px 2px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  color: #9b9b9b;
+  padding: 10px;
+}
+
+.vm_buttons:hover {
+    transition: none;
+    text-shadow: none;
+    color: @text-color;
+}
+
+.vm_buttons:checked {
+  border-color: @text-color;
+  font-weight: 900;
+}
+
+.vm_entry {
+  padding: 10px;
+}
+
+.dispvm_entry {
+  padding-left: 40px;
+  font-style: italic;
+  background-image: -gtk-icontheme('qappmenu-dispvm-child');
+  background-position: 15px top;
+  background-repeat: no-repeat;
+  background-size: 25px 25px;
+}
+
+.dvm_template_entry {
+    font-style: italic;
+}
+
+.running_vm {
+  font-weight: bold;
+}
+
+.favorite_entry {
+  padding: 8px 0 8px 10px;
+}
+
+.favorite_entry:hover {
+ background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
+}
+
+.favorite_app_name {
+  padding: 0px 0 5px 10px
+}
+
+.favorite_vm_name {
+  font-size: 80%;
+  padding: 0 5px;
+}
+
+.app_entry {
+  padding: 5px 0 5px 20px;
+}
+
+.app_entry:hover {
+ background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
+}
+
+.network_indicator {
+    font-style: italic;
+    color: #9b9b9b;
+}
+
+.power {
+  background: @outer-background;
+  opacity: 0.9;
+  border-width: 0;
+  border-color: @outer-background;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.power:hover {
+    background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
+}
+
+.right_menu {
+  background: @left-background;
+  opacity: 0.9;
+  margin: 0;
+  padding: 0px;
+  color: @text-color;
+}
+
+.settings_category_row {
+ padding: 15px;
+ font-size: 105%;
+ font-weight: bold;
+}
+
+undershoot.bottom {
+  background-image: linear-gradient(to bottom, @bg-color 0%, @highlight-blue-2);
+  padding-bottom: 1px; }
+
+undershoot.top {
+  background-image: linear-gradient(to top, @bg-color 0%, @highlight-blue-2);
+  padding-bottom: 1px; }
+
+overshoot.top, overshoot.bottom {
+ background: none;
+}

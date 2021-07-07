@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="17px" height="17px" viewBox="0 0 17 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Group 3</title>
+    <defs>
+        <path d="M14.9510069,3.62356761 L8.76314998,0.231560394 C8.49846709,0.0893804513 8.19801623,0.0081347695 7.89041178,0.00136429601 C7.54703937,-0.012176651 7.21797415,0.0758395043 6.92467689,0.231560394 L0.736819958,3.62356761 C0.379140367,3.81314087 0.15737902,4.12458265 0,4.46987679 L5.67995191,7.57752412 C6.71722272,8.1462439 7.3538924,9.18212634 7.3538924,10.3127954 L7.3538924,16.9140071 C7.81887586,17.0426461 8.31962729,17.0426461 8.76314998,16.8056795 L14.9510069,13.4136723 C15.5161407,13.1022305 15.8666667,12.5267402 15.8666667,11.9173976 L15.8666667,5.12661272 C15.8666667,4.50372916 15.5161407,3.93500939 14.9510069,3.62356761 Z" id="path-1"></path>
+        <filter x="-3.2%" y="-2.9%" width="112.6%" height="105.9%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="1" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 1 0" type="matrix" in="shadowOffsetOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="PROTOTYPE-—-Valentina" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="valentina---1st-release-(2)" transform="translate(-14.000000, -52.000000)">
+            <g id="Group-3" transform="translate(14.000000, 52.000000)">
+                <g id="Fill-1">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                    <use fill="#9B9B9B" fill-rule="evenodd" xlink:href="#path-1"></use>
+                </g>
+                <path d="M0,11.5392818 C0,12.2126224 0.369167458,12.8415669 0.964355809,13.1819369 L7.48129155,16.8890098 C7.62443811,16.9630033 7.77511871,16.9630033 7.93333333,17 L7.93333333,9.79303591 C7.93333333,8.55734494 7.26280469,7.41784548 6.17037037,6.79630033 L0.188350744,3.4 C0.0979423868,3.63677911 0,3.86615887 0,4.11773667 L0,11.5392818 Z" id="Fill-3" fill="#000000"></path>
+            </g>
+        </g>
+    </g>
+</svg>
