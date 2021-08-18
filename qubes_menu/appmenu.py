@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# pylint: disable=import-error
 import asyncio
 import subprocess
 import argparse
@@ -9,10 +10,11 @@ import traceback
 import xdg.DesktopEntry
 import xdg.BaseDirectory
 import xdg.Menu
-from typing import Dict, Iterable, Union, Optional, List, Callable, Tuple
+from typing import Dict, Iterable, Union, Optional, List, Callable
 from pathlib import Path, PosixPath
 import pyinotify
 import pkg_resources
+import logging
 
 import qubesadmin
 import qubesadmin.events
@@ -20,17 +22,13 @@ from qubesadmin.vm import QubesVM
 
 from html import escape
 
-import gi  # isort:skip
-gi.require_version('Gtk', '3.0')  # isort:skip
-from gi.repository import Gio, Gtk, GObject, Gdk, GdkPixbuf, GLib, Pango  # isort:skip
-import logging
+# pylint: disable=wrong-import-position
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, Pango
 
 import gbulb
 gbulb.install()
-
-import gettext
-t = gettext.translation("desktop-linux-manager", fallback=True)
-_ = t.gettext
 
 STATE_DICTIONARY = {
     'domain-pre-start': 'Transient',
@@ -55,9 +53,6 @@ parser.add_argument('--keep-visible', action='store_true',
                     help='Do not hide the menu after action.')
 parser.add_argument('--restart', action='store_true',
                     help="Restart the menu if it's running")
-# Styling
-# TODO: final styling pass
-
 # coding
 # TODO: fix keyboard nav
 # TODO: cli option for menu restart
@@ -76,14 +71,7 @@ parser.add_argument('--restart', action='store_true',
 # TODO: add testing, a lot of testing, incl favorite item: vm start?
 # TODO: edge case: super long app name, vm name??
 
-# bugfixing
-# TODO: running vm stopped being applied.....
-
-
 # TODO: debian?
-
-def _debug(*args):
-    print(args)
 
 
 def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
@@ -101,7 +89,7 @@ def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
 
 class LimitedWidthLabel(Gtk.Label):
     def __init__(self, label_text=None):
-        super(LimitedWidthLabel, self).__init__()
+        super().__init__()
         if label_text:
             self.set_label(label_text)
         self.set_width_chars(35)
@@ -111,7 +99,7 @@ class LimitedWidthLabel(Gtk.Label):
 
 class HoverListBox(Gtk.ListBoxRow):
     def __init__(self):
-        super(HoverListBox, self).__init__()
+        super().__init__()
         self.mouse = False
         self.event_box = Gtk.EventBox()
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
@@ -173,8 +161,8 @@ class ApplicationInfo:
 
         self.categories = entry.getCategories()
 
-        for entry in self.entries:
-            entry.update_contents()
+        for menu_entry in self.entries:
+            menu_entry.update_contents()
 
     def get_command_for_vm(self, vm=None):
         command = self.exec
@@ -198,7 +186,7 @@ class SelfAwareMenu(Gtk.Menu):
     OPEN_MENUS = 0
 
     def __init__(self, **kwargs):
-        super(SelfAwareMenu, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.connect('realize', self._add_to_open)
         self.connect('deactivate', self._remove_from_open)
 
@@ -213,7 +201,7 @@ class SelfAwareMenu(Gtk.Menu):
 
 class AppEntry(Gtk.ListBoxRow):
     def __init__(self, app_info: ApplicationInfo, **properties):
-        super(AppEntry, self).__init__(**properties)
+        super().__init__(**properties)
         self.app_info = app_info
 
         self.menu = SelfAwareMenu()
@@ -224,7 +212,7 @@ class AppEntry(Gtk.ListBoxRow):
         self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         self.event_box.connect('button-press-event', self.show_menu)
 
-    def show_menu(self, widget, event):
+    def show_menu(self, _widget, event):
         if event.button == 3:
             self.menu.popup_at_pointer(None)  # None means current event
 
@@ -240,7 +228,7 @@ class AppEntry(Gtk.ListBoxRow):
 
 class BaseAppEntry(AppEntry):
     def __init__(self, app_info: ApplicationInfo, **properties):
-        super(BaseAppEntry, self).__init__(app_info, **properties)
+        super().__init__(app_info, **properties)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.event_box.add(self.box)
         self.get_style_context().add_class('app_entry')
@@ -260,7 +248,7 @@ class BaseAppEntry(AppEntry):
         else:
             self.add_menu_item.set_active(self.app_info.is_favorite())
             self.add_menu_item.set_sensitive(not self.app_info.is_favorite())
-        super(BaseAppEntry, self).show_menu(widget, event)
+        super().show_menu(widget, event)
 
     def update_contents(self):
         icon = load_icon(self.app_info.app_icon, Gtk.IconSize.LARGE_TOOLBAR)
@@ -273,8 +261,8 @@ class BaseAppEntry(AppEntry):
             LimitedWidthLabel(self.app_info.app_name), False, False, 5)
         self.show_all()
 
-    def _add_to_favorites(self, *args, **kwargs):
-        # try to disable the add-to-favorites for already-favorited items
+    def _add_to_favorites(self, *_args, **_kwargs):
+        # disable the add-to-favorites for already-added items
         target_vm = self.app_info.vm
         if not target_vm:
             target_vm = self.app_info.qapp.domains[
@@ -284,7 +272,6 @@ class BaseAppEntry(AppEntry):
             FAVORITES_FEATURE, '').split(' ')
 
         if self.app_info.entry_name in current_feature:
-            # log this, should not happen
             return
         current_feature.append(self.app_info.entry_name)
         target_vm.features[FAVORITES_FEATURE] = ' '.join(current_feature)
@@ -292,7 +279,7 @@ class BaseAppEntry(AppEntry):
 
 class FavoritesAppEntry(AppEntry):
     def __init__(self, app_info: ApplicationInfo, **properties):
-        super(FavoritesAppEntry, self).__init__(app_info, **properties)
+        super().__init__(app_info, **properties)
         self.get_style_context().add_class('favorite_entry')
         self.grid = Gtk.Grid()
         self.event_box.add(self.grid)
@@ -359,7 +346,7 @@ class FavoritesAppEntry(AppEntry):
 
 class VMEntry(HoverListBox):
     def __init__(self, vm: QubesVM, qapp: qubesadmin.Qubes):
-        super(VMEntry, self).__init__()
+        super().__init__()
         self.qapp = qapp
         self.vm = vm
         self.vm_state = vm.get_power_state()
@@ -367,7 +354,8 @@ class VMEntry(HoverListBox):
         if self.vm.klass == 'DispVM':
             self.sort_order = self.vm.template.name + ":" + self.sort_order
         self.parent_vm = self.vm.template if self.vm.klass == 'DispVM' else None
-        self.is_dispvmtemplate = bool(getattr(vm, 'template_for_dispvms', False))
+        self.is_dispvmtemplate = bool(
+            getattr(vm, 'template_for_dispvms', False))
         self.has_network = vm.is_networked()
         self.get_style_context().add_class('vm_entry')
 
@@ -395,7 +383,8 @@ class VMEntry(HoverListBox):
         icon_img = Gtk.Image.new_from_pixbuf(icon_vm)
 
         self.main_box.pack_start(icon_img, False, False, 2)
-        self.main_box.pack_start(Gtk.Label(label=self.vm.name), False, False, 2)
+        self.main_box.pack_start(
+            Gtk.Label(label=self.vm.name), False, False, 2)
         self.main_box.show_all()
 
     @property
@@ -415,7 +404,7 @@ class VMEntry(HoverListBox):
 
 class ControlRow(Gtk.ListBoxRow):
     def __init__(self):
-        super(ControlRow, self).__init__()
+        super().__init__()
         self.row_label = LimitedWidthLabel()
         self.get_style_context().add_class('app_entry')
         self.add(self.row_label)
@@ -427,14 +416,14 @@ class ControlRow(Gtk.ListBoxRow):
     def run_app(self, vm):
         if self.command and self.is_sensitive():
             subprocess.Popen([self.command, str(vm)],
-                         stdout=subprocess.DEVNULL,
-                         stderr=subprocess.DEVNULL,
-                         stdin=subprocess.DEVNULL)
+                             stdout=subprocess.DEVNULL,
+                             stderr=subprocess.DEVNULL,
+                             stdin=subprocess.DEVNULL)
 
 
 class StartControlItem(ControlRow):
     def __init__(self):
-        super(StartControlItem, self).__init__()
+        super().__init__()
         self.state = None
 
     def update_state(self, state):
@@ -459,7 +448,7 @@ class StartControlItem(ControlRow):
 
 class PauseControlItem(ControlRow):
     def __init__(self):
-        super(PauseControlItem, self).__init__()
+        super().__init__()
         self.state = None
 
     def update_state(self, state):
@@ -476,7 +465,7 @@ class PauseControlItem(ControlRow):
 
 class ControlList(Gtk.ListBox):
     def __init__(self, app_page):
-        super(ControlList, self).__init__()
+        super().__init__()
         self.app_page = app_page
 
         self.get_style_context().add_class('right_pane')
@@ -490,6 +479,7 @@ class ControlList(Gtk.ListBox):
 
 
 class DesktopFileManager:
+    # pylint: disable=invalid-name
     class EventProcessor(pyinotify.ProcessEvent):
         def __init__(self, parent):
             self.parent = parent
@@ -520,9 +510,9 @@ class DesktopFileManager:
 
         self.app_entries: Dict[Path, ApplicationInfo] = {}
 
-        for d in self.desktop_dirs:
-            for file in os.listdir(d):
-                self.load_file(d / file)
+        for directory in self.desktop_dirs:
+            for file in os.listdir(directory):
+                self.load_file(directory / file)
         self.initialize_watchers()
 
     def register_callback(self, func):
@@ -556,8 +546,9 @@ class DesktopFileManager:
 
         try:
             entry = xdg.DesktopEntry.DesktopEntry(path)
-        except Exception as ex:  # pylint: disable=too-broad-exception
-            logger.warning('Cannot load desktop entry file %s', path)
+        except Exception as ex:  # pylint: disable=broad-except
+            logger.warning(
+                'Cannot load desktop entry file %s: %s', path, str(ex))
             self.remove_file(path)
             return
 
@@ -610,7 +601,7 @@ class DesktopFileManager:
 
 class NetworkIndicator(Gtk.Box):
     def __init__(self, *args, **kwargs):
-        super(NetworkIndicator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.icon_size = Gtk.IconSize.DND
         self.network_on = Gtk.Image.new_from_pixbuf(
@@ -739,8 +730,10 @@ class VMManager:
 class VMTypeToggle:
     def __init__(self, builder: Gtk.Builder, qapp: qubesadmin.Qubes):
         self.apps_toggle: Gtk.RadioButton = builder.get_object('apps_toggle')
-        self.templates_toggle: Gtk.RadioButton = builder.get_object('templates_toggle')
-        self.system_toggle: Gtk.RadioButton = builder.get_object('system_toggle')
+        self.templates_toggle: Gtk.RadioButton = \
+            builder.get_object('templates_toggle')
+        self.system_toggle: Gtk.RadioButton = \
+            builder.get_object('system_toggle')
         self.vm_list: Gtk.ListBox = builder.get_object('vm_list')
         self.app_list: Gtk.ListBox = builder.get_object('app_list')
         self.qapp = qapp
@@ -777,25 +770,28 @@ class VMTypeToggle:
             return self._filter_service(vm)
         return False
 
-    def _filter_appvms(self, vm: qubesadmin.vm.QubesVM):
+    @staticmethod
+    def _filter_appvms(vm: qubesadmin.vm.QubesVM):
         if vm.provides_network:
             return False
         if vm.klass == 'TemplateVM':
             return False
         return True
 
-    def _filter_templatevms(self, vm: qubesadmin.vm.QubesVM):
+    @staticmethod
+    def _filter_templatevms(vm: qubesadmin.vm.QubesVM):
         if vm.klass == 'TemplateVM':
             return True
         return getattr(vm, 'template_for_dispvms', False)
 
-    def _filter_service(self, vm: qubesadmin.vm.QubesVM):
+    @staticmethod
+    def _filter_service(vm: qubesadmin.vm.QubesVM):
         return vm.provides_network
 
 
 class SettingsEntry(Gtk.ListBoxRow):
     def __init__(self):
-        super(SettingsEntry, self).__init__()
+        super().__init__()
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.settings_icon = Gtk.Image.new_from_pixbuf(
             load_icon('qappmenu-settings'))
@@ -807,16 +803,14 @@ class SettingsEntry(Gtk.ListBoxRow):
 
     def run_app(self, vm):
         subprocess.Popen(
-            ['qubes-vm-settings', vm.name],
-                         stdout=subprocess.DEVNULL,
-                         stderr=subprocess.DEVNULL,
-                         stdin=subprocess.DEVNULL)
+            ['qubes-vm-settings', vm.name], stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
         self.get_toplevel().get_application().hide_menu()
 
 
 class SeparatorLine(Gtk.ListBoxRow):
     def __init__(self):
-        super(SeparatorLine, self).__init__()
+        super().__init__()
         self.set_sensitive(False)
         self.get_style_context().add_class('separator-bar')
 
@@ -849,7 +843,8 @@ class AppPage:
 
         self.app_list.set_filter_func(self._is_app_fitting)
         self.app_list.connect('row-activated', self._app_clicked)
-        self.app_list.set_sort_func(lambda x, y: x.app_info.app_name > y.app_info.app_name)
+        self.app_list.set_sort_func(
+            lambda x, y: x.app_info.app_name > y.app_info.app_name)
         self.app_list.invalidate_sort()
 
         self.vm_manager = VMManager(self.qapp, self.dispatcher,
@@ -892,14 +887,15 @@ class AppPage:
         if not self.selected_vm_entry:
             return False
         if appentry.app_info.vm.name != self.selected_vm_entry.vm:
-            return self.selected_vm_entry.parent_vm == appentry.app_info.vm.name and not appentry.app_info.disposable
+            return self.selected_vm_entry.parent_vm == \
+                   appentry.app_info.vm.name and \
+                   not appentry.app_info.disposable
         if self.selected_vm_entry.is_dispvmtemplate:
             return appentry.app_info.disposable == \
                    self.toggle_buttons.apps_toggle.get_active()
         return True
 
     def _keynav_failed(self, widget: Gtk.ListBox, direction: Gtk.DirectionType):
-        print("keynav failed for ", widget.get_name(), direction)
         next_widget = None
 
         if widget == self.vm_list:
@@ -910,7 +906,8 @@ class AppPage:
         elif widget in self.widget_order:
             if direction == Gtk.DirectionType.DOWN:
                 i = self.widget_order.index(widget)
-                next_widget = self.widget_order[(i + 1) % len(self.widget_order)]
+                next_widget = \
+                    self.widget_order[(i + 1) % len(self.widget_order)]
             elif direction == Gtk.DirectionType.UP:
                 i = self.widget_order.index(widget)
                 next_widget = self.widget_order[i - 1]
@@ -922,7 +919,7 @@ class AppPage:
             # self._select_first_visible(next_widget)
             return False
 
-    def _app_clicked(self, widget: Gtk.Widget, row: AppEntry):
+    def _app_clicked(self, _widget: Gtk.Widget, row: AppEntry):
         if not self.selected_vm_entry:
             return
         row.run_app(self.selected_vm_entry.vm)
@@ -934,13 +931,13 @@ class AppPage:
         self.app_list.invalidate_filter()
         self.vm_list.invalidate_filter()
 
-    def initialize_state(self, vm: Optional[qubesadmin.vm.QubesVM] = None):
+    def initialize_state(self, _vm: Optional[qubesadmin.vm.QubesVM] = None):
         self.toggle_buttons.initialize_state()
         self.app_list.select_row(None)
         self.control_list.hide()
         self.settings_list.hide()
 
-    def _selection_changed(self, widget, row: VMEntry):
+    def _selection_changed(self, _widget, row: VMEntry):
         if not row:
             self.selected_vm_entry = None
             self.control_list.hide()
@@ -1016,10 +1013,11 @@ class FavoritesPage:
         app_info.entries.append(entry)
         self.app_list.add(entry)
 
-    def _app_clicked(self, _widget, row: AppEntry):
+    @staticmethod
+    def _app_clicked(_widget, row: AppEntry):
         row.run_app(row.app_info.vm)
 
-    def _feature_deleted(self, vm, _event, _feature, *args, **kwargs):
+    def _feature_deleted(self, vm, _event, _feature, *_args, **_kwargs):
         try:
             if str(vm) == self.qapp.local_name:
                 vm = None
@@ -1028,15 +1026,17 @@ class FavoritesPage:
                     child.app_info.entries.remove(child)
                     self.app_list.remove(child)
             self.app_list.invalidate_sort()
-        except Exception as ex:
-            print("DEL", type(ex), ex)
+        except Exception as ex: # pylint: disable=broad-except
+            logger.warning(
+                'Encountered problem removing favorite entry: %s', repr(ex))
 
-    def _feature_set(self, vm, event, feature, *args, **kwargs):
+    def _feature_set(self, vm, event, feature, *_args, **_kwargs):
         try:
             self._feature_deleted(vm, event, feature)
             self._load_vms_favorites(vm)
-        except Exception as ex:
-            print("UGHHH", ex)
+        except Exception as ex: # pylint: disable=broad-except
+            logger.warning(
+                'Encountered problem adding favorite entry: %s', repr(ex))
 
     def _domain_added(self, _submitter, _event, vm, **_kwargs):
         self._load_vms_favorites(vm)
@@ -1047,7 +1047,7 @@ class FavoritesPage:
 
 class SettingsCategoryRow(HoverListBox):
     def __init__(self, name, filter_func):
-        super(SettingsCategoryRow, self).__init__()
+        super().__init__()
         self.name = name
         self.label = LimitedWidthLabel(self.name)
         self.main_box.add(self.label)
@@ -1097,12 +1097,14 @@ class SettingsPage:
             return False
         return filter_func(row)
 
-    def _filter_qubes_tools(self, row):
+    @staticmethod
+    def _filter_qubes_tools(row):
         if 'X-XFCE-SettingsDialog' not in row.app_info.categories:
             return False
         return 'qubes' in row.app_info.entry_name
 
-    def _filter_system_settings(self, row):
+    @staticmethod
+    def _filter_system_settings(row):
         if 'X-XFCE-SettingsDialog' in row.app_info.categories:
             return 'qubes' not in row.app_info.entry_name
         if 'Settings' in row.app_info.categories:
@@ -1116,7 +1118,8 @@ class SettingsPage:
     def _category_clicked(self, *_args):
         self.app_list.invalidate_filter()
 
-    def _app_clicked(self, _widget, row: AppEntry):
+    @staticmethod
+    def _app_clicked(_widget, row: AppEntry):
         row.run_app(None)
 
     def _app_info_callback(self, app_info):
@@ -1193,11 +1196,11 @@ class AppMenu(Gtk.Application):
         if not self.keep_visible:
             self.main_window.hide()
 
-    def _key_press(self, widget, event):
+    def _key_press(self, _widget, event):
         if event.keyval == Gdk.KEY_Escape:
             self.hide_menu()
 
-    def _focus_out(self, widget, event: Gdk.EventFocus):
+    def _focus_out(self, _widget, _event: Gdk.EventFocus):
         if SelfAwareMenu.OPEN_MENUS <= 0:
             self.hide_menu()
 
@@ -1235,6 +1238,7 @@ class AppMenu(Gtk.Application):
     def do_shutdown(self, *args, **kwargs):
         print("go away!")
 
+
 def main():
     """
     Start the menu app
@@ -1261,11 +1265,11 @@ def main():
             exc_type, exc_value = sys.exc_info()[:2]
             dialog = Gtk.MessageDialog(
                 None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK)
-            dialog.set_title(_("Houston, we have a problem..."))
-            dialog.set_markup(_(
+            dialog.set_title("Houston, we have a problem...")
+            dialog.set_markup(
                 "<b>Whoops. A critical error in App Menu has occured.</b>"
                 " This is most likely a bug in the widget. The App Menu"
-                " will restart itself."))
+                " will restart itself.")
             exc_description = "\n<b>{}</b>: {}\n{}".format(
                    exc_type.__name__, exc_value, traceback.format_exc(limit=10)
                 )
@@ -1291,4 +1295,3 @@ if __name__ == '__main__':
 # future: add resizing in a smarter way
 # future: add handling sizes in a smarter way
 # future: nicer handling for dispvm line icon
-
