@@ -826,7 +826,7 @@ class AppPage:
         self.dispatcher = dispatcher
         self.desktop_file_manager = desktop_file_manager
 
-        self.selected_vm_entry = None
+        self.selected_vm_entry: Optional[VMEntry] = None
         self.main_window: Gtk.Window = builder.get_object('main_window')
 
         self.vm_list: Gtk.ListBox = builder.get_object('vm_list')
@@ -886,7 +886,8 @@ class AppPage:
     def _is_app_fitting(self, appentry: BaseAppEntry):
         if not self.selected_vm_entry:
             return False
-        if appentry.app_info.vm.name != self.selected_vm_entry.vm:
+        if appentry.app_info.vm and \
+                appentry.app_info.vm.name != self.selected_vm_entry.vm:
             return self.selected_vm_entry.parent_vm == \
                    appentry.app_info.vm.name and \
                    not appentry.app_info.disposable
@@ -937,8 +938,8 @@ class AppPage:
         self.control_list.hide()
         self.settings_list.hide()
 
-    def _selection_changed(self, _widget, row: VMEntry):
-        if not row:
+    def _selection_changed(self, _widget, row: Optional[VMEntry]):
+        if row is None:
             self.selected_vm_entry = None
             self.control_list.hide()
             self.settings_list.hide()
