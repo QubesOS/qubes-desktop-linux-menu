@@ -480,6 +480,7 @@ class ControlList(Gtk.ListBox):
         self.app_page = app_page
 
         self.get_style_context().add_class('right_pane')
+        self.add(SeparatorLine())
         self.add(StartControlItem())
         self.add(PauseControlItem())
 
@@ -611,15 +612,18 @@ class NetworkIndicator(Gtk.Box):
     def __init__(self, *args, **kwargs):
         super(NetworkIndicator, self).__init__(*args, **kwargs)
 
-        self.icon_size = Gtk.IconSize.BUTTON
-        self.network_on = Gtk.Image.new_from_pixbuf(load_icon('qappmenu-networking-yes', self.icon_size))
-        self.network_off = Gtk.Image.new_from_pixbuf(load_icon('qappmenu-networking-no', self.icon_size))
-        # TODO: fix this
-        # self.network_on.set_size_request(-1, self.icon_size * 1.3)
-        # self.network_off.set_size_request(-1, self.icon_size * 1.3)
+        self.icon_size = Gtk.IconSize.DND
+        self.network_on = Gtk.Image.new_from_pixbuf(
+            load_icon('qappmenu-networking-yes', self.icon_size))
+        self.network_off = Gtk.Image.new_from_pixbuf(
+            load_icon('qappmenu-networking-no', self.icon_size))
 
-        self.pack_end(self.network_on, False, True, 0)
-        self.pack_end(self.network_off, False, True, 0)
+        _, height, _ = Gtk.icon_size_lookup(self.icon_size)
+        self.network_on.set_size_request(-1, height * 1.3)
+        self.network_off.set_size_request(-1, height * 1.3)
+
+        self.pack_end(self.network_on, False, True, 10)
+        self.pack_end(self.network_off, False, True, 10)
 
         self.network_on.set_no_show_all(True)
         self.network_off.set_no_show_all(True)
@@ -810,6 +814,16 @@ class SettingsEntry(Gtk.ListBoxRow):
         self.get_toplevel().get_application().hide_menu()
 
 
+class SeparatorLine(Gtk.ListBoxRow):
+    def __init__(self):
+        super(SeparatorLine, self).__init__()
+        self.set_sensitive(False)
+        self.get_style_context().add_class('separator-bar')
+
+    def update_state(self, *_args):
+        pass
+
+
 class AppPage:
     def __init__(self, qapp: qubesadmin.Qubes, builder: Gtk.Builder,
                  desktop_file_manager: DesktopFileManager,
@@ -846,6 +860,7 @@ class AppPage:
         self.vm_list.connect('row-selected', self._selection_changed)
 
         self.settings_list.add(SettingsEntry())
+        self.settings_list.add(SeparatorLine())
         self.settings_list.connect('row-activated', self._app_clicked)
 
         self.control_list = ControlList(self)

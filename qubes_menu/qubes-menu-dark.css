@@ -158,3 +158,10 @@ undershoot.top {
 overshoot.top, overshoot.bottom {
  background: none;
 }
+
+.separator-bar {
+    border: solid 1px #262626;
+    background: #262626;
+    margin: 20px;
+    padding: 0px;
+}
