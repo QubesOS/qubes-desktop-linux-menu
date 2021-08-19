@@ -55,7 +55,6 @@ parser.add_argument('--restart', action='store_true',
                     help="Restart the menu if it's running")
 # coding
 # TODO: cli option for menu restart
-# TODO: make assert if dispvm line is wrong
 # TODO: update labels in favorite list
 # TODO: how to handle errors? when something didn't want to start or run?
 
@@ -171,6 +170,9 @@ class ApplicationInfo:
         if vm and self.vm != vm:
             # replace name of the old VM - used for opening apps from DVM
             # template in their child dispvm
+            if command[5] != str(self.vm):
+                logger.warning(
+                    'Unexpected command for a disposable VM: %s', command)
             command = [str(vm) if s == str(self.vm) else s for s in command]
         return command
 
