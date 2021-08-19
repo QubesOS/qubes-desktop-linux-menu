@@ -59,11 +59,10 @@ parser.add_argument('--restart', action='store_true',
 # TODO: dispatcher functions can NOT fail
 # TODO: update labels in favorite list
 # TODO: how to handle errors? when something didn't want to start or run?
-# TODO: need a blank placeholder icon
 
 # packaging and docs
 # TODO: decent docs: document things like new features
-# TODO: add mypy and pylint
+# TODO: add mypy
 # TODO: move things into separate files
 
 # testing
@@ -77,13 +76,18 @@ def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
     _, width, height = Gtk.icon_size_lookup(size)
     try:
         return GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, width, height)
-    except GLib.Error:
+    except (GLib.Error, TypeError):
         try:
             # icon name is a path
-            return Gtk.IconTheme.get_default().load_icon(icon_name, width, 0)
-        except GLib.GError:
+            image: GdkPixbuf.Pixbuf = Gtk.IconTheme.get_default().load_icon(
+                icon_name, width, 0)
+            return image
+        except TypeError:
             # icon not found in any way
-            return None
+            pixbuf: GdkPixbuf.Pixbuf = GdkPixbuf.Pixbuf.new(
+                GdkPixbuf.Colorspace.RGB, True, 8, width, height)
+            pixbuf.fill(0x000)
+            return pixbuf
 
 
 class LimitedWidthLabel(Gtk.Label):
@@ -305,11 +309,7 @@ class FavoritesAppEntry(AppEntry):
         self.update_contents()
 
     def update_contents(self):
-        if self.app_info.vm_icon:
-            vm_icon = load_icon(
-                self.app_info.vm_icon, Gtk.IconSize.LARGE_TOOLBAR)
-        else:
-            vm_icon = None
+        vm_icon = load_icon(self.app_info.vm_icon, Gtk.IconSize.LARGE_TOOLBAR)
         self.vm_icon.set_from_pixbuf(vm_icon)
 
         app_icon = load_icon(self.app_info.app_icon, Gtk.IconSize.DIALOG)
