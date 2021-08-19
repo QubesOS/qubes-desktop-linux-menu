@@ -56,7 +56,6 @@ parser.add_argument('--restart', action='store_true',
 # coding
 # TODO: cli option for menu restart
 # TODO: make assert if dispvm line is wrong
-# TODO: dispatcher functions can NOT fail
 # TODO: update labels in favorite list
 # TODO: how to handle errors? when something didn't want to start or run?
 
@@ -685,20 +684,25 @@ class VMManager:
     def update_domain_entry(self, vm_name, event, **_kwargs):
         vm_entry = self._get_vm_entry(vm_name)
 
-        if event in STATE_DICTIONARY:
-            state = STATE_DICTIONARY[event]
-            vm_entry.vm_state = state
-            # State for new vms
-        elif event == 'property-set:label':
-            vm_entry.load_contents()
-        elif event == 'property-set:netvm':
-            vm_entry.has_network = vm_entry.vm.is_networked()
-        elif event == 'property-set:template-for-dispvms':
-            vm_entry.is_dispvmtemplate = \
-                bool(getattr(vm_entry.vm, 'template_for_dispvms', False))
-            vm_entry.update_style()
-            self.vm_list_widget.invalidate_sort()
-            self.vm_list_widget.invalidate_filter()
+        try:
+            if event in STATE_DICTIONARY:
+                state = STATE_DICTIONARY[event]
+                vm_entry.vm_state = state
+                # State for new vms
+            elif event == 'property-set:label':
+                vm_entry.load_contents()
+            elif event == 'property-set:netvm':
+                vm_entry.has_network = vm_entry.vm.is_networked()
+            elif event == 'property-set:template-for-dispvms':
+                vm_entry.is_dispvmtemplate = \
+                    bool(getattr(vm_entry.vm, 'template_for_dispvms', False))
+                vm_entry.update_style()
+                self.vm_list_widget.invalidate_sort()
+                self.vm_list_widget.invalidate_filter()
+        except Exception:  # pylint: disable=broad-except
+            # dispatcher functions cannot raise any Exception, because
+            # it will disable any future event handling
+            pass
 
         if vm_entry.is_selected():
             vm_entry.get_parent().select_row(None)
@@ -1028,7 +1032,7 @@ class FavoritesPage:
                     child.app_info.entries.remove(child)
                     self.app_list.remove(child)
             self.app_list.invalidate_sort()
-        except Exception as ex: # pylint: disable=broad-except
+        except Exception as ex:  # pylint: disable=broad-except
             logger.warning(
                 'Encountered problem removing favorite entry: %s', repr(ex))
 
@@ -1036,7 +1040,7 @@ class FavoritesPage:
         try:
             self._feature_deleted(vm, event, feature)
             self._load_vms_favorites(vm)
-        except Exception as ex: # pylint: disable=broad-except
+        except Exception as ex:  # pylint: disable=broad-except
             logger.warning(
                 'Encountered problem adding favorite entry: %s', repr(ex))
 
