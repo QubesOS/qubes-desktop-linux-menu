@@ -40,7 +40,7 @@ font-family: SourceSansPro;
     border-width: 0;
 }
 
-#main_notebook image:hover {
+#main_notebook image:hover, image:focus {
     background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
 }
 
@@ -58,7 +58,7 @@ font-family: SourceSansPro;
   padding: 10px;
 }
 
-.vm_buttons:hover {
+.vm_buttons:hover, .vm_buttons:focus {
     transition: none;
     text-shadow: none;
     color: @text-color;
@@ -111,7 +111,7 @@ font-family: SourceSansPro;
   padding: 5px 0 5px 20px;
 }
 
-.app_entry:hover {
+.app_entry:hover, .app_entry:focus {
  background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
 }
 
@@ -159,7 +159,7 @@ overshoot.top, overshoot.bottom {
  background: none;
 }
 
-.separator-bar {
+separator {
     border: solid 1px #262626;
     background: #262626;
     margin: 20px;

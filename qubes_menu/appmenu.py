@@ -54,7 +54,6 @@ parser.add_argument('--keep-visible', action='store_true',
 parser.add_argument('--restart', action='store_true',
                     help="Restart the menu if it's running")
 # coding
-# TODO: fix keyboard nav
 # TODO: cli option for menu restart
 # TODO: make assert if dispvm line is wrong
 # TODO: dispatcher functions can NOT fail
@@ -469,8 +468,10 @@ class ControlList(Gtk.ListBox):
         self.app_page = app_page
 
         self.get_style_context().add_class('right_pane')
-        self.add(SeparatorLine())
-        self.add(StartControlItem())
+
+        self.start_item = StartControlItem()
+
+        self.add(self.start_item)
         self.add(PauseControlItem())
 
     def update_visibility(self, state):
@@ -744,6 +745,8 @@ class VMTypeToggle:
         for button in self.buttons:
             button.set_relief(Gtk.ReliefStyle.NONE)
             button.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK)
+            button.set_can_focus(True)
+            button.connect('focus', self._activate_button)
 
     def initialize_state(self):
         self.apps_toggle.set_active(True)
@@ -751,6 +754,9 @@ class VMTypeToggle:
         for button in self.buttons:
             if button.get_size_request() == (-1, -1):
                 button.set_size_request(button.get_allocated_width()*1.2, -1)
+
+    def _activate_button(self, widget, _event):
+        widget.set_active(True)
 
     def connect_to_toggle(self, func):
         for button in self.buttons:
@@ -808,16 +814,6 @@ class SettingsEntry(Gtk.ListBoxRow):
         self.get_toplevel().get_application().hide_menu()
 
 
-class SeparatorLine(Gtk.ListBoxRow):
-    def __init__(self):
-        super().__init__()
-        self.set_sensitive(False)
-        self.get_style_context().add_class('separator-bar')
-
-    def update_state(self, *_args):
-        pass
-
-
 class AppPage:
     def __init__(self, qapp: qubesadmin.Qubes, builder: Gtk.Builder,
                  desktop_file_manager: DesktopFileManager,
@@ -855,21 +851,16 @@ class AppPage:
         self.vm_list.connect('row-selected', self._selection_changed)
 
         self.settings_list.add(SettingsEntry())
-        self.settings_list.add(SeparatorLine())
         self.settings_list.connect('row-activated', self._app_clicked)
 
         self.control_list = ControlList(self)
         self.control_list.connect('row-activated', self._app_clicked)
         self.vm_right_pane.pack_end(self.control_list, False, False, 0)
 
-        # self.app_list.connect('keynav-failed', self._app_list_keynav)
-        # self.settings_list.connect('keynav-failed', self._keynav_failed)
-        # self.control_list.connect('keynav-failed', self._keynav_failed)
-        # self.vm_list.connect('keynav-failed', self._keynav_failed)
-        # self.app_list.set_can_focus(True)
-        # self.settings_list.set_can_focus(True)
-        # self.control_list.set_can_focus(True)
-        # self.vm_list.set_can_focus(True)
+        self._set_keyboard_focus_chain()
+        self.app_list.connect('keynav-failed', self._keynav_failed)
+        self.settings_list.connect('keynav-failed', self._keynav_failed)
+        self.control_list.connect('keynav-failed', self._keynav_failed)
         self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.settings_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.control_list.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -896,29 +887,39 @@ class AppPage:
                    self.toggle_buttons.apps_toggle.get_active()
         return True
 
-    def _keynav_failed(self, widget: Gtk.ListBox, direction: Gtk.DirectionType):
-        next_widget = None
+    def _set_keyboard_focus_chain(self):
+        self.control_list.focus_neighbors = {
+            Gtk.DirectionType.UP: self.app_list,
+            Gtk.DirectionType.DOWN: self.settings_list,
+        }
+        self.app_list.focus_neighbors = {
+            Gtk.DirectionType.UP: self.settings_list,
+            Gtk.DirectionType.DOWN: self.control_list,
+        }
+        self.settings_list.focus_neighbors = {
+            Gtk.DirectionType.UP: self.control_list,
+            Gtk.DirectionType.DOWN: self.app_list,
+        }
 
-        if widget == self.vm_list:
-            if direction == Gtk.DirectionType.RIGHT:
-                next_widget = self.app_list
-            if direction == Gtk.DirectionType.DOWN:
-                next_widget = widget
-        elif widget in self.widget_order:
-            if direction == Gtk.DirectionType.DOWN:
-                i = self.widget_order.index(widget)
-                next_widget = \
-                    self.widget_order[(i + 1) % len(self.widget_order)]
-            elif direction == Gtk.DirectionType.UP:
-                i = self.widget_order.index(widget)
-                next_widget = self.widget_order[i - 1]
-            elif direction == Gtk.DirectionType.LEFT:
-                next_widget = self.vm_list
-        if next_widget:
-            if widget != self.vm_list:
-                widget.select_row(None)
-            # self._select_first_visible(next_widget)
-            return False
+    def _get_direction_child(self, widget: Gtk.ListBox,
+                             direction: Gtk.DirectionType):
+        child_list = widget.get_children()
+        if direction == Gtk.DirectionType.UP:
+            child_list = reversed(child_list)
+        for child in child_list:
+            if widget != self.app_list or self._is_app_fitting(child):
+                return child
+        return widget.get_row_at_index(0)
+
+    def _keynav_failed(self, widget: Gtk.ListBox, direction: Gtk.DirectionType):
+        next_widget_dict = getattr(widget, 'focus_neighbors', None)
+        if not next_widget_dict:
+            return
+        next_widget = next_widget_dict.get(direction, None)
+        if not next_widget:
+            return
+        next_focus_widget = self._get_direction_child(next_widget, direction)
+        next_focus_widget.grab_focus()
 
     def _app_clicked(self, _widget: Gtk.Widget, row: AppEntry):
         if not self.selected_vm_entry:
