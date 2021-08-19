@@ -60,7 +60,6 @@ parser.add_argument('--restart', action='store_true',
 
 # packaging and docs
 # TODO: decent docs: document things like new features
-# TODO: add mypy
 # TODO: move things into separate files
 
 # testing
@@ -149,7 +148,7 @@ class ApplicationInfo:
         except KeyError:
             self.vm = None
 
-        self.app_name = entry.getName()
+        self.app_name = entry.getName() or ''
         if self.vm and self.app_name.startswith(self.vm.name + ": "):
             self.app_name = self.app_name[len(self.vm.name + ": "):]
         self.vm_icon = self.vm.icon if self.vm else None
@@ -685,7 +684,8 @@ class VMManager:
 
     def update_domain_entry(self, vm_name, event, **_kwargs):
         vm_entry = self._get_vm_entry(vm_name)
-
+        if not vm_entry:
+            return
         try:
             if event in STATE_DICTIONARY:
                 state = STATE_DICTIONARY[event]
@@ -761,7 +761,8 @@ class VMTypeToggle:
             if button.get_size_request() == (-1, -1):
                 button.set_size_request(button.get_allocated_width()*1.2, -1)
 
-    def _activate_button(self, widget, _event):
+    @staticmethod
+    def _activate_button(widget, _event):
         widget.set_active(True)
 
     def connect_to_toggle(self, func):
@@ -894,6 +895,8 @@ class AppPage:
         return True
 
     def _set_keyboard_focus_chain(self):
+        # pylint: disable=attribute-defined-outside-init
+        # this is a hacky way to make finding neighbouring widgets less annoying
         self.control_list.focus_neighbors = {
             Gtk.DirectionType.UP: self.app_list,
             Gtk.DirectionType.DOWN: self.settings_list,
@@ -1214,7 +1217,8 @@ class AppMenu(Gtk.Application):
 
     def initialize_state(self):
         self.main_notebook.set_current_page(0)
-        self.app_page.initialize_state(None)
+        if self.app_page:
+            self.app_page.initialize_state(None)
 
     def perform_setup(self):
         self.main_window.set_events(Gdk.EventMask.FOCUS_CHANGE_MASK)
@@ -1238,9 +1242,9 @@ class AppMenu(Gtk.Application):
             asyncio.ensure_future(self.dispatcher.listen_for_events())]
 
     def _handle_page_switch(self, _widget, _page, page_num):
-        if page_num == 0:
+        if page_num == 0 and self.app_page:
             self.app_page.initialize_state()
-        elif page_num == 2:
+        elif page_num == 2 and self.settings_page:
             self.settings_page.initialize_state()
 
     def do_shutdown(self, *args, **kwargs):
@@ -1271,6 +1275,7 @@ def main():
             d.result()
         except Exception as _ex:  # pylint: disable=broad-except
             exc_type, exc_value = sys.exc_info()[:2]
+            exc_name = exc_type.__name__ if exc_type else None
             dialog = Gtk.MessageDialog(
                 None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK)
             dialog.set_title("Houston, we have a problem...")
@@ -1279,7 +1284,7 @@ def main():
                 " This is most likely a bug in the widget. The App Menu"
                 " will restart itself.")
             exc_description = "\n<b>{}</b>: {}\n{}".format(
-                   exc_type.__name__, exc_value, traceback.format_exc(limit=10)
+                   exc_name, exc_value, traceback.format_exc(limit=10)
                 )
             dialog.format_secondary_markup(escape(exc_description))
             dialog.run()
