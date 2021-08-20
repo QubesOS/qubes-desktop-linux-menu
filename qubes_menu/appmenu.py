@@ -19,8 +19,6 @@ import qubesadmin
 import qubesadmin.events
 from qubesadmin.vm import QubesVM
 
-from html import escape
-
 # pylint: disable=wrong-import-position
 import gi
 gi.require_version('Gtk', '3.0')
@@ -61,8 +59,6 @@ logger = logging.getLogger('qubes-appmenu')
 # testing
 # TODO: add testing, a lot of testing, incl favorite item: vm start?
 # TODO: edge case: super long app name, vm name??
-
-# TODO: debian?
 
 
 def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
@@ -1201,6 +1197,7 @@ class AppMenu(Gtk.Application):
         self.tasks = []
 
     def do_command_line(self, command_line):
+        # pylint: disable=arguments-differ
         options = command_line.get_options_dict()
         # convert GVariantDict -> GVariant -> dict
         options = options.end().unpack()
@@ -1277,7 +1274,7 @@ class AppMenu(Gtk.Application):
         elif page_num == 2 and self.settings_page:
             self.settings_page.initialize_state()
 
-    def exit_app(self, *args, **kwargs):
+    def exit_app(self):
         self.quit()
         self.loop_shutdown()
 
