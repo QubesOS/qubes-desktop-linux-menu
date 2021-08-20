@@ -11,24 +11,20 @@ Build-Depends:
  python3-systemd,
 Standards-Version: 3.9.5
 Homepage: https://www.qubes-os.org/
-#Vcs-Git: git://github.com/QubesOS/qubes-core-admin-client.git
-#Vcs-Browser: https://github.com/QubesOS/qubes-core-admin-client
 X-Python3-Version: >= 3.5
 
 Package: qubes-desktop-linux-menu
 Architecture: any
 Depends:
- python3-qui,
  ${misc:Depends}
-Description: Qubes UI Applications
- A collection of GUI application for enhancing the Qubes UX.
+Description: Qubes Application Menu
+ An Application Menu for Qubes OS.
 
-Package: python3-qui
+Package: python3-qubes-menu
 Architecture: any
 Depends:
  python3-qubesadmin,
- python3-gi,
  ${python3:Depends},
  ${misc:Depends}
 Description: Qubes UI Applications
- A collection of GUI application for enhancing the Qubes UX.
+ An Application Menu for Qubes OS.

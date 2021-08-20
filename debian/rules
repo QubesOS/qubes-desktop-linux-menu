@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-export PYBUILD_NAME = qui
+export PYBUILD_NAME = qubes-menu
 
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/default.mk
@@ -15,8 +15,8 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	dh_auto_install
-	make install DESTDIR=debian/qubes-desktop-linux-manager
-	mv debian/python3-qui/usr/bin/* debian/qubes-desktop-linux-manager/usr/bin/
+	make install DESTDIR=debian/qubes-desktop-linux-menu/usr/bin/
+	mv debian/python3-qubes-menu/usr/bin/* debian/qubes-desktop-linux-menu/usr/bin/
 
 override_dh_clean:
 	dh_clean -O--buildsystem=pybuild
