@@ -3,15 +3,14 @@
 # pylint: disable=import-error
 import asyncio
 import subprocess
-import argparse
 import sys
 import os
-import traceback
 import xdg.DesktopEntry
 import xdg.BaseDirectory
 import xdg.Menu
 from typing import Dict, Iterable, Union, Optional, List, Callable
 from pathlib import Path, PosixPath
+from contextlib import suppress
 import pyinotify
 import pkg_resources
 import logging
@@ -25,7 +24,7 @@ from html import escape
 # pylint: disable=wrong-import-position
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, Pango
+from gi.repository import Gtk, Gdk, GdkPixbuf, GLib, Pango, Gio
 
 import gbulb
 gbulb.install()
@@ -45,18 +44,15 @@ FAVORITES_FEATURE = 'menu-favorites'
 DISPOSABLE_PREFIX = '@disp:'
 HOVER_TIMEOUT = 20
 
+RESTART_PARAM_LONG = 'restart'
+RESTART_PARAM_SHORT = 'r'
+
 logger = logging.getLogger('qubes-appmenu')
 
-parser = argparse.ArgumentParser(description='Qubes Application Menu')
-
-parser.add_argument('--keep-visible', action='store_true',
-                    help='Do not hide the menu after action.')
-parser.add_argument('--restart', action='store_true',
-                    help="Restart the menu if it's running")
 # coding
-# TODO: cli option for menu restart
 # TODO: update labels in favorite list
 # TODO: how to handle errors? when something didn't want to start or run?
+# TODO: fix separators not vanishing, ffs
 
 # packaging and docs
 # TODO: decent docs: document things like new features
@@ -1150,12 +1146,31 @@ def show_error(title, text):
 
 
 class AppMenu(Gtk.Application):
-    def __init__(self, qapp, dispatcher, keep_visible):
-        super().__init__(application_id='org.qubesos.appmenu')
+    def __init__(self, qapp, dispatcher):
+        super().__init__(application_id='org.qubesos.appmenu',
+                         flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,)
         self.qapp = qapp
         self.dispatcher = dispatcher
         self.primary = False
-        self.keep_visible = keep_visible
+        self.keep_visible = False
+        self.restart = False
+
+        self.add_main_option(
+            "keep-visible",
+            ord("k"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            "Do not hide the menu after action",
+            None,
+        )
+        self.add_main_option(
+            RESTART_PARAM_LONG,
+            ord(RESTART_PARAM_SHORT),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            "Restart the menu if it's running",
+            None,
+        )
 
         screen = Gdk.Screen.get_default()
         provider = Gtk.CssProvider()
@@ -1185,6 +1200,18 @@ class AppMenu(Gtk.Application):
         self.power_button: Gtk.Button = self.builder.get_object('power_button')
         self.tasks = []
 
+    def do_command_line(self, command_line):
+        options = command_line.get_options_dict()
+        # convert GVariantDict -> GVariant -> dict
+        options = options.end().unpack()
+
+        if "keep-visible" in options:
+            self.keep_visible = True
+        if "restart" in options:
+            self.restart = True
+        self.activate()
+        return 0
+
     @staticmethod
     def _do_power_button(_widget):
         subprocess.Popen('xfce4-session-logout',
@@ -1201,6 +1228,8 @@ class AppMenu(Gtk.Application):
             self.initialize_state()
             self.hold()
         else:
+            if self.restart:
+                self.exit_app()
             self.main_window.present()
 
     def hide_menu(self):
@@ -1237,6 +1266,7 @@ class AppMenu(Gtk.Application):
                                           self.dispatcher)
         self.power_button.connect('clicked', self._do_power_button)
         self.main_notebook.connect('switch-page', self._handle_page_switch)
+        self.connect('shutdown', self.do_shutdown)
 
         self.tasks = [
             asyncio.ensure_future(self.dispatcher.listen_for_events())]
@@ -1247,49 +1277,30 @@ class AppMenu(Gtk.Application):
         elif page_num == 2 and self.settings_page:
             self.settings_page.initialize_state()
 
-    def do_shutdown(self, *args, **kwargs):
-        print("go away!")
+    def exit_app(self, *args, **kwargs):
+        self.quit()
+        self.loop_shutdown()
+
+    def loop_shutdown(self):
+        for task in self.tasks:
+            with suppress(asyncio.CancelledError):
+                task.cancel()
 
 
 def main():
     """
     Start the menu app
     """
-    args = parser.parse_args()
     qapp = qubesadmin.Qubes()
     dispatcher = qubesadmin.events.EventsDispatcher(qapp)
-    app = AppMenu(qapp, dispatcher, args.keep_visible)
-    loop = asyncio.get_event_loop()
-    app.run()
-
-    if not app.primary:
-        return
-
-    done, _unused = loop.run_until_complete(asyncio.wait(
-            app.tasks, return_when=asyncio.FIRST_EXCEPTION))
-
-    exit_code = 0
-
-    for d in done:  # pylint: disable=invalid-name
-        try:
-            d.result()
-        except Exception as _ex:  # pylint: disable=broad-except
-            exc_type, exc_value = sys.exc_info()[:2]
-            exc_name = exc_type.__name__ if exc_type else None
-            dialog = Gtk.MessageDialog(
-                None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK)
-            dialog.set_title("Houston, we have a problem...")
-            dialog.set_markup(
-                "<b>Whoops. A critical error in App Menu has occured.</b>"
-                " This is most likely a bug in the widget. The App Menu"
-                " will restart itself.")
-            exc_description = "\n<b>{}</b>: {}\n{}".format(
-                   exc_name, exc_value, traceback.format_exc(limit=10)
-                )
-            dialog.format_secondary_markup(escape(exc_description))
-            dialog.run()
-            exit_code = 1
-    return exit_code
+    app = AppMenu(qapp, dispatcher)
+    app.run(sys.argv)
+    if f'--{RESTART_PARAM_LONG}' in sys.argv or \
+            f'-{RESTART_PARAM_SHORT}' in sys.argv:
+        sys.argv = [x for x in sys.argv if x not in
+                    (f'--{RESTART_PARAM_LONG}', f'-{RESTART_PARAM_SHORT}') ]
+        app = AppMenu(qapp, dispatcher)
+        app.run(sys.argv)
 
 
 if __name__ == '__main__':
