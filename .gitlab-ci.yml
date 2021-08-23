@@ -13,7 +13,7 @@ checks:pylint:
     - pip3 install --quiet -r ci/requirements.txt
     - git clone https://github.com/QubesOS/qubes-core-admin-client ~/core-admin-client
   script:
-    - PYTHONPATH=~/core-admin-client python3 -m pylint --rcfile=.pylintrc qubes_menu
+    - PYTHONPATH=~/core-admin-client:. python3 -m pylint --rcfile=.pylintrc qubes_menu
     - mypy qubes_menu
 
 
