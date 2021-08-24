@@ -17,6 +17,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
+"""
+A collection of custom Gtk widgets used elsewhere in the App Menu
+"""
 import subprocess
 import logging
 
@@ -25,7 +28,6 @@ from .desktop_file_manager import ApplicationInfo
 from .utils import load_icon
 from . import constants
 
-# pylint: disable=wrong-import-position
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
@@ -35,12 +37,24 @@ logger = logging.getLogger('qubes-appmenu')
 
 
 class AppEntry(Gtk.ListBoxRow):
+    """
+    Basic Application ListBoxRow entry, designed to be used as a base
+    class:
+    - supports a right-click menu that keeps track whether its open or not
+    - supports an update_contents method for updating when changes in
+    related desktop file are noticed
+    - supports running an application on click; after click signals to the
+    complete menu it might need hiding
+    """
     def __init__(self, app_info: ApplicationInfo, **properties):
+        """
+        :param app_info: ApplicationInfo obj with data about related app file
+        :param properties: additional Gtk.ListBoxRow properties
+        """
         super().__init__(**properties)
         self.app_info = app_info
 
         self.menu = SelfAwareMenu()
-        self.menu.get_style_context().add_class('right_menu')
 
         self.event_box = Gtk.EventBox()
         self.add(self.event_box)
@@ -48,13 +62,23 @@ class AppEntry(Gtk.ListBoxRow):
         self.event_box.connect('button-press-event', self.show_menu)
 
     def show_menu(self, _widget, event):
+        """
+        Display own right click menu.
+        """
         if event.button == 3:
             self.menu.popup_at_pointer(None)  # None means current event
 
     def update_contents(self):
-        pass
+        """
+        Update any contents. To be called on changes in related .desktop
+        file.
+        """
 
     def run_app(self, vm):
+        """
+        Run application from related .desktop file for a given VM.
+        :param vm: QubesVM
+        """
         command = self.app_info.get_command_for_vm(vm)
         subprocess.Popen(command, stdout=subprocess.DEVNULL,
                          stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -62,27 +86,52 @@ class AppEntry(Gtk.ListBoxRow):
 
 
 class BaseAppEntry(AppEntry):
+    """
+    A 'normal' Application row, used by main applications menu and system tools.
+    """
     def __init__(self, app_info: ApplicationInfo, **properties):
+        """
+        :param app_info: ApplicationInfo obj with data about related app file
+        :param properties: additional Gtk.ListBoxRow properties
+        """
         super().__init__(app_info, **properties)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.event_box.add(self.box)
         self.get_style_context().add_class('app_entry')
         self._setup_menu()
+
+        self.icon = Gtk.Image()
+        self.label = LimitedWidthLabel()
+        self.box.pack_start(self.icon, False, False, 5)
+        self.box.pack_start(self.label, False, False, 5)
+
         self.update_contents()
 
     def _has_favorite_sibling(self):
+        """
+        Helper function, check if any other related Application Rows are
+        for Favorites
+        """
         for entry in self.app_info.entries:
             if isinstance(entry, FavoritesAppEntry):
                 return True
         return False
 
     def _setup_menu(self):
+        """
+        Setup right click menu: currently only one option, add to favorites.
+        """
         self.add_menu_item = Gtk.CheckMenuItem(label='Add to favorites')
         self.add_menu_item.connect('activate', self._add_to_favorites)
         self.menu.add(self.add_menu_item)
         self.menu.show_all()
 
     def show_menu(self, widget, event):
+        """
+        Show right click menu. For ephemeral VMs (class DispVM with a template
+        set) the menu is inactive. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+        """
         if getattr(self.get_parent(), 'ephemeral_vm', False):
             self.add_menu_item.set_active(False)
             self.add_menu_item.set_sensitive(False)
@@ -93,18 +142,16 @@ class BaseAppEntry(AppEntry):
         super().show_menu(widget, event)
 
     def update_contents(self):
-        icon = load_icon(self.app_info.app_icon, Gtk.IconSize.LARGE_TOOLBAR)
-        icon_img: Gtk.Image = Gtk.Image.new_from_pixbuf(icon)
-
-        for child in self.box:
-            self.box.remove(child)
-        self.box.pack_start(icon_img, False, False, 5)
-        self.box.pack_start(
-            LimitedWidthLabel(self.app_info.app_name), False, False, 5)
+        """Update icon and app name."""
+        self.icon.set_from_pixbuf(
+            load_icon(self.app_info.app_icon, Gtk.IconSize.LARGE_TOOLBAR))
+        self.label.set_label(self.app_info.app_name)
         self.show_all()
 
     def _add_to_favorites(self, *_args, **_kwargs):
-        # disable the add-to-favorites for already-added items
+        """
+        "Add to favorites" action: sets appropriate VM feature
+        """
         target_vm = self.app_info.vm
         if not target_vm:
             target_vm = self.app_info.qapp.domains[
@@ -121,6 +168,12 @@ class BaseAppEntry(AppEntry):
 
 
 class FavoritesAppEntry(AppEntry):
+    """
+    Application Gtk.ListBoxRow for use in Favorites page.
+    Favorites are stored in VM's feature, name of which is stored in
+    constants.py, as a space-separated list containing a subset of menu-items
+    feature.
+    """
     def __init__(self, app_info: ApplicationInfo, **properties):
         super().__init__(app_info, **properties)
         self.get_style_context().add_class('favorite_entry')
@@ -149,6 +202,7 @@ class FavoritesAppEntry(AppEntry):
         self.update_contents()
 
     def update_contents(self):
+        """Update application and VM icons and application and vm names"""
         vm_icon = load_icon(self.app_info.vm_icon, Gtk.IconSize.LARGE_TOOLBAR)
         self.vm_icon.set_from_pixbuf(vm_icon)
 
@@ -166,6 +220,8 @@ class FavoritesAppEntry(AppEntry):
         self.show_all()
 
     def _remove_from_favorites(self, *_args, **_kwargs):
+        """Remove from favorites, that is, from an appropriate VM
+        feature"""
         vm = self.app_info.vm or self.app_info.qapp.domains[
             self.app_info.qapp.local_name]
         current_feature = vm.features.get(

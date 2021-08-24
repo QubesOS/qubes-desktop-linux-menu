@@ -17,6 +17,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
+"""
+Helper class that manages all events related to VMs.
+"""
 import qubesadmin.events
 from qubesadmin.vm import QubesVM
 from typing import Optional, Dict, List, Callable
@@ -25,6 +28,11 @@ from . import constants
 
 
 class VMEntry:
+    """
+    A helper object containing information about a VM. Attempts to cache as
+    much data as possible and update it on events, sending also information
+    to all related menu entries to update themselves.
+    """
     def __init__(self, vm: QubesVM):
         self.vm = vm
         self.vm_name = str(vm)
@@ -45,12 +53,23 @@ class VMEntry:
     def update_entries(self, update_power_state=False,
                        update_label=False,
                        update_has_network=False, update_type=False):
+        """
+        Update all related menu entries.
+        :param update_power_state: did power state change?
+        :param update_label: did VM label change?
+        :param update_has_network: did networking state change?
+        :param update_type: did type change?
+        """
         for entry in self.entries:
             entry.update_contents(update_power_state, update_label,
                                   update_has_network, update_type)
 
     @property
     def power_state(self):
+        """
+        Property representing VM's current power state; updated based on events,
+        not on get_power_state method to avoid slowdowns.
+        """
         return self._power_state
 
     @power_state.setter
@@ -60,6 +79,9 @@ class VMEntry:
 
     @property
     def vm_icon_name(self):
+        """
+        Name of VM's icon.
+        """
         return self._vm_icon_name
 
     @vm_icon_name.setter
@@ -69,6 +91,8 @@ class VMEntry:
 
     @property
     def has_network(self):
+        """Whether VM currently has network (or, to be more precise, if its
+        connected to a sensible netvm"""
         return self._has_network
 
     @has_network.setter
@@ -78,6 +102,7 @@ class VMEntry:
 
     @property
     def is_dispvm_template(self):
+        """Is the VM a template for disposable VMs"""
         return self._is_dispvm_template
 
     @is_dispvm_template.setter
@@ -87,6 +112,7 @@ class VMEntry:
 
     @property
     def provides_network(self):
+        """Does the VM provide network"""
         return self._provides_network
 
     @provides_network.setter
@@ -96,6 +122,7 @@ class VMEntry:
 
 
 class VMManager:
+    """A helper class that watches for VM-related events"""
     def __init__(self, qapp: qubesadmin.Qubes, dispatcher):
         self.qapp = qapp
         self.dispatcher = dispatcher
@@ -109,6 +136,7 @@ class VMManager:
         self.register_events()
 
     def register_new_vm_callback(self, func):
+        """Register a callback to be executed whenever a VM is added."""
         self.new_vm_callbacks.append(func)
         for entry in self.vms.values():
             func(entry)
@@ -149,7 +177,7 @@ class VMManager:
                 except Exception:  # pylint: disable=broad-except
                     # a wrapper, to make absolutely sure dispatcher is not
                     # crashed by a rogue Exception
-                    return None
+                    return
             del self.vms[vm]
 
     def _update_domain_state(self, vm_name, event, **_kwargs):
@@ -183,6 +211,7 @@ class VMManager:
             pass
 
     def register_events(self):
+        """Register handlers for all relevant VM events."""
         self.dispatcher.add_handler('domain-pre-start',
                                     self._update_domain_state)
         self.dispatcher.add_handler('domain-start', self._update_domain_state)

@@ -3,24 +3,17 @@ persistent=no
 ignore=qubes_menu/tests
 
 [MESSAGES CONTROL]
-# abstract-class-little-used: see http://www.logilab.org/ticket/111138
+enable=*
 disable=
-  abstract-class-little-used,
-  bad-continuation,
-  cyclic-import,
-  duplicate-code,
-  file-ignored,
-  fixme,
-  inconsistent-return-statements,
-  locally-disabled,
-  locally-enabled,
-  logging-format-interpolation,
-  missing-docstring,
-  too-few-public-methods,
-  too-many-instance-attributes,
-  star-args,
-  useless-super-delegation,
-  wrong-import-order
+    bad-continuation,
+    fixme,
+    wrong-import-position,
+    invalid-name,
+    broad-except,
+    design,
+    similarities,
+    wrong-import-order,
+    import-error
 
 [REPORTS]
 
@@ -80,7 +73,7 @@ bad-names=foo,bar,baz,toto,tutu,tata
 
 # Regular expression which should only match functions or classes name which do
 # not require a docstring
-no-docstring-rgx=__.*__
+no-docstring-rgx=^_
 
 
 [MISCELLANEOUS]

@@ -17,6 +17,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
+"""
+Qubes App Menu favorites page and related widgets.
+"""
 import logging
 
 import qubesadmin.events
@@ -24,7 +27,6 @@ from .desktop_file_manager import DesktopFileManager
 from .app_widgets import AppEntry, FavoritesAppEntry
 from . import constants
 
-# pylint: disable=wrong-import-position
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
@@ -33,6 +35,9 @@ logger = logging.getLogger('qubes-appmenu')
 
 
 class FavoritesPage:
+    """
+    Helper class for managing the entirety of Favorites menu page.
+    """
     def __init__(self, qapp: qubesadmin.Qubes, builder: Gtk.Builder,
                  desktop_file_manager: DesktopFileManager,
                  dispatcher: qubesadmin.events.EventsDispatcher):
@@ -60,6 +65,10 @@ class FavoritesPage:
         self.dispatcher.add_handler('domain-delete', self._domain_deleted)
 
     def _load_vms_favorites(self, vm):
+        """
+        Load favorites for all existing VMs, based on VM feature specified in
+        constants.py file.
+        """
         if isinstance(vm, str):
             try:
                 vm = self.qapp.domains[vm]
@@ -79,6 +88,7 @@ class FavoritesPage:
         self.app_list.show_all()
 
     def _app_info_callback(self, app_info):
+        """Callback to be executed on every newly loaded ApplicationInfo."""
         if app_info.vm:
             vm = app_info.vm
         else:
@@ -98,6 +108,8 @@ class FavoritesPage:
         row.run_app(row.app_info.vm)
 
     def _feature_deleted(self, vm, _event, _feature, *_args, **_kwargs):
+        """Callback to be executed when a VM feature is deleted, and also
+        used for loading favorites when VM feature is changed."""
         try:
             if str(vm) == self.qapp.local_name:
                 vm = None
@@ -111,6 +123,9 @@ class FavoritesPage:
                 'Encountered problem removing favorite entry: %s', repr(ex))
 
     def _feature_set(self, vm, event, feature, *_args, **_kwargs):
+        """When VM feature specified in constants.py is changed, all existing
+        favorites menu entries for this VM will be removed and then loaded
+        afresh from the feature."""
         try:
             self._feature_deleted(vm, event, feature)
             self._load_vms_favorites(vm)
@@ -119,7 +134,11 @@ class FavoritesPage:
                 'Encountered problem adding favorite entry: %s', repr(ex))
 
     def _domain_added(self, _submitter, _event, vm, **_kwargs):
+        """On a newly created domain, load all favorites from features
+        (the VM might have been restored from backup with features already
+        there)"""
         self._load_vms_favorites(vm)
 
     def _domain_deleted(self, _submitter, event, vm, **_kwargs):
+        """On domain delete, all related features should be removed."""
         self._feature_deleted(vm, event, None)

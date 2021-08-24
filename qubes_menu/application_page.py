@@ -17,10 +17,11 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
+"""
+Application page and related widgets and logic
+"""
 import subprocess
 from typing import Optional
-
-import qubesadmin.events
 
 from .desktop_file_manager import DesktopFileManager
 from .custom_widgets import LimitedWidthLabel, NetworkIndicator, \
@@ -29,16 +30,20 @@ from .app_widgets import AppEntry, BaseAppEntry
 from .vm_manager import VMEntry, VMManager
 from .utils import load_icon
 
-# pylint: disable=wrong-import-position
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
 
 class VMRow(HoverListBox):
-    def __init__(self, vm_entry: VMEntry, qapp: qubesadmin.Qubes):
+    """
+    Helper widget representing a VM row.
+    """
+    def __init__(self, vm_entry: VMEntry):
+        """
+        :param vm_entry: VMEntry object, stored and managed by VMManager
+        """
         super().__init__()
-        self.qapp = qapp
         self.vm_entry = vm_entry
         self.get_style_context().add_class('vm_entry')
 
@@ -52,6 +57,8 @@ class VMRow(HoverListBox):
                              update_has_network=True, update_type=True)
 
     def _update_style(self):
+        """Update own style, based on whether VM is running or not and
+        what type it has."""
         style_context: Gtk.StyleContext = self.get_style_context()
         if self.vm_entry.is_dispvm_template:
             style_context.add_class('dvm_template_entry')
@@ -74,6 +81,16 @@ class VMRow(HoverListBox):
                         update_label=False,
                         update_has_network=False,
                         update_type=False):
+        """
+        Update own contents (or related widgets, if applicable) based on state
+        change.
+        :param update_power_state: whether to update if VM is running or not
+        :param update_label: whether label (vm icon) should be updated
+        :param update_has_network: whether VM networking state should be
+        updated
+        :param update_type: whether VM type should be updated
+        :return:
+        """
         if update_label:
             icon_vm = load_icon(self.vm_entry.vm_icon_name)
             self.icon_img.set_from_pixbuf(icon_vm)
@@ -90,10 +107,17 @@ class VMRow(HoverListBox):
 
     @property
     def sort_order(self):
+        """
+        Helper property exposing desired sort order.
+        """
         return self.vm_entry.sort_name
 
 
 class ControlRow(Gtk.ListBoxRow):
+    """
+    Gtk.ListBoxRow representing one of the VM control options: start/shutdown/
+    pause etc.
+    """
     def __init__(self):
         super().__init__()
         self.row_label = LimitedWidthLabel()
@@ -102,9 +126,15 @@ class ControlRow(Gtk.ListBoxRow):
         self.command = None
 
     def update_state(self, state):
-        pass
+        """
+        Update own state (visibility/text/sensitivity) based on provided VM
+        state.
+        """
 
     def run_app(self, vm):
+        """
+        Run related app/script.
+        """
         if self.command and self.is_sensitive():
             subprocess.Popen([self.command, str(vm)],
                              stdout=subprocess.DEVNULL,
@@ -113,11 +143,20 @@ class ControlRow(Gtk.ListBoxRow):
 
 
 class StartControlItem(ControlRow):
+    """
+    Control Row item representing changing VM state: start if it's not running,
+    shutdown if it's running, unpause if it's paused, and kill if it's
+    transient.
+    """
     def __init__(self):
         super().__init__()
         self.state = None
 
     def update_state(self, state):
+        """
+        Update own state (visibility/text/sensitivity) based on provided VM
+        state.
+        """
         self.state = state
         if state == 'Running':
             self.row_label.set_label('Shutdown qube')
@@ -138,11 +177,18 @@ class StartControlItem(ControlRow):
 
 
 class PauseControlItem(ControlRow):
+    """
+    Control Row item representing pausing VM: visible only when it's running.
+    """
     def __init__(self):
         super().__init__()
         self.state = None
 
     def update_state(self, state):
+        """
+        Update own state (visibility/text/sensitivity) based on provided VM
+        state.
+        """
         self.state = state
         if state == 'Running':
             self.row_label.set_label('Pause qube')
@@ -155,6 +201,9 @@ class PauseControlItem(ControlRow):
 
 
 class ControlList(Gtk.ListBox):
+    """
+    ListBox containing VM state control items.
+    """
     def __init__(self, app_page):
         super().__init__()
         self.app_page = app_page
@@ -167,12 +216,22 @@ class ControlList(Gtk.ListBox):
         self.add(PauseControlItem())
 
     def update_visibility(self, state):
+        """
+        Update children's state based on provided VM state.
+        """
         for row in self.get_children():
             row.update_state(state)
 
 
 class VMTypeToggle:
-    def __init__(self, builder: Gtk.Builder, qapp: qubesadmin.Qubes):
+    """
+    A class controlling a set of radio buttons for toggling
+    which VMs are shown.
+    """
+    def __init__(self, builder: Gtk.Builder):
+        """
+        :param builder: Gtk.Builder, containing loaded glade data
+        """
         self.apps_toggle: Gtk.RadioButton = builder.get_object('apps_toggle')
         self.templates_toggle: Gtk.RadioButton = \
             builder.get_object('templates_toggle')
@@ -180,7 +239,6 @@ class VMTypeToggle:
             builder.get_object('system_toggle')
         self.vm_list: Gtk.ListBox = builder.get_object('vm_list')
         self.app_list: Gtk.ListBox = builder.get_object('app_list')
-        self.qapp = qapp
 
         self.buttons = [self.apps_toggle, self.templates_toggle,
                         self.system_toggle]
@@ -189,9 +247,19 @@ class VMTypeToggle:
             button.set_relief(Gtk.ReliefStyle.NONE)
             button.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK)
             button.set_can_focus(True)
+            # the below is necessary to make sure keyboard navigation
+            # behaves corrrectly
             button.connect('focus', self._activate_button)
 
     def initialize_state(self):
+        """
+        Initialize own state; by default Apps section is selected.
+        Furthermore, it increases space allocated to widgets to make sure
+        no problems happen when hover effect is applied
+        (by default hover is a couple of pixels wider than non-hover, and
+        Gtk wants to dynamically change button length... leading to the whole
+        pane's size oscillating.)
+        """
         self.apps_toggle.set_active(True)
 
         for button in self.buttons:
@@ -200,13 +268,18 @@ class VMTypeToggle:
 
     @staticmethod
     def _activate_button(widget, _event):
+        """Helper function that activates triggering widget. Used in keyboard
+        navigation to activate on focus."""
         widget.set_active(True)
 
     def connect_to_toggle(self, func):
+        """Connect a function to toggling of all buttons"""
         for button in self.buttons:
             button.connect('toggled', func)
 
     def filter_function(self, row):
+        """Filter function calculated based on currently selected VM toggle
+        button. Used in filtering VM list placed outside this widget."""
         vm_entry: VMEntry = row.vm_entry
 
         if self.apps_toggle.get_active():
@@ -219,6 +292,10 @@ class VMTypeToggle:
 
     @staticmethod
     def _filter_appvms(vm_entry: VMEntry):
+        """
+        Filter function for normal / application VMEntries. Returns VMs that
+        are not a templateVM and do not provide network.
+        """
         if vm_entry.provides_network:
             return False
         if vm_entry.vm_klass == 'TemplateVM':
@@ -227,22 +304,35 @@ class VMTypeToggle:
 
     @staticmethod
     def _filter_templatevms(vm_entry: VMEntry):
+        """
+        Filter function for template VMEntries. Returns VMs that
+        are a templateVM or a template for DispVMs.
+        """
         if vm_entry.vm_klass == 'TemplateVM':
             return True
         return vm_entry.is_dispvm_template
 
     @staticmethod
     def _filter_service(vm_entry: VMEntry):
+        """
+        Filter function for service/system VMEntries. Returns VMs that
+        provide network.
+        """
         return vm_entry.provides_network
+# TODO: test this better, does toggle retoggle on changes here?
 
 
 class AppPage:
-    def __init__(self, qapp: qubesadmin.Qubes, builder: Gtk.Builder,
-                 desktop_file_manager: DesktopFileManager,
-                 dispatcher: qubesadmin.events.EventsDispatcher):
-        self.qapp = qapp
-        self.dispatcher = dispatcher
-        self.desktop_file_manager = desktop_file_manager
+    """
+    Helper class for managing the entirety of Applications menu page.
+    """
+    def __init__(self, vm_manager: VMManager, builder: Gtk.Builder,
+                 desktop_file_manager: DesktopFileManager):
+        """
+        :param vm_manager: VM Manager object
+        :param builder: Gtk.Builder with loaded glade object
+        :param desktop_file_manager: Desktop File Manager object
+        """
         self.selected_vm_entry: Optional[VMRow] = None
 
         self.vm_list: Gtk.ListBox = builder.get_object('vm_list')
@@ -254,8 +344,8 @@ class AppPage:
         self.vm_right_pane.pack_start(self.network_indicator, False, False, 0)
         self.vm_right_pane.reorder_child(self.network_indicator, 0)
 
-        self.desktop_file_manager.register_callback(self._app_info_callback)
-        self.toggle_buttons = VMTypeToggle(builder, self.qapp)
+        desktop_file_manager.register_callback(self._app_info_callback)
+        self.toggle_buttons = VMTypeToggle(builder)
         self.toggle_buttons.connect_to_toggle(self._button_toggled)
 
         self.app_list.set_filter_func(self._is_app_fitting)
@@ -264,8 +354,7 @@ class AppPage:
             lambda x, y: x.app_info.app_name > y.app_info.app_name)
         self.app_list.invalidate_sort()
 
-        self.vm_manager = VMManager(self.qapp, self.dispatcher)
-        self.vm_manager.register_new_vm_callback(self._vm_callback)
+        vm_manager.register_new_vm_callback(self._vm_callback)
         self.vm_list.set_sort_func(lambda x, y: x.sort_order > y.sort_order)
         self.vm_list.set_filter_func(self.toggle_buttons.filter_function)
 
@@ -290,14 +379,20 @@ class AppPage:
                              self.control_list]
 
     def _app_info_callback(self, app_info):
+        """
+        Callback to be performed on all newly loaded ApplicationInfo instances.
+        """
         if app_info.vm:
             entry = BaseAppEntry(app_info)
             app_info.entries.append(entry)
             self.app_list.add(entry)
 
     def _vm_callback(self, vm_entry: VMEntry):
+        """
+        Callback to be performed on all newly loaded VMEntry instances.
+        """
         if vm_entry:
-            vm_row = VMRow(vm_entry, self.qapp)
+            vm_row = VMRow(vm_entry)
             vm_row.show_all()
             vm_entry.entries.append(vm_row)
             self.vm_list.add(vm_row)
@@ -306,6 +401,12 @@ class AppPage:
 # TODO: weird bug in file manager system entry
 
     def _is_app_fitting(self, appentry: BaseAppEntry):
+        """
+        Filter function for applications - attempts to filter only
+        applications that have a VM same as selected VM, or, in the case
+        of disposable VMs that are children of a parent DVM template,
+        show the DVM's menu entries.
+        """
         # TODO: is this too complex?
         # TODO: debug what happens when a VM becomes a dvm template
         if not self.selected_vm_entry:
@@ -322,8 +423,11 @@ class AppPage:
         return True
 
     def _set_keyboard_focus_chain(self):
+        """
+        An somewhat hacky helper function that is used by keyboard navigation
+        functions.
+        """
         # pylint: disable=attribute-defined-outside-init
-        # this is a hacky way to make finding neighbouring widgets less annoying
         self.control_list.focus_neighbors = {
             Gtk.DirectionType.UP: self.app_list,
             Gtk.DirectionType.DOWN: self.settings_list,
@@ -339,6 +443,13 @@ class AppPage:
 
     def _get_direction_child(self, widget: Gtk.ListBox,
                              direction: Gtk.DirectionType):
+        """
+        Find next widget in provided Gtk.DirectionType. Used when keyboard
+        navigation fails.
+        Due to problems in forcing Gtk.ListBox to return the rows that
+        are currently shown, we re-use filter function _is_app_fitting
+        to make sure a visible ListBoxRow is selected.
+        """
         child_list = widget.get_children()
         if direction == Gtk.DirectionType.UP:
             child_list = reversed(child_list)
@@ -348,6 +459,10 @@ class AppPage:
         return widget.get_row_at_index(0)
 
     def _keynav_failed(self, widget: Gtk.ListBox, direction: Gtk.DirectionType):
+        """
+        Callback to be performed when keyboard nav fails. Attempts to
+        find next widget and move keyboard focus to it.
+        """
         next_widget_dict = getattr(widget, 'focus_neighbors', None)
         if not next_widget_dict:
             return
@@ -370,6 +485,10 @@ class AppPage:
         self.vm_list.invalidate_filter()
 
     def initialize_state(self, _vm=None):
+        """
+        Initialize own state. Optional parameter for selecting initially
+        selected VM is currently not supported.
+        """
         self.toggle_buttons.initialize_state()
         self.app_list.select_row(None)
         self.control_list.hide()

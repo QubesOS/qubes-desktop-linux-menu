@@ -17,7 +17,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
-
+"""
+Helper class that manages all events related to .desktop files.
+"""
 import pyinotify
 import logging
 import asyncio
@@ -37,6 +39,9 @@ logger = logging.getLogger('qubes-appmenu')
 
 
 class ApplicationInfo:
+    """
+    Class representing data within a single .desktop file.
+    """
     def __init__(self, qapp, file_path):
         self.qapp: qubesadmin.Qubes = qapp
         self.file_path: PosixPath = file_path
@@ -51,6 +56,7 @@ class ApplicationInfo:
         self.entries: List = []
 
     def load_data(self, entry):
+        """Fill own data with information from xdg.DesktopEntry provided."""
         vm_name = entry.get('X-Qubes-VmName') or None
         try:
             self.vm = self.qapp.domains[vm_name]
@@ -74,6 +80,9 @@ class ApplicationInfo:
             menu_entry.update_contents()
 
     def get_command_for_vm(self, vm=None):
+        """Get execution command for a specified VM. We're not using contents
+        of an Exec field directly because freshly-minted DispVMs don't have
+         their own .desktop files."""
         command = self.exec
         if vm and self.vm != vm:
             # replace name of the old VM - used for opening apps from DVM
@@ -85,23 +94,35 @@ class ApplicationInfo:
         return command
 
     def is_qubes_specific(self):
+        """Check if the current file represents a qubes-generated app."""
         return 'X-Qubes-VM' in self.categories
 
 
 class DesktopFileManager:
+    """
+    Class that loads, caches and observes changes in .desktop files.
+    """
     # pylint: disable=invalid-name
     class EventProcessor(pyinotify.ProcessEvent):
+        """pyinotify helper class"""
         def __init__(self, parent):
             self.parent = parent
             super().__init__()
 
         def process_IN_CREATE(self, event):
+            """On file create, attempt to load it. This can lead to spurious
+            warnings due to 0-byte files being loaded, but in some cases
+            is necessary to correctly process files."""
             self.parent.load_file(event.pathname)
 
         def process_IN_DELETE(self, event):
+            """
+            On file delete, remove the tile and all its children menu entries
+            """
             self.parent.remove_file(event.pathname)
 
         def process_IN_MODIFY(self, event):
+            """On modify, simply attempt to laod the file again."""
             self.parent.load_file(event.pathname)
 
     def __init__(self, qapp):
@@ -126,16 +147,25 @@ class DesktopFileManager:
         self.initialize_watchers()
 
     def register_callback(self, func):
-        # for new file callbacks
+        """
+        Register callbacks to be executed on newly loaded files.
+        Will only be executed on correctly loaded ApplicationInfos. The callback
+        should also add created widget (if any) to ApplicationInfo's entries
+        field.
+        """
         self._callbacks.append(func)
         for info in self.app_entries.values():
             func(info)
 
     def get_app_infos(self):
+        """Get all available ApplicationInfos. Needed for initial loading
+        of favorites."""
         for info in self.app_entries.values():
             yield info
 
     def remove_file(self, path: Union[str, Path]):
+        """Remove a file provided by path from local cache. Also removes
+        all child menu entries."""
         if isinstance(path, str):
             path = Path(path)
         app_info = self.app_entries.get(path)
@@ -148,6 +178,10 @@ class DesktopFileManager:
             del self.app_entries[path]
 
     def load_file(self, path: Union[str, Path]):
+        """
+        Load a file. If file was already known, its ApplicationInfo is
+        refreshed, otherwise a new ApplicationInfo object will be creates and
+        and all callbacks registered will be executed."""
         if isinstance(path, str):
             path = Path(path)
 
@@ -179,7 +213,9 @@ class DesktopFileManager:
             for func in self._callbacks:
                 func(app_info)
 
-    def _eligibility_check(self, entry):
+    def _eligibility_check(self, entry: xdg.DesktopEntry):
+        """Check if the loaded entry should be shown in the menu at all,
+        based on current environment."""
         if entry.getHidden():
             return False
         if entry.getOnlyShowIn():
@@ -192,6 +228,9 @@ class DesktopFileManager:
         return True
 
     def initialize_watchers(self):
+        """
+        Initialize all watcher entities.
+        """
         self.watch_manager = pyinotify.WatchManager()
 
         # pylint: disable=no-member

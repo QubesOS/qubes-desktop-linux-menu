@@ -17,18 +17,27 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
+"""
+Various custom Gtk widgets used in Qubes App Menu.
+"""
 import subprocess
 from . import constants
 from .utils import load_icon
 
-# pylint: disable=wrong-import-position
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, Pango
 
 
 class LimitedWidthLabel(Gtk.Label):
+    """
+    Gtk.Label, but with ellipsization and capped at 35 characters wide
+    (which is not coincidentally 4 characters more than maximum VM name length)
+    """
     def __init__(self, label_text=None):
+        """
+        :param label_text: optional text of the newly instantiated label
+        """
         super().__init__()
         if label_text:
             self.set_label(label_text)
@@ -38,6 +47,10 @@ class LimitedWidthLabel(Gtk.Label):
 
 
 class HoverListBox(Gtk.ListBoxRow):
+    """
+    Gtk.ListBoxRow, but selects itself on hover (after a timeout specified in
+    constants.py)
+    """
     def __init__(self):
         super().__init__()
         self.mouse = False
@@ -68,10 +81,14 @@ class HoverListBox(Gtk.ListBoxRow):
 
 
 class SelfAwareMenu(Gtk.Menu):
+    """
+    Gtk.Menu, but the class has a counter of number of currently opened menus.
+    """
     OPEN_MENUS = 0
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.get_style_context().add_class('right_menu')
         self.connect('realize', self._add_to_open)
         self.connect('deactivate', self._remove_from_open)
 
@@ -85,6 +102,10 @@ class SelfAwareMenu(Gtk.Menu):
 
 
 class NetworkIndicator(Gtk.Box):
+    """
+    Network Indicator Gtk.Box - changes appearance when set_network_state is
+    called.
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -105,13 +126,19 @@ class NetworkIndicator(Gtk.Box):
         self.network_off.set_no_show_all(True)
 
     def set_network_state(self, state: bool):
-        # True is network on, False is network off
+        """
+        :param state: boolean, True indicates network is on and False indicates
+        it is off
+        """
         self.set_visible(True)
         self.network_on.set_visible(state)
         self.network_off.set_visible(not state)
 
 
 class SettingsEntry(Gtk.ListBoxRow):
+    """
+    Gtk.ListBoxRow especially for a (run VM) Settings entry.
+    """
     def __init__(self):
         super().__init__()
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
@@ -124,6 +151,7 @@ class SettingsEntry(Gtk.ListBoxRow):
         self.add(self.hbox)
 
     def run_app(self, vm):
+        """Run settings for specified vm."""
         subprocess.Popen(
             ['qubes-vm-settings', vm.name], stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)

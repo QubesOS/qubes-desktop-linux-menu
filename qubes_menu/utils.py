@@ -17,14 +17,20 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
-
-# pylint: disable=wrong-import-position
+"""
+Miscellaneous Qubes Menu utility functions.
+"""
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 
 
 def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
+    """Load icon from provided name, if available. If not, attempt to treat
+    provided name as a path. If icon not found in any of the above ways,
+    load a blank icon of specified size.
+    Returns GdkPixbuf.Pixbuf
+    """
     _, width, height = Gtk.icon_size_lookup(size)
     try:
         return GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, width, height)
@@ -43,6 +49,9 @@ def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
 
 
 def show_error(title, text):
+    """
+    Helper function to display error messages.
+    """
     dialog = Gtk.MessageDialog(
         None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK)
     dialog.set_title(title)

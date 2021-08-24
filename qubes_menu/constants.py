@@ -17,6 +17,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
+"""
+Qubes App Menu constants, like dictionary of events-to-vm-states, name of
+favorites feature etc.
+"""
 
 STATE_DICTIONARY = {
     'domain-pre-start': 'Transient',
@@ -34,4 +38,6 @@ DISPOSABLE_PREFIX = '@disp:'
 
 RESTART_PARAM_LONG = 'restart'
 RESTART_PARAM_SHORT = 'r'
+
+# Timeout for activation change when hovering over a menu item, in microseconds
 HOVER_TIMEOUT = 20

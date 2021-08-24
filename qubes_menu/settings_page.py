@@ -17,19 +17,25 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
+"""
+Qubes App Menu settings/system tools page and related widgets.
+"""
 import qubesadmin.events
 
 from .desktop_file_manager import DesktopFileManager
 from . import custom_widgets
 from .app_widgets import AppEntry, BaseAppEntry
 
-# pylint: disable=wrong-import-position
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 
 class SettingsCategoryRow(custom_widgets.HoverListBox):
+    """
+    A custom widget representing a category of Settings; selects itself
+    on hover.
+    """
     def __init__(self, name, filter_func):
         super().__init__()
         self.name = name
@@ -41,6 +47,9 @@ class SettingsCategoryRow(custom_widgets.HoverListBox):
 
 
 class SettingsPage:
+    """
+    Helper class for managing the entirety of Settings menu page.
+    """
     def __init__(self, qapp, builder: Gtk.Builder,
                  desktop_file_manager: DesktopFileManager,
                  dispatcher: qubesadmin.events.EventsDispatcher):
@@ -72,6 +81,7 @@ class SettingsPage:
         self.app_list.invalidate_sort()
 
     def initialize_state(self):
+        """On initialization, no category should be selected."""
         self.category_list.select_row(None)
 
     def _filter_apps(self, row):
@@ -107,6 +117,9 @@ class SettingsPage:
         row.run_app(None)
 
     def _app_info_callback(self, app_info):
+        """
+        Callback to be executed on every newly loaded ApplciationInfo object.
+        """
         if not app_info.vm and not app_info.is_qubes_specific():
             entry = BaseAppEntry(app_info)
             app_info.entries.append(entry)
