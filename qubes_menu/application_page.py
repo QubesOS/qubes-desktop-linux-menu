@@ -65,16 +65,13 @@ class VMRow(HoverListBox):
         elif self.vm_entry.vm_klass == 'DispVM':
             style_context.add_class('dispvm_entry')
         else:
-            if style_context.has_class('dispvm_entry'):
-                style_context.remove_class('dispvm_entry')
-            if style_context.has_class('dvm_template_entry'):
-                style_context.remove_class('dvm_template_entry')
+            style_context.remove_class('dispvm_entry')
+            style_context.remove_class('dvm_template_entry')
 
         if self.vm_entry.power_state == 'Running':
             style_context.add_class('running_vm')
         else:
-            if style_context.has_class('running_vm'):
-                style_context.remove_class('running_vm')
+            style_context.remove_class('running_vm')
 
     def update_contents(self,
                         update_power_state=False,
@@ -99,6 +96,7 @@ class VMRow(HoverListBox):
             if self.get_parent():
                 self.get_parent().invalidate_sort()
                 self.get_parent().invalidate_filter()
+                self.get_parent().select_row(None)
         if update_has_network:
             if self.is_selected() and self.get_parent():
                 self.get_parent().select_row(None)
@@ -339,6 +337,8 @@ class AppPage:
         self.app_list: Gtk.ListBox = builder.get_object('app_list')
         self.settings_list: Gtk.ListBox = builder.get_object('settings_list')
         self.vm_right_pane: Gtk.Box = builder.get_object('vm_right_pane')
+        self.separator_top = builder.get_object('separator_top')
+        self.separator_bottom = builder.get_object('separator_bottom')
 
         self.network_indicator = NetworkIndicator()
         self.vm_right_pane.pack_start(self.network_indicator, False, False, 0)
@@ -408,7 +408,6 @@ class AppPage:
         show the DVM's menu entries.
         """
         # TODO: is this too complex?
-        # TODO: debug what happens when a VM becomes a dvm template
         if not self.selected_vm_entry:
             return False
         if appentry.app_info.vm and \
@@ -491,22 +490,32 @@ class AppPage:
         """
         self.toggle_buttons.initialize_state()
         self.app_list.select_row(None)
-        self.control_list.hide()
-        self.settings_list.hide()
+        self._set_right_visibility(False)
 
     def _selection_changed(self, _widget, row: Optional[VMRow]):
         if row is None:
             self.selected_vm_entry = None
+            self.app_list.ephemeral_vm = False
+            self._set_right_visibility(False)
+        else:
+            self.selected_vm_entry = row
+            self._set_right_visibility(True)
+            self.network_indicator.set_network_state(row.vm_entry.has_network)
+            self.control_list.update_visibility(row.vm_entry.power_state)
+            self.control_list.select_row(None)
+            self.app_list.ephemeral_vm = bool(
+                self.selected_vm_entry.vm_entry.parent_vm)
+        self.app_list.invalidate_filter()
+
+    def _set_right_visibility(self, visibility: bool):
+        if not visibility:
             self.control_list.hide()
             self.settings_list.hide()
             self.network_indicator.set_visible(False)
-            return
-        self.selected_vm_entry = row
-        self.control_list.show_all()
-        self.settings_list.show_all()
-        self.app_list.invalidate_filter()
-        self.control_list.update_visibility(row.vm_entry.power_state)
-        self.control_list.select_row(None)
-        self.app_list.ephemeral_vm = bool(
-            self.selected_vm_entry.vm_entry.parent_vm)
-        self.network_indicator.set_network_state(row.vm_entry.has_network)
+            self.separator_top.hide()
+            self.separator_bottom.hide()
+        else:
+            self.control_list.show_all()
+            self.settings_list.show_all()
+            self.separator_top.show_all()
+            self.separator_bottom.show_all()

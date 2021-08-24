@@ -37,7 +37,6 @@ logger = logging.getLogger('qubes-appmenu')
 # TODO: update labels in favorite list
 # TODO: add CLI option to set which page should be shown
 # TODO: how to handle errors? when something didn't want to start or run?
-# TODO: fix separators not vanishing, ffs
 
 # packaging and docs
 # TODO: decent docs: document things like new features

@@ -196,14 +196,18 @@ class VMManager:
 
         if not vm_entry:
             return
+
+        if newvalue == 'False':
+            newvalue = False
+
         try:
             if event == 'property-set:label':
                 vm_entry.vm_icon_name = newvalue
             elif event == 'property-set:netvm':
                 vm_entry.has_network = vm_entry.vm.is_networked()
-            elif event == 'property-set:template-for-dispvms':
+            elif event == 'property-set:template_for_dispvms':
                 vm_entry.is_dispvm_template = newvalue
-            elif event == 'property-set:provides-network':
+            elif event == 'property-set:provides_network':
                 vm_entry.provides_network = newvalue
         except Exception:  # pylint: disable=broad-except
             # dispatcher functions cannot raise any Exception, because
@@ -234,7 +238,7 @@ class VMManager:
                                     self._update_domain_property)
         self.dispatcher.add_handler('property-set:label',
                                     self._update_domain_property)
-        self.dispatcher.add_handler('property-set:template-for-dispvms',
+        self.dispatcher.add_handler('property-set:template_for_dispvms',
                                     self._update_domain_property)
-        self.dispatcher.add_handler('property-set:provides-network',
+        self.dispatcher.add_handler('property-set:provides_network',
                                     self._update_domain_property)

@@ -184,6 +184,9 @@ class DesktopFileManager:
         and all callbacks registered will be executed."""
         if isinstance(path, str):
             path = Path(path)
+            if not path.exists() or path.stat().st_size == 0:
+                # event received while file was being deleted or created
+                return
 
         if not path.name.endswith('.desktop'):
             return
