@@ -397,7 +397,6 @@ class AppPage:
             self.vm_list.add(vm_row)
             self.vm_list.invalidate_filter()
             self.vm_list.invalidate_sort()
-# TODO: weird bug in file manager system entry
 
     def _is_app_fitting(self, appentry: BaseAppEntry):
         """

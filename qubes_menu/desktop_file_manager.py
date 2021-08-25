@@ -222,12 +222,15 @@ class DesktopFileManager:
         if entry.getHidden():
             return False
         if entry.getOnlyShowIn():
-            return bool(set(entry.getOnlyShowIn()).intersection(
-                self.current_environments))
+            if not set(entry.getOnlyShowIn()).intersection(
+                    self.current_environments):
+                return False
         if entry.getNotShowIn():
-            return not bool(
-                set(entry.getNotShowIn()).intersection(
-                    self.current_environments))
+            if set(entry.getNotShowIn()).intersection(
+                    self.current_environments):
+                return False
+        if entry.get('X-AppStream-Ignore'):
+            return False
         return True
 
     def initialize_watchers(self):
