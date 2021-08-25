@@ -25,6 +25,7 @@ import logging
 import qubesadmin.events
 from .desktop_file_manager import DesktopFileManager
 from .app_widgets import AppEntry, FavoritesAppEntry
+from .vm_manager import VMManager
 from . import constants
 
 import gi
@@ -40,10 +41,12 @@ class FavoritesPage:
     """
     def __init__(self, qapp: qubesadmin.Qubes, builder: Gtk.Builder,
                  desktop_file_manager: DesktopFileManager,
-                 dispatcher: qubesadmin.events.EventsDispatcher):
+                 dispatcher: qubesadmin.events.EventsDispatcher,
+                 vm_manager: VMManager):
         self.qapp = qapp
         self.desktop_file_manager = desktop_file_manager
         self.dispatcher = dispatcher
+        self.vm_manager = vm_manager
 
         self.app_list: Gtk.ListBox = builder.get_object('fav_app_list')
         self.app_list.connect('row-activated', self._app_clicked)
@@ -99,7 +102,7 @@ class FavoritesPage:
             self._add_from_app_info(app_info)
 
     def _add_from_app_info(self, app_info):
-        entry = FavoritesAppEntry(app_info)
+        entry = FavoritesAppEntry(app_info, self.vm_manager)
         app_info.entries.append(entry)
         self.app_list.add(entry)
 

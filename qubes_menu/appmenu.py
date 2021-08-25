@@ -34,7 +34,6 @@ gbulb.install()
 logger = logging.getLogger('qubes-appmenu')
 
 # coding
-# TODO: update labels in favorite list
 # TODO: add CLI option to set which page should be shown
 # TODO: how to handle errors? when something didn't want to start or run?
 
@@ -205,7 +204,7 @@ class AppMenu(Gtk.Application):
                                 self.desktop_file_manager)
         self.favorites_page = FavoritesPage(self.qapp, self.builder,
                                             self.desktop_file_manager,
-                                            self.dispatcher)
+                                            self.dispatcher, self.vm_manager)
         self.settings_page = SettingsPage(self.qapp, self.builder,
                                           self.desktop_file_manager,
                                           self.dispatcher)

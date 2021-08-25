@@ -22,9 +22,11 @@ A collection of custom Gtk widgets used elsewhere in the App Menu
 """
 import subprocess
 import logging
+from typing import Optional
 
 from .custom_widgets import LimitedWidthLabel, SelfAwareMenu
 from .desktop_file_manager import ApplicationInfo
+from .vm_manager import VMManager, VMEntry
 from .utils import load_icon
 from . import constants
 
@@ -167,6 +169,38 @@ class BaseAppEntry(AppEntry):
             = ' '.join(current_feature)
 
 
+class VMIcon(Gtk.Image):
+    """Helper class for displaying and auto-updating"""
+    def __init__(self, vm_entry: Optional[VMEntry]):
+        super().__init__()
+        self.vm_entry = vm_entry
+        if self.vm_entry:
+            self.vm_entry.entries.append(self)
+        self.update_contents(update_label=True)
+
+    def update_contents(self,
+                        update_power_state=False,
+                        update_label=False,
+                        update_has_network=False,
+                        update_type=False):
+        # pylint: disable=unused-argument
+        """
+        Update own contents (or related widgets, if applicable) based on state
+        change.
+        :param update_power_state: whether to update if VM is running or not
+        :param update_label: whether label (vm icon) should be updated
+        :param update_has_network: whether VM networking state should be
+        updated
+        :param update_type: whether VM type should be updated
+        :return:
+        """
+        if update_label and self.vm_entry:
+            vm_icon = load_icon(self.vm_entry.vm_icon_name,
+                                Gtk.IconSize.LARGE_TOOLBAR)
+            self.set_from_pixbuf(vm_icon)
+            self.show_all()
+
+
 class FavoritesAppEntry(AppEntry):
     """
     Application Gtk.ListBoxRow for use in Favorites page.
@@ -174,7 +208,8 @@ class FavoritesAppEntry(AppEntry):
     constants.py, as a space-separated list containing a subset of menu-items
     feature.
     """
-    def __init__(self, app_info: ApplicationInfo, **properties):
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
+                 **properties):
         super().__init__(app_info, **properties)
         self.get_style_context().add_class('favorite_entry')
         self.grid = Gtk.Grid()
@@ -187,7 +222,8 @@ class FavoritesAppEntry(AppEntry):
         self.app_label = LimitedWidthLabel()
         self.vm_label = Gtk.Label()
         self.app_icon = Gtk.Image()
-        self.vm_icon = Gtk.Image()
+        self.vm_icon = VMIcon(vm_manager.load_vm_from_name(str(app_info.vm)))
+
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.pack_start(self.vm_icon, False, False, 5)
         box.pack_start(self.vm_label, False, False, 5)
@@ -203,9 +239,6 @@ class FavoritesAppEntry(AppEntry):
 
     def update_contents(self):
         """Update application and VM icons and application and vm names"""
-        vm_icon = load_icon(self.app_info.vm_icon, Gtk.IconSize.LARGE_TOOLBAR)
-        self.vm_icon.set_from_pixbuf(vm_icon)
-
         app_icon = load_icon(self.app_info.app_icon, Gtk.IconSize.DIALOG)
         self.app_icon.set_from_pixbuf(app_icon)
 

@@ -317,7 +317,6 @@ class VMTypeToggle:
         provide network.
         """
         return vm_entry.provides_network
-# TODO: test this better, does toggle retoggle on changes here?
 
 
 class AppPage:

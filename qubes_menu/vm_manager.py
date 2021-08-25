@@ -131,7 +131,7 @@ class VMManager:
         self.vms: Dict[str, VMEntry] = {}
 
         for vm in self.qapp.domains:
-            self._load_vm_from_name(vm.name)
+            self.load_vm_from_name(vm.name)
 
         self.register_events()
 
@@ -141,7 +141,8 @@ class VMManager:
         for entry in self.vms.values():
             func(entry)
 
-    def _load_vm_from_name(self, vm_name: str) -> Optional[VMEntry]:
+    def load_vm_from_name(self, vm_name: str) -> Optional[VMEntry]:
+        """Get a VM entry corresponding to a VM name"""
         if vm_name in self.vms:
             return self.vms[vm_name]
         try:
@@ -166,7 +167,7 @@ class VMManager:
         return entry
 
     def _add_domain(self, _submitter, _event, vm, **_kwargs):
-        self._load_vm_from_name(vm)
+        self.load_vm_from_name(vm)
 
     def _remove_domain(self, _submitter, _event, vm, **_kwargs):
         vm_entry = self.vms.get(vm)
@@ -181,7 +182,7 @@ class VMManager:
             del self.vms[vm]
 
     def _update_domain_state(self, vm_name, event, **_kwargs):
-        vm_entry = self._load_vm_from_name(vm_name)
+        vm_entry = self.load_vm_from_name(vm_name)
         if not vm_entry:
             return
 
@@ -192,7 +193,7 @@ class VMManager:
 
     def _update_domain_property(self, vm_name, event, newvalue,
                                 *_args, **_kwargs):
-        vm_entry = self._load_vm_from_name(vm_name)
+        vm_entry = self.load_vm_from_name(vm_name)
 
         if not vm_entry:
             return
