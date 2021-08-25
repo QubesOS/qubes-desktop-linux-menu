@@ -405,7 +405,6 @@ class AppPage:
         of disposable VMs that are children of a parent DVM template,
         show the DVM's menu entries.
         """
-        # TODO: is this too complex?
         if not self.selected_vm_entry:
             return False
         if appentry.app_info.vm and \

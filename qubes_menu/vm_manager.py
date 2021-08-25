@@ -189,7 +189,6 @@ class VMManager:
         if event in constants.STATE_DICTIONARY:
             state = constants.STATE_DICTIONARY[event]
             vm_entry.power_state = state
-            # TODO: State for new vms
 
     def _update_domain_property(self, vm_name, event, newvalue,
                                 *_args, **_kwargs):

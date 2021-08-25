@@ -33,16 +33,6 @@ gbulb.install()
 
 logger = logging.getLogger('qubes-appmenu')
 
-# coding
-# TODO: how to handle errors? when something didn't want to start or run?
-
-# packaging and docs
-# TODO: decent docs: document things like new features
-
-# testing
-# TODO: add testing, a lot of testing, incl favorite item: vm start?
-# TODO: edge case: super long app name, vm name??
-
 
 class AppMenu(Gtk.Application):
     """
@@ -280,18 +270,3 @@ def main():
 
 if __name__ == '__main__':
     sys.exit(main())
-
-# future: rethink categorizing apps and maybe use Menu files for that
-# future: add placeholder entries for missing favorites entries
-# future: vm color on hover on apps
-# future: add Terminal and Files to each VM?
-# future: perhaps the not working add to favs when ephemeral_vm could use a
-#   tooltip or something
-# future: changing keep visible setting
-# future: shortcut keys for control row items; not a great idea RN,
-# should be added with search
-# future: add restart vm item
-# future: add resizing in a smarter way
-# future: add handling sizes in a smarter way
-# future: nicer handling for dispvm line icon
-# future: remember sizing or not? figure out how sizing should work
