@@ -34,7 +34,6 @@ gbulb.install()
 logger = logging.getLogger('qubes-appmenu')
 
 # coding
-# TODO: add CLI option to set which page should be shown
 # TODO: how to handle errors? when something didn't want to start or run?
 
 # packaging and docs
@@ -61,7 +60,28 @@ class AppMenu(Gtk.Application):
         self.primary = False
         self.keep_visible = False
         self.restart = False
+        self.initial_page = 0
 
+        self._add_cli_options()
+
+        self.builder: Optional[Gtk.Builder] = None
+        self.main_window: Optional[Gtk.Window] = None
+        self.main_notebook: Optional[Gtk.Notebook] = None
+
+        self.fav_app_list: Optional[Gtk.ListBox] = None
+        self.sys_tools_list: Optional[Gtk.ListBox] = None
+
+        self.desktop_file_manager: Optional[DesktopFileManager] = None
+        self.vm_manager: Optional[VMManager] = None
+        self.app_page: Optional[AppPage] = None
+
+        self.favorites_page: Optional[FavoritesPage] = None
+        self.settings_page: Optional[SettingsPage] = None
+
+        self.power_button: Optional[Gtk.Button] = None
+        self.tasks = []
+
+    def _add_cli_options(self):
         self.add_main_option(
             "keep-visible",
             ord("k"),
@@ -79,34 +99,14 @@ class AppMenu(Gtk.Application):
             None,
         )
 
-        screen = Gdk.Screen.get_default()
-        provider = Gtk.CssProvider()
-        provider.load_from_path(pkg_resources.resource_filename(
-            __name__, 'qubes-menu-dark.css'))
-        Gtk.StyleContext.add_provider_for_screen(
-            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
-
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file(pkg_resources.resource_filename(
-            __name__, 'qubes-menu.glade'))
-        self.main_window: Gtk.Window = self.builder.get_object('main_window')
-        self.main_window.focus_out_callback = self._focus_out
-        self.main_notebook: Gtk.Notebook = \
-            self.builder.get_object('main_notebook')
-
-        self.fav_app_list: Gtk.ListBox = self.builder.get_object('fav_app_list')
-        self.sys_tools_list: Gtk.ListBox = \
-            self.builder.get_object('sys_tools_list')
-
-        self.desktop_file_manager: Optional[DesktopFileManager] = None
-        self.vm_manager: Optional[VMManager] = None
-        self.app_page: Optional[AppPage] = None
-
-        self.favorites_page: Optional[FavoritesPage] = None
-        self.settings_page: Optional[SettingsPage] = None
-
-        self.power_button: Gtk.Button = self.builder.get_object('power_button')
-        self.tasks = []
+        self.add_main_option(
+            'page',
+            ord('p'),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.INT,
+            "Open menu at selected page; 0 is the application page, 1 is the"
+            "favorites page and 2 is the system tools page"
+        )
 
     def do_command_line(self, command_line):
         """
@@ -115,6 +115,7 @@ class AppMenu(Gtk.Application):
         pylint is confused about its arguments).
         """
         # pylint: disable=arguments-differ
+        Gtk.Application.do_command_line(self, command_line)
         options = command_line.get_options_dict()
         # convert GVariantDict -> GVariant -> dict
         options = options.end().unpack()
@@ -123,6 +124,8 @@ class AppMenu(Gtk.Application):
             self.keep_visible = True
         if "restart" in options:
             self.restart = True
+        if "page" in options:
+            self.initial_page = options['page']
         self.activate()
         return 0
 
@@ -146,13 +149,17 @@ class AppMenu(Gtk.Application):
         if not self.primary:
             self.perform_setup()
             self.primary = True
+            assert self.main_window
             self.main_window.show_all()
             self.initialize_state()
             self.hold()
         else:
             if self.restart:
                 self.exit_app()
-            self.main_window.present()
+            if self.main_notebook:
+                self.main_notebook.set_current_page(self.initial_page)
+            if self.main_window:
+                self.main_window.present()
 
     def hide_menu(self):
         """
@@ -160,7 +167,7 @@ class AppMenu(Gtk.Application):
         itself. Should be called after all sorts of actions like running an
         app or clicking outside of the menu.
         """
-        if not self.keep_visible:
+        if not self.keep_visible and self.main_window:
             self.main_window.hide()
 
     def _key_press(self, _widget, event):
@@ -184,7 +191,8 @@ class AppMenu(Gtk.Application):
         some things (like widget size adjustments) must be called after
         widgets are realized and not on init.
         """
-        self.main_notebook.set_current_page(0)
+        if self.main_notebook:
+            self.main_notebook.set_current_page(self.initial_page)
         if self.app_page:
             self.app_page.initialize_state(None)
 
@@ -193,6 +201,21 @@ class AppMenu(Gtk.Application):
         The function that performs actual widget realization and setup. Should
         be only called once, in the main instance of this application.
         """
+        screen = Gdk.Screen.get_default()
+        provider = Gtk.CssProvider()
+        provider.load_from_path(pkg_resources.resource_filename(
+            __name__, 'qubes-menu-dark.css'))
+        Gtk.StyleContext.add_provider_for_screen(
+            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        self.builder = Gtk.Builder()
+
+        self.fav_app_list = self.builder.get_object('fav_app_list')
+        self.sys_tools_list = self.builder.get_object('sys_tools_list')
+        self.builder.add_from_file(pkg_resources.resource_filename(
+            __name__, 'qubes-menu.glade'))
+        self.main_window = self.builder.get_object('main_window')
+        self.main_notebook = self.builder.get_object('main_notebook')
+
         self.main_window.set_events(Gdk.EventMask.FOCUS_CHANGE_MASK)
         self.main_window.connect('focus-out-event', self._focus_out)
         self.main_window.connect('key_press_event', self._key_press)
@@ -208,6 +231,7 @@ class AppMenu(Gtk.Application):
         self.settings_page = SettingsPage(self.qapp, self.builder,
                                           self.desktop_file_manager,
                                           self.dispatcher)
+        self.power_button = self.builder.get_object('power_button')
         self.power_button.connect('clicked', self._do_power_button)
         self.main_notebook.connect('switch-page', self._handle_page_switch)
         self.connect('shutdown', self.do_shutdown)
@@ -244,7 +268,7 @@ def main():
     dispatcher = qubesadmin.events.EventsDispatcher(qapp)
     app = AppMenu(qapp, dispatcher)
     app.run(sys.argv)
-    # TODO: this pop probably could be done nicer from within Gtk's own methods
+
     if f'--{constants.RESTART_PARAM_LONG}' in sys.argv or \
             f'-{constants.RESTART_PARAM_SHORT}' in sys.argv:
         sys.argv = [x for x in sys.argv if x not in
@@ -270,3 +294,4 @@ if __name__ == '__main__':
 # future: add resizing in a smarter way
 # future: add handling sizes in a smarter way
 # future: nicer handling for dispvm line icon
+# future: remember sizing or not? figure out how sizing should work

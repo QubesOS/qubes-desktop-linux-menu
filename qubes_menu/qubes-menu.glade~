@@ -157,7 +157,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkSeparator">
+                  <object class="GtkSeparator" id="separator_top">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                   </object>
@@ -203,7 +203,7 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkSeparator">
+                  <object class="GtkSeparator" id="separator_bottom">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                   </object>
