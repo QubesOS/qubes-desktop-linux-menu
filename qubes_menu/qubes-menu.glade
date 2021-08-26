@@ -332,6 +332,7 @@
                       <object class="GtkListBox" id="sys_tools_list">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="selection-mode">none</property>
                         <style>
                           <class name="right_pane"/>
                         </style>
