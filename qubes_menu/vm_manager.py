@@ -46,7 +46,8 @@ class VMEntry:
         self._is_dispvm_template = getattr(
             self.vm, 'template_for_dispvms', False)
         self._has_network = self.vm.is_networked()
-        self._vm_icon_name = getattr(self.vm, 'icon', self.vm.label.icon)
+        self._vm_icon_name = getattr(self.vm, 'icon',
+                                     getattr(self.vm.label, 'icon', None))
         self._power_state = self.vm.get_power_state()
         self.entries: List = []
 

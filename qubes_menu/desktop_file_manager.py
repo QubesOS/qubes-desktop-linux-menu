@@ -84,6 +84,10 @@ class ApplicationInfo:
         of an Exec field directly because freshly-minted DispVMs don't have
          their own .desktop files."""
         command = self.exec
+        if vm and not self.vm:
+            logger.warning('Unexpected command: cannot run local'
+                           ' application for a non-local VM: %s', vm)
+            return command
         if vm and self.vm != vm:
             # replace name of the old VM - used for opening apps from DVM
             # template in their child dispvm
@@ -102,6 +106,10 @@ class DesktopFileManager:
     """
     Class that loads, caches and observes changes in .desktop files.
     """
+    desktop_dirs = [
+        Path(xdg.BaseDirectory.xdg_data_home) / 'applications',
+        Path('/usr/share/applications')]
+
     # pylint: disable=invalid-name
     class EventProcessor(pyinotify.ProcessEvent):
         """pyinotify helper class"""
@@ -134,17 +142,15 @@ class DesktopFileManager:
 
         # directories used by Qubes menu tools, not necessarily all possible
         # XDG directories
-        self.desktop_dirs = [
-            Path(xdg.BaseDirectory.xdg_data_home) / 'applications',
-            Path('/usr/share/applications')]
-        self.current_environments = os.environ['XDG_CURRENT_DESKTOP'].split(':')
+        self.current_environments = \
+            os.environ.get('XDG_CURRENT_DESKTOP', '').split(':')
 
         self.app_entries: Dict[Path, ApplicationInfo] = {}
 
         for directory in self.desktop_dirs:
             for file in os.listdir(directory):
                 self.load_file(directory / file)
-        self.initialize_watchers()
+        self._initialize_watchers()
 
     def register_callback(self, func):
         """
@@ -233,7 +239,7 @@ class DesktopFileManager:
             return False
         return True
 
-    def initialize_watchers(self):
+    def _initialize_watchers(self):
         """
         Initialize all watcher entities.
         """
