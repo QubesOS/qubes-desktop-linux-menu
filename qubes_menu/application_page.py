@@ -134,10 +134,7 @@ class ControlRow(Gtk.ListBoxRow):
         Run related app/script.
         """
         if self.command and self.is_sensitive():
-            subprocess.Popen([self.command, str(vm)],
-                             stdout=subprocess.DEVNULL,
-                             stderr=subprocess.DEVNULL,
-                             stdin=subprocess.DEVNULL)
+            subprocess.Popen([self.command, str(vm)], stdin=subprocess.DEVNULL)
 
 
 class StartControlItem(ControlRow):
@@ -294,7 +291,7 @@ class VMTypeToggle:
         Filter function for normal / application VMEntries. Returns VMs that
         are not a templateVM and do not provide network.
         """
-        if vm_entry.provides_network:
+        if vm_entry.service_vm:
             return False
         if vm_entry.vm_klass == 'TemplateVM':
             return False
@@ -314,9 +311,9 @@ class VMTypeToggle:
     def _filter_service(vm_entry: VMEntry):
         """
         Filter function for service/system VMEntries. Returns VMs that
-        provide network.
+        have feature 'servicevm' set.
         """
-        return vm_entry.provides_network
+        return vm_entry.service_vm
 
 
 class AppPage:

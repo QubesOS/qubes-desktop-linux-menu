@@ -153,6 +153,5 @@ class SettingsEntry(Gtk.ListBoxRow):
     def run_app(self, vm):
         """Run settings for specified vm."""
         subprocess.Popen(
-            ['qubes-vm-settings', vm.name], stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL, stdin=subprocess.DEVNULL)
+            ['qubes-vm-settings', vm.name], stdin=subprocess.DEVNULL)
         self.get_toplevel().get_application().hide_menu()

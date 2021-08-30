@@ -24,6 +24,7 @@ import pyinotify
 import logging
 import asyncio
 import os
+import shlex
 import xdg.DesktopEntry
 import xdg.BaseDirectory
 import xdg.Menu
@@ -36,6 +37,27 @@ import qubesadmin.events
 from . import constants
 
 logger = logging.getLogger('qubes-appmenu')
+
+
+def exec_parse(desktop_entry: xdg.DesktopEntry.DesktopEntry):
+    """
+    Parse Exec field according to specification and return an already-split
+    exec command, ready to be used in subprocess.Popen et al.
+    """
+    split_str = shlex.split(desktop_entry.getExec())
+    result = []
+    for s in split_str:
+        if s in ['%f', '%F', '%u', '%U', '%d', '%D', '%n', '%N', '%v',
+                 '%m', '%k']:
+            continue
+        if s == '%i' and desktop_entry.getIcon():
+            result.extend(['--icon', desktop_entry.getIcon()])
+            continue
+        if s == '%c':
+            result.append(desktop_entry.getName())
+            continue
+        result.append(s)
+    return result
 
 
 class ApplicationInfo:
@@ -72,7 +94,7 @@ class ApplicationInfo:
         self.entry_name = entry.get('X-Qubes-AppName') or self.file_path.name
         if self.disposable:
             self.entry_name = constants.DISPOSABLE_PREFIX + self.entry_name
-        self.exec = entry.getExec().split(' ')
+        self.exec = exec_parse(entry)
 
         self.categories = entry.getCategories()
 
@@ -88,13 +110,14 @@ class ApplicationInfo:
             logger.warning('Unexpected command: cannot run local'
                            ' application for a non-local VM: %s', vm)
             return command
-        if vm and self.vm != vm:
+        if vm and str(self.vm) != str(vm):
             # replace name of the old VM - used for opening apps from DVM
             # template in their child dispvm
-            if command[5] != str(self.vm):
-                logger.warning(
+            if len(command) < 6 or command[5] != str(self.vm):
+                logger.error(
                     'Unexpected command for a disposable VM: %s', command)
-            command = [str(vm) if s == str(self.vm) else s for s in command]
+                return []
+            return command[:5] + [str(vm)] + command[6:]
         return command
 
     def is_qubes_specific(self):
@@ -222,7 +245,7 @@ class DesktopFileManager:
             for func in self._callbacks:
                 func(app_info)
 
-    def _eligibility_check(self, entry: xdg.DesktopEntry):
+    def _eligibility_check(self, entry: xdg.DesktopEntry.DesktopEntry):
         """Check if the loaded entry should be shown in the menu at all,
         based on current environment."""
         if entry.getHidden():

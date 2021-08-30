@@ -42,7 +42,7 @@ class VMEntry:
             if hasattr(self.vm, 'template') and self.vm_klass == 'DispVM' \
             else self.vm_name
         self.parent_vm = self.vm.template if self.vm.klass == 'DispVM' else None
-        self._provides_network = getattr(self.vm, 'provides_network', False)
+        self._servicevm = bool(self.vm.features.get("servicevm", False))
         self._is_dispvm_template = getattr(
             self.vm, 'template_for_dispvms', False)
         self._has_network = self.vm.is_networked()
@@ -112,13 +112,13 @@ class VMEntry:
         self.update_entries(update_type=True)
 
     @property
-    def provides_network(self):
+    def service_vm(self):
         """Does the VM provide network"""
-        return self._provides_network
+        return self._servicevm
 
-    @provides_network.setter
-    def provides_network(self, new_value):
-        self._provides_network = new_value
+    @service_vm.setter
+    def service_vm(self, new_value):
+        self._servicevm = new_value
         self.update_entries(update_type=True)
 
 
@@ -208,8 +208,24 @@ class VMManager:
                 vm_entry.has_network = vm_entry.vm.is_networked()
             elif event == 'property-set:template_for_dispvms':
                 vm_entry.is_dispvm_template = newvalue
-            elif event == 'property-set:provides_network':
-                vm_entry.provides_network = newvalue
+        except Exception:  # pylint: disable=broad-except
+            # dispatcher functions cannot raise any Exception, because
+            # it will disable any future event handling
+            pass
+
+    def _update_domain_feature(self, vm, _event, feature=None, value=None):
+        vm_entry = self.load_vm_from_name(vm)
+
+        if not vm_entry:
+            return
+
+        if value == 'False':
+            value = False
+        value = bool(value)
+
+        try:
+            if feature == 'servicevm':
+                vm_entry.service_vm = value
         except Exception:  # pylint: disable=broad-except
             # dispatcher functions cannot raise any Exception, because
             # it will disable any future event handling
@@ -241,5 +257,7 @@ class VMManager:
                                     self._update_domain_property)
         self.dispatcher.add_handler('property-set:template_for_dispvms',
                                     self._update_domain_property)
-        self.dispatcher.add_handler('property-set:provides_network',
-                                    self._update_domain_property)
+        self.dispatcher.add_handler('domain-feature-set:servicevm',
+                                    self._update_domain_feature)
+        self.dispatcher.add_handler('domain-feature-delete:servicevm',
+                                    self._update_domain_feature)

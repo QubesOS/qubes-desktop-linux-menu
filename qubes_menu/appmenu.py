@@ -125,10 +125,7 @@ class AppMenu(Gtk.Application):
         Run xfce4's default logout button. Possible enhancement would be
         providing our own tiny program.
         """
-        subprocess.Popen('xfce4-session-logout',
-                         stdout=subprocess.DEVNULL,
-                         stderr=subprocess.DEVNULL,
-                         stdin=subprocess.DEVNULL)
+        subprocess.Popen('xfce4-session-logout', stdin=subprocess.DEVNULL)
 
     def do_activate(self, *args, **kwargs):
         """

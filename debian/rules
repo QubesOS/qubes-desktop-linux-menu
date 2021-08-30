@@ -15,7 +15,8 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	dh_auto_install
-	make install DESTDIR=debian/qubes-desktop-linux-menu/usr/bin/
+	make install DESTDIR=debian/qubes-desktop-linux-menu/
+	mkdir -p debian/qubes-desktop-linux-menu/usr/bin/
 	mv debian/python3-qubes-menu/usr/bin/* debian/qubes-desktop-linux-menu/usr/bin/
 
 override_dh_clean:

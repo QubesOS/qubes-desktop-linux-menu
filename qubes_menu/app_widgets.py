@@ -82,8 +82,7 @@ class AppEntry(Gtk.ListBoxRow):
         :param vm: QubesVM
         """
         command = self.app_info.get_command_for_vm(vm)
-        subprocess.Popen(command, stdout=subprocess.DEVNULL,
-                         stdin=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.Popen(command, stdin=subprocess.DEVNULL)
         self.get_toplevel().get_application().hide_menu()
 
 
@@ -244,7 +243,7 @@ class FavoritesAppEntry(AppEntry):
 
         if self.app_info.disposable:
             self.vm_label.set_label(
-                'new Disposable VM from ' + str(self.app_info.vm))
+                'new Disposable Qube from ' + str(self.app_info.vm))
         elif self.app_info.vm:
             self.vm_label.set_label(str(self.app_info.vm))
         else:

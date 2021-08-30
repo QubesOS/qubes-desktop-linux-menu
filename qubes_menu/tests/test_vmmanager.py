@@ -39,7 +39,7 @@ def test_vm_manager(test_qapp):
     assert entry_template
     assert not entry_template.has_network
     assert not entry_test.is_dispvm_template
-    assert not entry_test.provides_network
+    assert not entry_test.service_vm
 
     test_qapp.domains['template'].netvm = TestVM('sys-firewall')
     vm_manager._update_domain_property('template',
@@ -63,9 +63,9 @@ def test_vm_manager(test_qapp):
                                        newvalue=True)
     assert entry_test.is_dispvm_template
 
-    test_qapp.domains['test-vm'].provides_network = True
-    vm_manager._update_domain_property('test-vm',
-                                       'property-set:provides_network',
-                                       name='provides_network',
-                                       newvalue=True)
-    assert entry_test.provides_network
+    test_qapp.domains['test-vm'].features['servicevm'] = 1
+    vm_manager._update_domain_feature('test-vm',
+                                      'feature-set:servicevm',
+                                      feature='servicevm',
+                                      value=1)
+    assert entry_test.service_vm

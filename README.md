@@ -15,7 +15,7 @@ sorted into App qubes (with no special role), Templates (both "normal"
 templates and Disposable VM templates) and Service qubes (such as `sys-usb` 
 or `sys-net`). Running qubes' names are bolded.
 
-![](menu1.png)
+![](readme_img/menu1.png)
 
 Each qube, when selected, displays the list of all applications it exposes
 (which can be set in the typical way, through Qube Settings, which are also
@@ -33,7 +33,7 @@ apps can be also started in the same VM, exposing a functionality previously
 unavailable through GUI means - that is, starting a program inside an existing
 disposable VM.
 
-![](menu2.png)
+![](readme_img/menu2.png)
 
 ### Favorites pane
 
@@ -44,7 +44,7 @@ Applications added to favorites appear in the Favorites pane for quicker access.
 They can also be removed from favorites from within the Favorites pane, also
 through a right-click menu.
 
-![](menu3.png)
+![](readme_img/menu3.png)
 
 ### System tools
 
@@ -54,7 +54,7 @@ Qubes Tools (programs specific to Qubes), System Settings (various programs
 related to system appearance etc.) and Other (Miscellanous programs found
 in the system).
 
-![](menu4.png)
+![](readme_img/menu4.png)
 
 ## How to run
 

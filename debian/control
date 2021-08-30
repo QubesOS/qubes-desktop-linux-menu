@@ -16,6 +16,7 @@ X-Python3-Version: >= 3.5
 Package: qubes-desktop-linux-menu
 Architecture: any
 Depends:
+ python3-qubes-menu
  ${misc:Depends}
 Description: Qubes Application Menu
  An Application Menu for Qubes OS.

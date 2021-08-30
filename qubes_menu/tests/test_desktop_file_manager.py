@@ -212,6 +212,30 @@ Categories=System;X-Qubes-VM;'''
     assert not app_info.vm
 
 
+def test_space_exec(tmp_path, test_qapp):
+    qubes_virtual = b'''
+[Desktop Entry]
+Version=1.0
+Type=Application
+Exec=command "a vm"
+Icon=qubes
+Terminal=false
+Name=Generic Name
+GenericName=Generic Name
+StartupNotify=false
+Categories=System;X-Qubes-VM;'''
+
+    file_path = tmp_path / 'test.desktop'
+    file_path.write_bytes(qubes_virtual)
+
+    desktop_entry = DesktopEntry(file_path)
+
+    app_info = ApplicationInfo(test_qapp, file_path)
+    app_info.load_data(desktop_entry)
+
+    assert app_info.get_command_for_vm(None) == ['command', 'a vm']
+
+
 @pytest.mark.asyncio
 async def test_file_manager(tmp_path, test_qapp):
     DesktopFileManager.desktop_dirs = [tmp_path]

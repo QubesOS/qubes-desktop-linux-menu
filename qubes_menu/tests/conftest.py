@@ -54,7 +54,7 @@ def test_qapp():
             ('sys-net',
              TestVM('sys-net', label='red', icon='servicevm-red',
                     provides_network=True, template=TestVM('template'),
-                    features={})),
+                    features={'servicevm': 1})),
             ('template',
              TestVM('template', label='red', icon='templatevm-red',
                     features={})),
