@@ -1,9 +1,9 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: qubes-desktop-linux-manager
+Upstream-Name: qubes-desktop-linux-menu
 Source: <https://www.qubes-os.org/>
 
 Files: *
-Copyright: 2021 Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
+Copyright: 2021 Marta Marczykowska-Górecka <marmarta@invisiblethingslab.com>
 License: GPL-2+
  This program is free software; you can redistribute it and/or
  modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@ License: GPL-2+
  Public License version 2 can be found in "/usr/share/common-licenses/GPL-2".
 
 Files: debian/*
-Copyright: 2021 Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com> 
+Copyright: 2021 Marta Marczykowska-Górecka <marmarta@invisiblethingslab.com>
 License: GPL-2+
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by

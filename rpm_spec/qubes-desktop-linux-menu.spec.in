@@ -47,14 +47,8 @@ BuildRequires:  gettext
 
 Requires:  python%{python3_pkgversion}-setuptools
 Requires:  python%{python3_pkgversion}-gbulb
-Requires:  libappindicator-gtk3
-Requires:  python%{python3_pkgversion}-systemd
 Requires:  gtk3
 Requires:  python%{python3_pkgversion}-qubesadmin >= 4.1.8
-%if !0%{?vm_package}
-# FIXME: we need some way for applying updates from GUI VM
-Requires:  qubes-mgmt-salt-dom0-update >= 4.0.5
-%endif
 Requires:  qubes-artwork >= 4.1.5
 
 Provides:   qubes_menu = %{version}-%{release}
@@ -74,16 +68,16 @@ A Qubes-specific Application menu.
 make install DESTDIR=$RPM_BUILD_ROOT
 
 %post
-touch --no-create %{_datadir}/icons/Adwaita &>/dev/null || :
+touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
 
 %postun
 if [ $1 -eq 0 ]; then
-    touch --no-create %{_datadir}/icons/Adwaita &>/dev/null || :
-    gtk-update-icon-cache %{_datadir}/icons/Adwaita &>/dev/null || :
+    touch --no-create %{_datadir}/icons/hicolor &>/dev/null || :
+    gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 fi
 
 %posttrans
-gtk-update-icon-cache %{_datadir}/icons/Adwaita &>/dev/null || :
+gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 
 %files
 %defattr(-,root,root,-)
@@ -110,16 +104,16 @@ gtk-update-icon-cache %{_datadir}/icons/Adwaita &>/dev/null || :
 %{python3_sitelib}/qubes_menu/qubes-menu-dark.css
 
 %{_bindir}/qubes-app-menu
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-dispvm-child.svg
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-favorites.svg
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-favorites-blue.svg
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-grab-handle.svg
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-networking-no.svg
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-networking-vpn.svg
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-networking-yes.svg
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-power.svg
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-qube.svg
-/usr/share/icons/Adwaita/scalable/apps/qappmenu-settings.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-dispvm-child.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-favorites.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-favorites-blue.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-grab-handle.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-networking-no.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-networking-vpn.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-networking-yes.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-power.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-qube.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
 
 %changelog
 @CHANGELOG@
