@@ -67,9 +67,12 @@ Useful CLI options are:
 - `--page N` - select page to be shown when started (with 0 standing for main
 application page, 1 being Favorites page and 2 being System Tools page.
 
-The easiest way to use the menu is adding a Launcher item to XFCE4's panel
-with the desired executable command, e.g. `qubes-app-menu --page 1` if the user
-prefers starting from the favorites page.
+The easiest way to use the menu is adding a Launcher item to XFCE4's panel that
+contains the Open Qubes Application Menu item. It's a fast and efficient 
+method, however, it will use the CLI params as set by either autostart menu 
+position or via executing `qubes-app-menu` with desired params in CLI.
+
+![](readme_img/menu_howto.png)
 
 ## Technical details
 

@@ -3,6 +3,7 @@ default: help
 help:
 	@echo "Use setup.py to build"
 	@echo "Extra make targets available:"
+	@echo " install-autostart - install autostart files (xdg)"
 	@echo " install-icons - install icons"
 	@echo " install - calls all of the above (but calling setup.py is still necessary)"
 
@@ -19,7 +20,13 @@ install-icons:
 	cp icons/qappmenu-qube.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-qube.svg
 	cp icons/qappmenu-settings.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
 
-install: install-icons
+install-autostart:
+	mkdir -p $(DESTDIR)/etc/xdg/autostart
+	cp autostart/qubes-app-menu.desktop $(DESTDIR)/etc/xdg/autostart
+	mkdir -p $(DESTDIR)/usr/share/applications
+	cp desktop_files/open-qubes-app-menu.desktop $(DESTDIR)/usr/share/applications/
+
+install: install-autostart install-icons
 
 .PHONY: clean
 clean:
