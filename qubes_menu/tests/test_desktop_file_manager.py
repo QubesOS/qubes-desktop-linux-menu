@@ -21,6 +21,7 @@
 import pytest
 from xdg.DesktopEntry import DesktopEntry
 from ..desktop_file_manager import ApplicationInfo, DesktopFileManager
+from ..settings_page import SettingsPage
 from qubesadmin.tests import TestVM
 from unittest.mock import Mock
 import asyncio
@@ -53,6 +54,55 @@ Comment=standard terminal emulator for the X window system
 Categories=System;TerminalEmulator;X-Qubes-VM;
 Exec=qvm-run -q -a --service -- template qubes.StartApp+xterm
 X-Qubes-DispvmExec=qvm-run -q -a --service --dispvm=template -- qubes.StartApp+xterm
+'''
+
+correct_local_qubes = b'''
+[Desktop Entry]
+Type=Application
+Exec=qubes-backup
+Icon=qubes-manager
+Terminal=false
+Name=Backup Qubes
+GenericName=Backup Qubes
+StartupNotify=false
+Categories=Settings;X-XFCE-SettingsDialog
+'''
+
+correct_local_non_qubes = b'''
+[Desktop Entry]
+Version=1.0
+Name=Power Manager
+GenericName=Power Manager
+Comment=Settings for the Xfce Power Manager
+Exec=xfce4-power-manager-settings
+Icon=xfce4-power-manager-settings
+Terminal=false
+Type=Application
+Categories=XFCE;GTK;Settings;DesktopSettings;X-XFCE-SettingsDialog;X-XFCE-HardwareSettings;
+NotShowIn=GNOME;KDE;Unity;
+StartupNotify=true
+X-XfcePluggable=true
+X-XfceHelpComponent=xfce4-power-manager
+X-XfceHelpPage=start
+'''
+
+correct_other = b'''
+[Desktop Entry]
+Version=1.0
+Name=Pinta
+Comment=Easily create and edit images
+GenericName=Image Editor
+X-GNOME-FullName=Pinta Image Editor
+TryExec=pinta
+Exec=pinta %F
+Icon=pinta
+StartupNotify=false
+StartupWMClass=Pinta
+Terminal=false
+Type=Application
+Categories=Graphics;2DGraphics;RasterGraphics;GTK;
+Keywords=draw;drawing;paint;painting;graphics;raster;2d;
+MimeType=image/bmp;image/gif;image/jpeg;image/jpg;image/pjpeg;image/png;image/svg+xml;image/tiff;image/x-bmp;image/x-gray;image/x-icb;image/x-ico;image/x-png;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-xbitmap;image/x-xpixmap;image/x-pcx;image/x-targa;image/x-tga;image/openraster;
 '''
 
 
@@ -120,36 +170,6 @@ def test_file_dvmtemplate(tmp_path, test_qapp):
 
 
 def test_appinfo_local(tmp_path, test_qapp):
-    correct_local_qubes = b'''
-    [Desktop Entry]
-    Type=Application
-    Exec=qubes-backup
-    Icon=qubes-manager
-    Terminal=false
-    Name=Backup Qubes
-    GenericName=Backup Qubes
-    StartupNotify=false
-    Categories=Settings;X-XFCE-SettingsDialog
-    '''
-
-    correct_local_non_qubes = b'''
-    [Desktop Entry]
-    Version=1.0
-    Name=Power Manager
-    GenericName=Power Manager
-    Comment=Settings for the Xfce Power Manager
-    Exec=xfce4-power-manager-settings
-    Icon=xfce4-power-manager-settings
-    Terminal=false
-    Type=Application
-    Categories=XFCE;GTK;Settings;DesktopSettings;X-XFCE-SettingsDialog;X-XFCE-HardwareSettings;
-    NotShowIn=GNOME;KDE;Unity;
-    StartupNotify=true
-    X-XfcePluggable=true
-    X-XfceHelpComponent=xfce4-power-manager
-    X-XfceHelpPage=start
-    '''
-
     file_path_qubes = tmp_path / 'test.desktop'
     file_path_non_qubes = tmp_path / 'test2.desktop'
     file_path_qubes.write_bytes(correct_local_qubes)
@@ -236,6 +256,30 @@ Categories=System;X-Qubes-VM;'''
     assert app_info.get_command_for_vm(None) == ['command', 'a vm']
 
 
+def test_special_characters_exec(tmp_path, test_qapp):
+    qubes_virtual = b'''
+[Desktop Entry]
+Version=1.0
+Type=Application
+Exec=command "a\\b\\c"
+Icon=qubes
+Terminal=false
+Name=Generic Name
+GenericName=Generic Name
+StartupNotify=false
+Categories=System;X-Qubes-VM;'''
+
+    file_path = tmp_path / 'test.desktop'
+    file_path.write_bytes(qubes_virtual)
+
+    desktop_entry = DesktopEntry(file_path)
+
+    app_info = ApplicationInfo(test_qapp, file_path)
+    app_info.load_data(desktop_entry)
+
+    assert app_info.get_command_for_vm(None) == ['command', "a\\b\\c"]
+
+
 @pytest.mark.asyncio
 async def test_file_manager(tmp_path, test_qapp):
     DesktopFileManager.desktop_dirs = [tmp_path]
@@ -275,3 +319,40 @@ async def test_file_manager(tmp_path, test_qapp):
     for entry in entry_list:
         assert entry.update_contents.called
 
+
+def test_filter_system(tmp_path, test_qapp):
+    file_path_non_qubes = tmp_path / 'correct_local_non.desktop'
+    file_path_non_qubes.write_bytes(correct_local_non_qubes)
+    desktop_entry_non_qubes = DesktopEntry(file_path_non_qubes)
+    app_info_non_qubes = ApplicationInfo(test_qapp, file_path_non_qubes)
+    app_info_non_qubes.load_data(desktop_entry_non_qubes)
+    row_non_qubes = Mock()
+    row_non_qubes.app_info = app_info_non_qubes
+
+    file_path_qubes = tmp_path / 'correct_local_qubes.desktop'
+    file_path_qubes.write_bytes(correct_local_qubes)
+    desktop_entry_qubes = DesktopEntry(file_path_qubes)
+    app_info_qubes = ApplicationInfo(test_qapp, file_path_qubes)
+    app_info_qubes.load_data(desktop_entry_qubes)
+    row_qubes = Mock()
+    row_qubes.app_info = app_info_qubes
+
+    file_path_other = tmp_path / 'correct_other.desktop'
+    file_path_other.write_bytes(correct_other)
+    desktop_entry_other = DesktopEntry(file_path_other)
+    app_info_other = ApplicationInfo(test_qapp, file_path_other)
+    app_info_other.load_data(desktop_entry_other)
+    row_other = Mock()
+    row_other.app_info = app_info_other
+
+    assert not SettingsPage._filter_qubes_tools(row_non_qubes)
+    assert SettingsPage._filter_system_settings(row_non_qubes)
+    assert not SettingsPage._filter_other(row_non_qubes)
+
+    assert SettingsPage._filter_qubes_tools(row_qubes)
+    assert not SettingsPage._filter_system_settings(row_qubes)
+    assert not SettingsPage._filter_other(row_qubes)
+
+    assert not SettingsPage._filter_qubes_tools(row_other)
+    assert not SettingsPage._filter_system_settings(row_other)
+    assert SettingsPage._filter_other(row_other)

@@ -24,6 +24,7 @@ import qubesadmin.events
 from qubesadmin.tests import TestVM
 from qubesadmin.label import Label
 from ..vm_manager import VMManager
+from ..application_page import VMTypeToggle
 
 
 @pytest.mark.asyncio
@@ -69,3 +70,33 @@ def test_vm_manager(test_qapp):
                                       feature='servicevm',
                                       value=1)
     assert entry_test.service_vm
+
+
+def test_filter(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    entry_test = vm_manager.load_vm_from_name('test-vm')
+    entry_template = vm_manager.load_vm_from_name('template')
+    entry_service = vm_manager.load_vm_from_name('sys-net')
+    entry_dvm_template = vm_manager.load_vm_from_name('template-dvm')
+    assert entry_test
+    assert entry_template
+    assert entry_service
+    assert entry_dvm_template
+
+    assert VMTypeToggle._filter_appvms(entry_test)
+    assert not VMTypeToggle._filter_templatevms(entry_test)
+    assert not VMTypeToggle._filter_service(entry_test)
+
+    assert not VMTypeToggle._filter_appvms(entry_template)
+    assert VMTypeToggle._filter_templatevms(entry_template)
+    assert not VMTypeToggle._filter_service(entry_template)
+
+    assert not VMTypeToggle._filter_appvms(entry_service)
+    assert not VMTypeToggle._filter_templatevms(entry_service)
+    assert VMTypeToggle._filter_service(entry_service)
+
+    assert VMTypeToggle._filter_appvms(entry_dvm_template)
+    assert VMTypeToggle._filter_templatevms(entry_dvm_template)
+    assert not VMTypeToggle._filter_service(entry_dvm_template)

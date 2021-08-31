@@ -158,14 +158,17 @@ class BaseAppEntry(AppEntry):
             target_vm = self.app_info.qapp.domains[
                 self.app_info.qapp.local_name]
 
-        current_feature = target_vm.features.get(
-            constants.FAVORITES_FEATURE, '').split(' ')
+        current_feature = target_vm.features.get(constants.FAVORITES_FEATURE)
+        if current_feature:
+            feature_list = current_feature.split(' ')
+        else:
+            feature_list = []
 
-        if self.app_info.entry_name in current_feature:
+        if self.app_info.entry_name in feature_list:
             return
-        current_feature.append(self.app_info.entry_name)
+        feature_list.append(self.app_info.entry_name)
         target_vm.features[constants.FAVORITES_FEATURE] \
-            = ' '.join(current_feature)
+            = ' '.join(feature_list)
 
 
 class VMIcon(Gtk.Image):

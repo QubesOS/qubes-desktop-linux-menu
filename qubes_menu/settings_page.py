@@ -105,9 +105,10 @@ class SettingsPage:
             return True
         return False
 
-    def _filter_other(self, row):
-        return not self._filter_qubes_tools(row) and \
-               not self._filter_system_settings(row)
+    @staticmethod
+    def _filter_other(row):
+        return not SettingsPage._filter_qubes_tools(row) and \
+               not SettingsPage._filter_system_settings(row)
 
     def _category_clicked(self, *_args):
         self.app_list.invalidate_filter()
