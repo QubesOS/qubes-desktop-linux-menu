@@ -144,7 +144,10 @@ class DesktopFileManager:
             """On file create, attempt to load it. This can lead to spurious
             warnings due to 0-byte files being loaded, but in some cases
             is necessary to correctly process files."""
-            self.parent.load_file(event.pathname)
+            try:
+                self.parent.load_file(event.pathname)
+            except FileNotFoundError:
+                self.parent.remove_file(event.pathname)
 
         def process_IN_DELETE(self, event):
             """
@@ -154,7 +157,10 @@ class DesktopFileManager:
 
         def process_IN_MODIFY(self, event):
             """On modify, simply attempt to laod the file again."""
-            self.parent.load_file(event.pathname)
+            try:
+                self.parent.load_file(event.pathname)
+            except FileNotFoundError:
+                self.parent.remove_file(event.pathname)
 
     def __init__(self, qapp):
         self.qapp = qapp
@@ -215,6 +221,7 @@ class DesktopFileManager:
             path = Path(path)
             if not path.exists() or path.stat().st_size == 0:
                 # event received while file was being deleted or created
+                self.remove_file(path)
                 return
 
         if not path.name.endswith('.desktop'):
