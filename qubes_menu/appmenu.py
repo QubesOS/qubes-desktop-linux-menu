@@ -51,6 +51,7 @@ class AppMenu(Gtk.Application):
         self.keep_visible = False
         self.restart = False
         self.initial_page = 0
+        self.start_in_background = False
 
         self._add_cli_options()
 
@@ -98,6 +99,16 @@ class AppMenu(Gtk.Application):
             "favorites page and 2 is the system tools page"
         )
 
+        self.add_main_option(
+            "background",
+            ord("b"),
+            GLib.OptionFlags.NONE,
+            GLib.OptionArg.NONE,
+            "Do not show the menu at start, run in the background; useful "
+            "for initial autostart",
+            None,
+        )
+
     def do_command_line(self, command_line):
         """
         Handle CLI arguments. This method overrides default do_command_line
@@ -116,6 +127,8 @@ class AppMenu(Gtk.Application):
             self.restart = True
         if "page" in options:
             self.initial_page = options['page']
+        if "background" in options:
+            self.start_in_background = True
         self.activate()
         return 0
 
@@ -137,7 +150,8 @@ class AppMenu(Gtk.Application):
             self.perform_setup()
             self.primary = True
             assert self.main_window
-            self.main_window.show_all()
+            if not self.start_in_background:
+                self.main_window.show_all()
             self.initialize_state()
             self.hold()
         else:
@@ -145,7 +159,7 @@ class AppMenu(Gtk.Application):
                 self.exit_app()
             if self.main_notebook:
                 self.main_notebook.set_current_page(self.initial_page)
-            if self.main_window:
+            if self.main_window and not self.start_in_background:
                 self.main_window.present()
 
     def hide_menu(self):
