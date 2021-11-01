@@ -43,6 +43,7 @@ BuildArch: noarch
 
 BuildRequires:  make
 BuildRequires:  python%{python3_pkgversion}-devel
+BuildRequires:  python%{python3_pkgversion}-setuptools
 BuildRequires:  gettext
 
 Requires:  python%{python3_pkgversion}-setuptools
