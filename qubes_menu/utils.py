@@ -40,7 +40,7 @@ def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
             image: GdkPixbuf.Pixbuf = Gtk.IconTheme.get_default().load_icon(
                 icon_name, width, 0)
             return image
-        except TypeError:
+        except (TypeError, GLib.Error):
             # icon not found in any way
             pixbuf: GdkPixbuf.Pixbuf = GdkPixbuf.Pixbuf.new(
                 GdkPixbuf.Colorspace.RGB, True, 8, width, height)
