@@ -160,7 +160,10 @@ class AppMenu(Gtk.Application):
             if self.main_notebook:
                 self.main_notebook.set_current_page(self.initial_page)
             if self.main_window and not self.start_in_background:
-                self.main_window.present()
+                if self.main_window.is_visible() and not self.keep_visible:
+                    self.main_window.hide()
+                else:
+                    self.main_window.present()
 
     def hide_menu(self):
         """
