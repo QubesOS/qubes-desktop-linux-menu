@@ -66,7 +66,7 @@ class SettingsPage:
         self.category_list: Gtk.ListBox = builder.get_object(
             'settings_categories')
 
-        self.category_list.connect('row-activated', self._category_clicked)
+        self.category_list.connect('row-selected', self._category_clicked)
         self.category_list.add(SettingsCategoryRow('Qubes Tools',
                                                    self._filter_qubes_tools))
         self.category_list.add(
