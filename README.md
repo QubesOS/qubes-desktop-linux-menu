@@ -2,7 +2,9 @@
 
 This is the initial release of Qubes Application Menu. Certain functionalities
 (especially related to integration with desktop managers) are yet in development,
-but the basic functionality from initial release design is done.
+however the basic functionality from initial release design is done.
+
+If you would like to [leave feedback in a quick anonymous survey](https://survey.qubes-os.org/index.php?r=survey/index&sid=255277&lang=en), we are closely following what we learn and want to hear from folks! For bugs, however, please [file issues, here](https://github.com/QubesOS/qubes-issues).
 
 ## Features
 
@@ -85,13 +87,13 @@ used by `menu-items` feature, with one exception: items can be prefixed with
 based on the one, on which the feature is set.
 
 ## Future plans
-
+- add "light" mode (current UI is dark mode, only)
 - discuss using existing .menu files for categorization of local
 programs (that is, programs run in the VM that is running the menu)
 - add placeholder entries for "missing" favorites entries (entries that 
 are listed in appropriate VM feature, but do not currently have generated
 corresponding .desktop files)
-- color right pane with the color of currently selected VM; change the hover
+- in submenu for qubes, discuss how to add color to right pane to correspond with color of selected VM; and/or, change the hover
 color to the color of currently selected VM
 - improve performance if menu is run as an executable
 - discuss adding set Terminal and Files positions to every VM
@@ -104,4 +106,5 @@ favorites option is not present
 - add "Restart VM" control item
 - add a resize grabber
 - discuss handling resizing and moving menu in a more complex way
+- see [full Project, here on GitHub](https://github.com/QubesOS/qubes-issues/projects/12)
 
