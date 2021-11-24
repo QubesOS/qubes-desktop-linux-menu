@@ -62,6 +62,14 @@ class AppEntry(Gtk.ListBoxRow):
         self.add(self.event_box)
         self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         self.event_box.connect('button-press-event', self.show_menu)
+        self.drag_source_set(
+            Gdk.ModifierType.BUTTON1_MASK, [],
+            (Gdk.DragAction.COPY | Gdk.DragAction.MOVE))
+        self.drag_source_add_uri_targets()
+        self.connect("drag-data-get", self._on_drag_data_get)
+
+    def _on_drag_data_get(self, _widget, _drag_context, data, _info, _time):
+        data.set_uris([self.app_info.entry_name])
 
     def show_menu(self, _widget, event):
         """
