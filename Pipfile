@@ -10,6 +10,7 @@ pygobject = "*"
 gbulb = "*"
 qubesadmin = "*" # install this manually, or use the following
 # qubesadmin = {git = "https://github.com/QubesOS/qubes-core-admin-client"}
+thefuzz = "*"
 
 [dev-packages]
 pytest = "*"

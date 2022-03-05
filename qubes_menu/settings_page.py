@@ -53,14 +53,17 @@ class SettingsPage:
     def __init__(self, qapp, builder: Gtk.Builder,
                  desktop_file_manager: DesktopFileManager,
                  dispatcher: qubesadmin.events.EventsDispatcher):
+        self.query = ""
+        self.query_entry: Gtk.SearchEntry = builder.get_object('current_search')
+        self.query_entry.connect("changed", self._on_query_change)
+
         self.qapp = qapp
         self.desktop_file_manager = desktop_file_manager
         self.dispatcher = dispatcher
 
         self.app_list: Gtk.ListBox = builder.get_object('sys_tools_list')
         self.app_list.connect('row-activated', self._app_clicked)
-        self.app_list.set_sort_func(
-            lambda x, y: x.app_info.app_name > y.app_info.app_name)
+        self.app_list.set_sort_func(self._sort_apps)
         self.app_list.set_filter_func(self._filter_apps)
 
         self.category_list: Gtk.ListBox = builder.get_object(
@@ -80,9 +83,21 @@ class SettingsPage:
         self.app_list.invalidate_filter()
         self.app_list.invalidate_sort()
 
+
     def initialize_state(self):
         """On initialization, no category should be selected."""
         self.category_list.select_row(None)
+    
+    def _on_query_change(self, entry: Gtk.SearchEntry):
+        self.query = entry.get_text()
+        self.app_list.invalidate_sort()
+
+    def _sort_apps(self, x, y):
+        from thefuzz import fuzz
+        edit_distance = fuzz.token_sort_ratio
+        if not self.query:
+            return x.app_info.app_name > y.app_info.app_name
+        return edit_distance(self.query, x.app_info.app_name) < edit_distance(self.query, y.app_info.app_name)
 
     def _filter_apps(self, row):
         filter_func = getattr(self.category_list.get_selected_row(),
