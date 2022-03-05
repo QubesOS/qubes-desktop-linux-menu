@@ -22,6 +22,7 @@ import pytest
 import unittest.mock
 from qubesadmin.tests import TestVM, TestVMCollection
 
+TestVM.__test__ = False # pytest, this is not a test suite
 
 class TestApp(object):
     def __init__(self):

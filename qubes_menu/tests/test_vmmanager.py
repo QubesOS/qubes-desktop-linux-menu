@@ -27,7 +27,6 @@ from ..vm_manager import VMManager
 from ..application_page import VMTypeToggle
 
 
-@pytest.mark.asyncio
 def test_vm_manager(test_qapp):
     dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
