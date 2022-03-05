@@ -20,7 +20,7 @@
 """
 Miscellaneous Qubes Menu utility functions.
 """
-import gi
+import os, gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 
@@ -33,19 +33,32 @@ def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
     """
     _, width, height = Gtk.icon_size_lookup(size)
     try:
+        # icon name is a path
         return GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, width, height)
-    except (GLib.Error, TypeError):
+    except (TypeError, GLib.Error):
+        pass
+
+    if "QUBES_MENU_TEST" in os.environ:
         try:
             # icon name is a path
-            image: GdkPixbuf.Pixbuf = Gtk.IconTheme.get_default().load_icon(
-                icon_name, width, 0)
-            return image
+            return GdkPixbuf.Pixbuf.new_from_file_at_size(os.path.join("./icons", icon_name + ".svg"), width, height)
         except (TypeError, GLib.Error):
-            # icon not found in any way
-            pixbuf: GdkPixbuf.Pixbuf = GdkPixbuf.Pixbuf.new(
-                GdkPixbuf.Colorspace.RGB, True, 8, width, height)
-            pixbuf.fill(0x000)
-            return pixbuf
+            pass
+
+    try:
+        # icon name is symbol
+        image: GdkPixbuf.Pixbuf = Gtk.IconTheme.get_default().load_icon(
+            icon_name, width, 0)
+        return image
+    except (TypeError, GLib.Error):
+        pass
+    
+    print(icon_name)
+    # icon not found in any way
+    pixbuf: GdkPixbuf.Pixbuf = GdkPixbuf.Pixbuf.new(
+        GdkPixbuf.Colorspace.RGB, True, 8, width, height)
+    pixbuf.fill(0xff00ffff) # magenta
+    return pixbuf
 
 
 def show_error(title, text):
