@@ -264,22 +264,22 @@ class AppMenu(Gtk.Application):
                 task.cancel()
 
 
+from .tests.mock_app import new_mock_qapp
+import os
+
+
 def main():
     """
     Start the menu app
     """
+
     qapp = qubesadmin.Qubes()
+    if "QUBES_MENU_TEST" in os.environ:
+        qapp = new_mock_qapp(qapp)
+        qapp.domains[qapp.local_name] = qapp.domains['dom0']
     dispatcher = qubesadmin.events.EventsDispatcher(qapp)
     app = AppMenu(qapp, dispatcher)
     app.run(sys.argv)
-
-    if f'--{constants.RESTART_PARAM_LONG}' in sys.argv or \
-            f'-{constants.RESTART_PARAM_SHORT}' in sys.argv:
-        sys.argv = [x for x in sys.argv if x not in
-                    (f'--{constants.RESTART_PARAM_LONG}',
-                     f'-{constants.RESTART_PARAM_SHORT}')]
-        app = AppMenu(qapp, dispatcher)
-        app.run(sys.argv)
 
 
 if __name__ == '__main__':
