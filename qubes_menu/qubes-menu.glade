@@ -17,7 +17,7 @@
         <property name="can-focus">True</property>
         <property name="tab-pos">left</property>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="tab_all">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
@@ -301,7 +301,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="tab_current_vm">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
@@ -319,30 +319,56 @@
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
+              <object class="GtkBox">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="hscrollbar-policy">never</property>
-                <property name="shadow-type">in</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkViewport">
+                  <object class="GtkSearchEntry" id="current_search">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="primary-icon-name">edit-find-symbolic</property>
+                    <property name="primary-icon-activatable">False</property>
+                    <property name="primary-icon-sensitive">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="shadow-type">in</property>
                     <child>
-                      <object class="GtkListBox" id="sys_tools_list">
+                      <object class="GtkViewport">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="selection-mode">none</property>
-                        <style>
-                          <class name="right_pane"/>
-                        </style>
+                        <child>
+                          <object class="GtkListBox" id="sys_tools_list">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="selection-mode">none</property>
+                            <style>
+                              <class name="right_pane"/>
+                            </style>
+                          </object>
+                        </child>
                       </object>
                     </child>
+                    <style>
+                      <class name="right_pane"/>
+                    </style>
                   </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
-                <style>
-                  <class name="right_pane"/>
-                </style>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -352,6 +378,7 @@
             </child>
           </object>
           <packing>
+            <property name="menu-label">Stuff in Current VM</property>
             <property name="position">2</property>
           </packing>
         </child>
@@ -393,6 +420,7 @@
             </style>
           </object>
           <packing>
+            <property name="menu-label">Power Button</property>
             <property name="tab-fill">False</property>
           </packing>
         </child>
