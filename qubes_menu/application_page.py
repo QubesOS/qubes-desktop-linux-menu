@@ -549,16 +549,16 @@ class AppPage:
         """
         self.toggle_buttons.initialize_state()
         self.app_list.select_row(None)
-        self._set_right_visibility(True)
+        self._set_right_visibility(True, None)
 
     def _selection_changed(self, _widget, row: Optional[VMRow]):
         if row is None:
             self.selected_vm_entry = None
             self.app_list.ephemeral_vm = False
-            self._set_right_visibility(False)
+            self._set_right_visibility(False, None)
         elif isinstance(row, VMRow) and not row.vm_entry.service_vm:
             self.selected_vm_entry = row
-            self._set_right_visibility(True)
+            self._set_right_visibility(True, self.selected_vm_entry)
             self.network_indicator.set_network_state(row.vm_entry.has_network)
             self.control_list.update_visibility(row.vm_entry.power_state)
             self.control_list.select_row(None)
@@ -568,7 +568,7 @@ class AppPage:
             row.run_app(None)
         self.app_list.invalidate_filter()
 
-    def _set_right_visibility(self, visibility: bool):
+    def _set_right_visibility(self, visibility: bool, row: Optional[VMRow]):
         if not visibility:
             self.control_list.hide()
             self.settings_list.hide()
@@ -576,7 +576,8 @@ class AppPage:
             self.separator_top.hide()
             self.separator_bottom.hide()
         else:
-            self.control_list.show_all()
-            self.settings_list.show_all()
-            self.separator_top.show_all()
-            self.separator_bottom.show_all()
+            if isinstance(row, VMRow):
+                self.control_list.show_all()
+                self.settings_list.show_all()
+                self.separator_top.show_all()
+                self.separator_bottom.show_all()
