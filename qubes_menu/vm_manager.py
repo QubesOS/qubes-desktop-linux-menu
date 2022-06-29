@@ -150,7 +150,9 @@ class VMManager:
             vm: QubesVM = self.qapp.domains[vm_name]
         except KeyError:
             return None
-        if vm.klass == 'AdminVM' or vm.features.get('internal', False):
+        
+        # DONE: DON't LOAD TemplateVM VMs 
+        if vm.klass == 'AdminVM' or vm.klass == 'TemplateVM' or vm.features.get('internal', False):
             return None
 
         return self._add_vm(vm)

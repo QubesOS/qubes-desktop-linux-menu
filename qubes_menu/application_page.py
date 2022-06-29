@@ -20,10 +20,15 @@
 """
 Application page and related widgets and logic
 """
+from lib2to3.pytree import Base
 import subprocess
-from typing import Optional
+from typing import Dict, Optional, List
 
-from .desktop_file_manager import DesktopFileManager
+import qubesadmin.events
+from qubesadmin.vm import QubesVM
+
+from . import constants
+from .desktop_file_manager import DesktopFileManager, ApplicationInfo
 from .custom_widgets import LimitedWidthLabel, NetworkIndicator, \
     SettingsEntry, HoverListBox
 from .app_widgets import AppEntry, BaseAppEntry
@@ -206,9 +211,10 @@ class ControlList(Gtk.ListBox):
         self.get_style_context().add_class('right_pane')
 
         self.start_item = StartControlItem()
+        self.pause_item = PauseControlItem()
 
         self.add(self.start_item)
-        self.add(PauseControlItem())
+        self.add(self.pause_item)
 
     def update_visibility(self, state):
         """
@@ -228,15 +234,15 @@ class VMTypeToggle:
         :param builder: Gtk.Builder, containing loaded glade data
         """
         self.apps_toggle: Gtk.RadioButton = builder.get_object('apps_toggle')
-        self.templates_toggle: Gtk.RadioButton = \
-            builder.get_object('templates_toggle')
-        self.system_toggle: Gtk.RadioButton = \
-            builder.get_object('system_toggle')
+        self.tools_toggle: Gtk.RadioButton = \
+            builder.get_object('tools_toggle')
+        self.service_toggle: Gtk.RadioButton = \
+            builder.get_object('service_toggle')
         self.vm_list: Gtk.ListBox = builder.get_object('vm_list')
         self.app_list: Gtk.ListBox = builder.get_object('app_list')
 
-        self.buttons = [self.apps_toggle, self.templates_toggle,
-                        self.system_toggle]
+        self.buttons = [self.apps_toggle, self.tools_toggle,
+                        self.service_toggle]
 
         for button in self.buttons:
             button.set_relief(Gtk.ReliefStyle.NONE)
@@ -275,15 +281,24 @@ class VMTypeToggle:
     def filter_function(self, row):
         """Filter function calculated based on currently selected VM toggle
         button. Used in filtering VM list placed outside this widget."""
-        vm_entry: VMEntry = row.vm_entry
+        if type(row) == VMRow:
+            vm_entry: VMEntry = row.vm_entry
 
-        if self.apps_toggle.get_active():
-            return self._filter_appvms(vm_entry)
-        if self.templates_toggle.get_active():
-            return self._filter_templatevms(vm_entry)
-        if self.system_toggle.get_active():
-            return self._filter_service(vm_entry)
+            if self.apps_toggle.get_active():
+                return self._filter_appvms(vm_entry)
+            if self.service_toggle.get_active():
+                return self._filter_service(vm_entry)
+        elif type(row) == BaseAppEntry:
+            if self.tools_toggle.get_active():
+                return self._filter_tools(row)
+            
         return False
+
+    @staticmethod
+    def _filter_tools(row: BaseAppEntry):
+        if 'X-XFCE-SettingsDialog' not in row.app_info.categories:
+            return False
+        return 'qubes' in row.app_info.entry_name
 
     @staticmethod
     def _filter_appvms(vm_entry: VMEntry):
@@ -305,7 +320,6 @@ class VMTypeToggle:
         """
         if vm_entry.vm_klass == 'TemplateVM':
             return True
-        return vm_entry.is_dispvm_template
 
     @staticmethod
     def _filter_service(vm_entry: VMEntry):
@@ -321,7 +335,8 @@ class AppPage:
     Helper class for managing the entirety of Applications menu page.
     """
     def __init__(self, vm_manager: VMManager, builder: Gtk.Builder,
-                 desktop_file_manager: DesktopFileManager):
+                 desktop_file_manager: DesktopFileManager,
+                 dispatcher: qubesadmin.events.EventsDispatcher):
         """
         :param vm_manager: VM Manager object
         :param builder: Gtk.Builder with loaded glade object
@@ -336,13 +351,17 @@ class AppPage:
         self.separator_top = builder.get_object('separator_top')
         self.separator_bottom = builder.get_object('separator_bottom')
 
+        self.dispatcher = dispatcher
+
+        self.dispatcher.add_handler(
+            f'domain-feature-pre-set:{constants.FAVORITES_FEATURE}',
+            self._update_fav_btns
+        )
+
         self.network_indicator = NetworkIndicator()
         self.vm_right_pane.pack_start(self.network_indicator, False, False, 0)
         self.vm_right_pane.reorder_child(self.network_indicator, 0)
 
-        desktop_file_manager.register_callback(self._app_info_callback)
-        self.toggle_buttons = VMTypeToggle(builder)
-        self.toggle_buttons.connect_to_toggle(self._button_toggled)
 
         self.app_list.set_filter_func(self._is_app_fitting)
         self.app_list.connect('row-activated', self._app_clicked)
@@ -350,9 +369,7 @@ class AppPage:
             lambda x, y: x.app_info.app_name > y.app_info.app_name)
         self.app_list.invalidate_sort()
 
-        vm_manager.register_new_vm_callback(self._vm_callback)
-        self.vm_list.set_sort_func(lambda x, y: x.sort_order > y.sort_order)
-        self.vm_list.set_filter_func(self.toggle_buttons.filter_function)
+        self.vm_entries: Dict[str, List[BaseAppEntry]] = {}
 
         self.vm_list.connect('row-selected', self._selection_changed)
 
@@ -371,17 +388,65 @@ class AppPage:
         self.settings_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.control_list.set_selection_mode(Gtk.SelectionMode.NONE)
 
+        desktop_file_manager.register_callback(self._app_info_callback)
+        desktop_file_manager.register_callback(self._settings_callback)
+        self.toggle_buttons = VMTypeToggle(builder)
+        self.toggle_buttons.connect_to_toggle(self._button_toggled)
+
+        vm_manager.register_new_vm_callback(self._vm_callback)
+        # self.vm_list.set_sort_func(lambda x, y: x.sort_order > y.sort_order)
+        self.vm_list.set_filter_func(self.toggle_buttons.filter_function)
+
         self.widget_order = [self.settings_list, self.app_list,
                              self.control_list]
+
+    def _settings_callback(self, app_info):
+        """
+        Callback to be performed on all newly loaded ApplicationInfo instances.
+        """
+        
+        if 'X-XFCE-SettingsDialog' in app_info.categories and 'qubes' in app_info.entry_name:
+            entry = BaseAppEntry(app_info)
+            app_info.entries.append(entry)
+            self.vm_list.add(entry)
+
+    def _update_fav_btns(self, vm, event, feature, *_args, **_kwargs):
+        """
+        Update the favorite buttons in the app page
+        """
+        old_fav = _kwargs['oldvalue'].split(' ') if _kwargs['oldvalue'] else None
+        new_fav = _kwargs['value'].split(' ')
+
+        if old_fav and len(old_fav) > len(new_fav) or new_fav == ['']:
+            remove_fav = set(old_fav) - set(new_fav)
+            for entry in self.vm_entries[vm.name]:
+                if entry.app_info.entry_name in remove_fav:
+                    entry.update_fav_btns()
+                    break
+
 
     def _app_info_callback(self, app_info):
         """
         Callback to be performed on all newly loaded ApplicationInfo instances.
         """
-        if app_info.vm:
+        if app_info.vm:          
             entry = BaseAppEntry(app_info)
+
+            if app_info.vm.name not in self.vm_entries:
+                self.vm_entries[app_info.vm.name] = [entry]
+            else:
+                self.vm_entries[app_info.vm.name].append(entry)
+
             app_info.entries.append(entry)
             self.app_list.add(entry)
+
+
+    def _qubes_settings_callback(self, settings_entry):
+        """
+        Callback to be performed on all newly loaded qubes settings entries. 
+        """
+        if settings_entry:
+            pass
 
     def _vm_callback(self, vm_entry: VMEntry):
         """
@@ -472,7 +537,7 @@ class AppPage:
 
     def _button_toggled(self, widget: Gtk.ToggleButton):
         if not widget.get_active():
-            return
+            return        
         self.vm_list.select_row(None)
         self.app_list.invalidate_filter()
         self.vm_list.invalidate_filter()
@@ -484,14 +549,14 @@ class AppPage:
         """
         self.toggle_buttons.initialize_state()
         self.app_list.select_row(None)
-        self._set_right_visibility(False)
+        self._set_right_visibility(True)
 
     def _selection_changed(self, _widget, row: Optional[VMRow]):
         if row is None:
             self.selected_vm_entry = None
             self.app_list.ephemeral_vm = False
             self._set_right_visibility(False)
-        else:
+        elif isinstance(row, VMRow) and not row.vm_entry.service_vm:
             self.selected_vm_entry = row
             self._set_right_visibility(True)
             self.network_indicator.set_network_state(row.vm_entry.has_network)
@@ -499,6 +564,8 @@ class AppPage:
             self.control_list.select_row(None)
             self.app_list.ephemeral_vm = bool(
                 self.selected_vm_entry.vm_entry.parent_vm)
+        elif isinstance(row, BaseAppEntry):
+            row.run_app(None)
         self.app_list.invalidate_filter()
 
     def _set_right_visibility(self, visibility: bool):

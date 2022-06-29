@@ -5,7 +5,7 @@ Main Application Menu class and helpers.
 """
 # pylint: disable=import-error
 import asyncio
-import subprocess
+import subprocess, threading
 import sys
 from typing import Optional
 from contextlib import suppress
@@ -159,7 +159,7 @@ class AppMenu(Gtk.Application):
                 self.exit_app()
             if self.main_notebook:
                 self.main_notebook.set_current_page(self.initial_page)
-            if self.main_window and not self.start_in_background:
+            if self.main_window and self.start_in_background:
                 if self.main_window.is_visible() and not self.keep_visible:
                     self.main_window.hide()
                 else:
@@ -228,13 +228,10 @@ class AppMenu(Gtk.Application):
         self.vm_manager = VMManager(self.qapp, self.dispatcher)
 
         self.app_page = AppPage(self.vm_manager, self.builder,
-                                self.desktop_file_manager)
+                                self.desktop_file_manager, self.dispatcher)
         self.favorites_page = FavoritesPage(self.qapp, self.builder,
                                             self.desktop_file_manager,
                                             self.dispatcher, self.vm_manager)
-        self.settings_page = SettingsPage(self.qapp, self.builder,
-                                          self.desktop_file_manager,
-                                          self.dispatcher)
         self.power_button = self.builder.get_object('power_button')
         self.power_button.connect('clicked', self._do_power_button)
         self.main_notebook.connect('switch-page', self._handle_page_switch)
@@ -263,6 +260,13 @@ class AppMenu(Gtk.Application):
             with suppress(asyncio.CancelledError):
                 task.cancel()
 
+def run_asyncio(dispatcher):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(
+        asyncio.ensure_future(dispatcher.listen_for_events())
+    )
+    loop.run_forever()
 
 def main():
     """
@@ -270,6 +274,7 @@ def main():
     """
     qapp = qubesadmin.Qubes()
     dispatcher = qubesadmin.events.EventsDispatcher(qapp)
+    threading.Thread(target=run_asyncio, args=(dispatcher, )).start()
     app = AppMenu(qapp, dispatcher)
     app.run(sys.argv)
 
