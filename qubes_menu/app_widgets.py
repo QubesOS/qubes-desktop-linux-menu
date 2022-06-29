@@ -61,7 +61,6 @@ class AppEntry(Gtk.ListBoxRow):
         self.event_box = Gtk.EventBox()
         self.add(self.event_box)
         self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
-        self.event_box.connect('button-press-event', self.show_menu)
 
     def show_menu(self, _widget, event):
         """
@@ -99,14 +98,39 @@ class BaseAppEntry(AppEntry):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.event_box.add(self.box)
         self.get_style_context().add_class('app_entry')
-        self._setup_menu()
 
         self.icon = Gtk.Image()
         self.label = LimitedWidthLabel()
         self.box.pack_start(self.icon, False, False, 5)
         self.box.pack_start(self.label, False, False, 5)
 
+        if 'X-XFCE-SettingsDialog' not in app_info.categories and 'qubes' not in app_info.entry_name:
+            self.fav_btn = Gtk.CheckButton()
+            self.is_user_click = True
+            self.fav_img = Gtk.Image.new_from_stock(Gtk.STOCK_ABOUT, Gtk.IconSize.SMALL_TOOLBAR)
+            self.fav_btn.set_image(self.fav_img)
+            self.fav_btn.set_mode(False)
+            self.show_fav_btns()
+            self.fav_btn.connect('toggled', self._toggle_favorites)
+            self.box.pack_start(self.fav_btn, False, False, 10)
+
         self.update_contents()
+
+
+    def show_fav_btns(self):
+        current_feature = self.app_info.vm.features.get(constants.FAVORITES_FEATURE)
+        if current_feature:
+            feature_list = current_feature.split(' ')
+        else:
+            feature_list = []
+
+        if self.app_info.entry_name in feature_list:
+            self.fav_btn.set_active(True)
+
+    def update_fav_btns(self):
+        self.is_user_click = False
+        self.fav_btn.set_active(False)
+        
 
     def _has_favorite_sibling(self):
         """
@@ -149,26 +173,40 @@ class BaseAppEntry(AppEntry):
         self.label.set_label(self.app_info.app_name)
         self.show_all()
 
-    def _add_to_favorites(self, *_args, **_kwargs):
+    def _toggle_favorites(self, *_args, **_kwargs):
         """
         "Add to favorites" action: sets appropriate VM feature
         """
-        target_vm = self.app_info.vm
-        if not target_vm:
-            target_vm = self.app_info.qapp.domains[
-                self.app_info.qapp.local_name]
+        if self.is_user_click:
+            target_vm = self.app_info.vm or self.app_info.qapp.domains[
+                    self.app_info.qapp.local_name]
 
-        current_feature = target_vm.features.get(constants.FAVORITES_FEATURE)
-        if current_feature:
-            feature_list = current_feature.split(' ')
-        else:
-            feature_list = []
+            current_feature = target_vm.features.get(constants.FAVORITES_FEATURE)
 
-        if self.app_info.entry_name in feature_list:
-            return
-        feature_list.append(self.app_info.entry_name)
-        target_vm.features[constants.FAVORITES_FEATURE] \
-            = ' '.join(feature_list)
+            current_feature = current_feature.split(' ') if current_feature else []
+            
+            # Add a favorite app
+            if self.fav_btn.get_active():
+                try:
+                    current_feature.append(self.app_info.entry_name)
+                except ValueError:
+                    logger.info('Failed to add %s from vm favorites for vm %s: '
+                                'favorites did not contain %s',
+                                self.app_info.entry_name, str(target_vm),
+                                self.app_info.entry_name)
+            
+            # Remove a favorite app
+            else:
+                try:
+                    current_feature.remove(self.app_info.entry_name)
+                except ValueError:
+                    logger.info('Failed to remove %s from vm favorites for vm %s: '
+                                'favorites did not contain %s',
+                                self.app_info.entry_name, str(target_vm),
+                                self.app_info.entry_name)
+            target_vm.features[constants.FAVORITES_FEATURE] = ' '.join(current_feature)
+        self.is_user_click = True
+
 
 
 class VMIcon(Gtk.Image):
@@ -227,6 +265,16 @@ class FavoritesAppEntry(AppEntry):
         self.vm_icon = VMIcon(vm_manager.load_vm_from_name(str(app_info.vm)))
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        self.fav_btn = Gtk.CheckButton()
+        self.fav_img = Gtk.Image.new_from_stock(Gtk.STOCK_ABOUT, Gtk.IconSize.SMALL_TOOLBAR)
+        self.fav_btn.set_image(self.fav_img)
+        self.fav_btn.set_mode(False)
+        self.fav_btn.set_active(True)
+        self.fav_btn.connect('toggled', self._remove_from_favorites)
+        box.pack_start(self.fav_btn, False, False, 10)
+
+
         box.pack_start(self.vm_icon, False, False, 5)
         box.pack_start(self.vm_label, False, False, 5)
         self.vm_label.get_style_context().add_class('favorite_vm_name')

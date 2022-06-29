@@ -40,4 +40,4 @@ RESTART_PARAM_LONG = 'restart'
 RESTART_PARAM_SHORT = 'r'
 
 # Timeout for activation change when hovering over a menu item, in microseconds
-HOVER_TIMEOUT = 20
+HOVER_TIMEOUT = 0
