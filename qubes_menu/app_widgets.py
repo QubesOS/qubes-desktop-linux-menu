@@ -24,9 +24,11 @@ import subprocess
 import logging
 from typing import Optional
 
+
 from .custom_widgets import LimitedWidthLabel, SelfAwareMenu
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
+from .icons_loader import IconsLoader
 from .utils import load_icon
 from . import constants
 
@@ -36,7 +38,6 @@ from gi.repository import Gtk, Gdk
 
 
 logger = logging.getLogger('qubes-appmenu')
-
 
 class AppEntry(Gtk.ListBoxRow):
     """
@@ -105,19 +106,24 @@ class BaseAppEntry(AppEntry):
         self.box.pack_start(self.label, False, False, 5)
 
         if 'X-XFCE-SettingsDialog' not in app_info.categories and 'qubes' not in app_info.entry_name:
-            self.fav_btn = Gtk.CheckButton()
-            self.is_user_click = True
-            self.fav_img = Gtk.Image.new_from_stock(Gtk.STOCK_ABOUT, Gtk.IconSize.SMALL_TOOLBAR)
-            self.fav_btn.set_image(self.fav_img)
-            self.fav_btn.set_mode(False)
-            self.show_fav_btns()
-            self.fav_btn.connect('toggled', self._toggle_favorites)
+            self.fav_btn = Gtk.Button()
+            self.fav_btn.get_style_context().add_class('favorite_button')
+
+            self.icons = IconsLoader()
+            
+            self.fav_btn.set_relief(Gtk.ReliefStyle.NONE)
+            self.init_fav_btn()
+
+            self.fav_btn.connect('clicked', self._toggle_favorites)
+            self.fav_btn.connect("enter-notify-event", self._enter_favorite_button)
+            self.fav_btn.connect("leave-notify-event", self._leave_favorite_button)
+
             self.box.pack_start(self.fav_btn, False, False, 10)
 
         self.update_contents()
 
 
-    def show_fav_btns(self):
+    def init_fav_btn(self):
         current_feature = self.app_info.vm.features.get(constants.FAVORITES_FEATURE)
         if current_feature:
             feature_list = current_feature.split(' ')
@@ -125,12 +131,12 @@ class BaseAppEntry(AppEntry):
             feature_list = []
 
         if self.app_info.entry_name in feature_list:
-            self.fav_btn.set_active(True)
-
-    def update_fav_btns(self):
-        self.is_user_click = False
-        self.fav_btn.set_active(False)
-        
+            self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
+        else:
+            self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
+    
+    def update_fav_btn(self):
+        self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
 
     def _has_favorite_sibling(self):
         """
@@ -177,36 +183,59 @@ class BaseAppEntry(AppEntry):
         """
         "Add to favorites" action: sets appropriate VM feature
         """
-        if self.is_user_click:
-            target_vm = self.app_info.vm or self.app_info.qapp.domains[
-                    self.app_info.qapp.local_name]
+        target_vm = self.app_info.vm or self.app_info.qapp.domains[
+                self.app_info.qapp.local_name]
 
-            current_feature = target_vm.features.get(constants.FAVORITES_FEATURE)
+        current_feature = target_vm.features.get(constants.FAVORITES_FEATURE)
 
-            current_feature = current_feature.split(' ') if current_feature else []
-            
-            # Add a favorite app
-            if self.fav_btn.get_active():
-                try:
-                    current_feature.append(self.app_info.entry_name)
-                except ValueError:
-                    logger.info('Failed to add %s from vm favorites for vm %s: '
-                                'favorites did not contain %s',
-                                self.app_info.entry_name, str(target_vm),
-                                self.app_info.entry_name)
-            
-            # Remove a favorite app
-            else:
-                try:
-                    current_feature.remove(self.app_info.entry_name)
-                except ValueError:
-                    logger.info('Failed to remove %s from vm favorites for vm %s: '
-                                'favorites did not contain %s',
-                                self.app_info.entry_name, str(target_vm),
-                                self.app_info.entry_name)
-            target_vm.features[constants.FAVORITES_FEATURE] = ' '.join(current_feature)
-        self.is_user_click = True
+        current_feature = current_feature.split(' ') if current_feature else []
+        
+        current_img = self.fav_btn.get_image()
+        # Add a favorite app
+        if (current_img == self.icons.BOOKMARK_BLACK):
+            try:
+                current_feature.append(self.app_info.entry_name)
+                self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
+            except ValueError:
+                logger.info('Failed to add %s from vm favorites for vm %s: '
+                            'favorites did not contain %s',
+                            self.app_info.entry_name, str(target_vm),
+                            self.app_info.entry_name)
+        
+        # Remove a favorite app
+        elif (current_img == self.icons.BOOKMARK_FILL_BLACK):
+            try:
+                current_feature.remove(self.app_info.entry_name)
+                self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
+            except ValueError:
+                logger.info('Failed to remove %s from vm favorites for vm %s: '
+                            'favorites did not contain %s',
+                            self.app_info.entry_name, str(target_vm),
+                            self.app_info.entry_name)
+        target_vm.features[constants.FAVORITES_FEATURE] = ' '.join(current_feature)
 
+    def _enter_favorite_button(self, *args, **kwargs):
+        current_img = self.fav_btn.get_image()
+        # The app isn't in favorites
+        if (current_img == self.icons.BOOKMARK_WHITE):
+            self.fav_btn.set_image(self.icons.BOOKMARK_BLACK)
+            return
+        
+        # The app is in favorites
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_BLACK)
+
+    def _leave_favorite_button(self, *args, **kwargs):
+        current_img = self.fav_btn.get_image()
+        # The app isn't in favorites
+        if (
+            current_img == self.icons.BOOKMARK_BLACK or 
+            current_img == self.icons.BOOKMARK_WHITE):
+
+            self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
+            return
+        
+        # The app is in favorites
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
 
 
 class VMIcon(Gtk.Image):
@@ -266,12 +295,15 @@ class FavoritesAppEntry(AppEntry):
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
-        self.fav_btn = Gtk.CheckButton()
-        self.fav_img = Gtk.Image.new_from_stock(Gtk.STOCK_ABOUT, Gtk.IconSize.SMALL_TOOLBAR)
-        self.fav_btn.set_image(self.fav_img)
-        self.fav_btn.set_mode(False)
-        self.fav_btn.set_active(True)
-        self.fav_btn.connect('toggled', self._remove_from_favorites)
+        self.icons = IconsLoader()
+
+        self.fav_btn = Gtk.Button()
+        self.fav_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
+        
+        self.fav_btn.connect('clicked', self._remove_from_favorites)
+        self.fav_btn.connect("enter-notify-event", self._enter_favorite_button)
+        self.fav_btn.connect("leave-notify-event", self._leave_favorite_button)
         box.pack_start(self.fav_btn, False, False, 10)
 
 
@@ -320,3 +352,24 @@ class FavoritesAppEntry(AppEntry):
             self.get_parent().remove(self)
             return
         vm.features[constants.FAVORITES_FEATURE] = ' '.join(current_feature)
+
+    def _enter_favorite_button(self, *args, **kwargs):
+        current_img = self.fav_btn.get_image()
+        # The app isn't in favorites
+        if (current_img == self.icons.BOOKMARK_WHITE):
+            self.fav_btn.set_image(self.icons.BOOKMARK_BLACK)
+            return
+        
+        # The app is in favorites
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_BLACK)
+
+    def _leave_favorite_button(self, *args, **kwargs):
+        current_img = self.fav_btn.get_image()
+        # The app isn't in favorites
+        if (current_img == self.icons.BOOKMARK_BLACK):
+
+            self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
+            return
+        
+        # The app is in favorites
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)

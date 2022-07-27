@@ -355,7 +355,7 @@ class AppPage:
 
         self.dispatcher.add_handler(
             f'domain-feature-pre-set:{constants.FAVORITES_FEATURE}',
-            self._update_fav_btns
+            self._update_fav_btn
         )
 
         self.network_indicator = NetworkIndicator()
@@ -410,7 +410,7 @@ class AppPage:
             app_info.entries.append(entry)
             self.vm_list.add(entry)
 
-    def _update_fav_btns(self, vm, event, feature, *_args, **_kwargs):
+    def _update_fav_btn(self, vm, event, feature, *_args, **_kwargs):
         """
         Update the favorite buttons in the app page
         """
@@ -421,7 +421,7 @@ class AppPage:
             remove_fav = set(old_fav) - set(new_fav)
             for entry in self.vm_entries[vm.name]:
                 if entry.app_info.entry_name in remove_fav:
-                    entry.update_fav_btns()
+                    entry.update_fav_btn()
                     break
 
 
