@@ -58,9 +58,6 @@ class FavoritesPage:
         self.app_list.invalidate_sort()
         self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)
 
-        # self.dispatcher.add_handler(
-        #     f'domain-feature-delete:{constants.FAVORITES_FEATURE}',
-        #     self._feature_deleted)
         self.dispatcher.add_handler(
             f'domain-feature-set:{constants.FAVORITES_FEATURE}',
             self._feature_set)

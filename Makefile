@@ -19,6 +19,10 @@ install-icons:
 	cp icons/qappmenu-power.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-power.svg
 	cp icons/qappmenu-qube.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-qube.svg
 	cp icons/qappmenu-settings.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
+	cp icons/qappmenu-bookmark-black.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-black.svg
+	cp icons/qappmenu-bookmark-white.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-white.svg
+	cp icons/qappmenu-bookmark-fill-black.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-fill-black.svg
+	cp icons/qappmenu-bookmark-fill-white.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-fill-white.svg
 
 install-autostart:
 	mkdir -p $(DESTDIR)/etc/xdg/autostart

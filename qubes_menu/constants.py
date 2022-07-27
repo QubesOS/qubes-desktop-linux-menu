@@ -41,3 +41,10 @@ RESTART_PARAM_SHORT = 'r'
 
 # Timeout for activation change when hovering over a menu item, in microseconds
 HOVER_TIMEOUT = 0
+
+# Icons
+BOOKMARK_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-black.svg"
+BOOKMARK_FILL_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-fill-black.svg"
+
+BOOKMARK_FILL_WHITE = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-fill-white.svg"
+BOOKMARK_WHITE = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-white.svg"
