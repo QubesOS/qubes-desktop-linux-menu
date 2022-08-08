@@ -22,6 +22,8 @@ Qubes App Menu constants, like dictionary of events-to-vm-states, name of
 favorites feature etc.
 """
 
+import os
+
 STATE_DICTIONARY = {
     'domain-pre-start': 'Transient',
     'domain-start': 'Running',
@@ -42,9 +44,22 @@ RESTART_PARAM_SHORT = 'r'
 # Timeout for activation change when hovering over a menu item, in microseconds
 HOVER_TIMEOUT = 0
 
+SETTINGS_PATH = os.path.join(os.getenv('HOME'), '.config/qappmenu-settings.ini')
+
+FAVORITE_APPS_LAYOUT = 'favoriteappslayout'
+SETTINGS = 'Settings'
+LIST = 'list'
+GRID = 'grid'
+
 # Icons
 BOOKMARK_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-black.svg"
 BOOKMARK_FILL_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-fill-black.svg"
 
 BOOKMARK_FILL_WHITE = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-fill-white.svg"
 BOOKMARK_WHITE = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-white.svg"
+
+LIST_WHITE = "/usr/share/icons/hicolor/scalable/apps/qappmenu-list-white.svg"
+LIST_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-list-black.svg"
+
+GRID_WHITE = "/usr/share/icons/hicolor/scalable/apps/qappmenu-grid-white.svg"
+GRID_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-grid-black.svg"

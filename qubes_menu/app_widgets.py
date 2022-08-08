@@ -107,7 +107,6 @@ class BaseAppEntry(AppEntry):
 
         if 'X-XFCE-SettingsDialog' not in app_info.categories and 'qubes' not in app_info.entry_name:
             self.fav_btn = Gtk.Button()
-            self.fav_btn.get_style_context().add_class('favorite_button')
 
             self.icons = IconsLoader()
             

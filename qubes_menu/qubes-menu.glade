@@ -244,6 +244,40 @@
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkButton" id="fav_layout_toggle">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="relief">none</property>
+                    <property name="always-show-image">True</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="padding">15</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <style>
+                  <class name="left_pane"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="padding">5</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkScrolledWindow">
                 <property name="visible">True</property>
@@ -252,17 +286,11 @@
                 <property name="shadow-type">in</property>
                 <property name="kinetic-scrolling">False</property>
                 <child>
-                  <object class="GtkViewport">
+                  <object class="GtkViewport" id="fav_view_port">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <child>
-                      <object class="GtkListBox" id="fav_app_list">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <style>
-                          <class name="left_pane"/>
-                        </style>
-                      </object>
+                      <placeholder/>
                     </child>
                   </object>
                 </child>
@@ -273,12 +301,12 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
-            <child>
-              <placeholder/>
-            </child>
+            <style>
+              <class name="left_pane"/>
+            </style>
           </object>
           <packing>
             <property name="position">1</property>
