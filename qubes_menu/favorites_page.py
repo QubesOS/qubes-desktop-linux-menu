@@ -26,6 +26,7 @@ import qubesadmin.events
 from .desktop_file_manager import DesktopFileManager
 from .app_widgets import AppEntry, FavoritesAppEntry
 from .vm_manager import VMManager
+from .utils import load_icon, read_settings, write_settings
 from . import constants
 
 import gi
@@ -34,6 +35,21 @@ from gi.repository import Gtk
 
 logger = logging.getLogger('qubes-appmenu')
 
+LIST_WHITE_ICON = Gtk.Image.new_from_pixbuf(
+    load_icon(constants.LIST_WHITE, Gtk.IconSize.LARGE_TOOLBAR)
+)
+    
+LIST_BLACK_ICON = Gtk.Image.new_from_pixbuf(
+    load_icon(constants.LIST_BLACK, Gtk.IconSize.LARGE_TOOLBAR)
+)
+
+GRID_WHITE_ICON = Gtk.Image.new_from_pixbuf(
+    load_icon(constants.GRID_WHITE, Gtk.IconSize.LARGE_TOOLBAR)
+)
+
+GRID_BLACK_ICON = Gtk.Image.new_from_pixbuf(
+    load_icon(constants.GRID_BLACK, Gtk.IconSize.LARGE_TOOLBAR)
+)
 
 class FavoritesPage:
     """
@@ -48,21 +64,84 @@ class FavoritesPage:
         self.dispatcher = dispatcher
         self.vm_manager = vm_manager
 
-        self.app_list: Gtk.ListBox = builder.get_object('fav_app_list')
-        self.app_list.connect('row-activated', self._app_clicked)
+        self.fav_apps_view: Gtk.Viewport = builder.get_object('fav_view_port')
+        
+        self.fav_apps_layout = read_settings(constants.FAVORITE_APPS_LAYOUT)
 
+        self.fav_layout_toggle: Gtk.Button = builder.get_object('fav_layout_toggle')
+        
+        self.fav_layout_toggle.set_image(LIST_WHITE_ICON)\
+            if self.fav_apps_layout == constants.LIST \
+                else self.fav_layout_toggle.set_image(GRID_WHITE_ICON)
+
+        self.fav_layout_toggle.connect('clicked', self._toggle_layout)
+        self.fav_layout_toggle.connect('enter-notify-event', self._enter_layout_button)
+        self.fav_layout_toggle.connect('leave-notify-event', self._leave_layout_button)
+
+        self.app_grid: Gtk.FlowBox = Gtk.FlowBox()
+        self.app_grid.get_style_context().add_class('left_pane')
+        
+        self.app_list: Gtk.ListBox = Gtk.ListBox()
+        self.app_list.get_style_context().add_class('left_pane')
+        
+        self.app_list.connect('row-activated', self._app_clicked)
+        
         self.app_list.set_sort_func(
             lambda x, y: x.app_info.app_name > y.app_info.app_name)
-        self.desktop_file_manager.register_callback(self._app_info_callback)
+        
         self.app_list.show_all()
         self.app_list.invalidate_sort()
         self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)
+        
+        
+        self.fav_apps_view.add(self.app_list)\
+            if self.fav_apps_layout == constants.LIST \
+                else self.fav_apps_view.add(self.app_grid)
+
+        self.desktop_file_manager.register_callback(self._app_info_callback)
 
         self.dispatcher.add_handler(
             f'domain-feature-set:{constants.FAVORITES_FEATURE}',
             self._feature_set)
         self.dispatcher.add_handler('domain-add', self._domain_added)
         self.dispatcher.add_handler('domain-delete', self._domain_deleted)
+
+    def _toggle_layout(self, *args, **kwargs):
+        if self.fav_apps_layout == constants.LIST:
+            self.fav_apps_view.remove(self.app_list)
+            self.fav_apps_view.add(self.app_grid)
+
+            self.fav_layout_toggle.set_image(GRID_WHITE_ICON)
+            
+            self.fav_apps_layout = constants.GRID
+            write_settings(constants.FAVORITE_APPS_LAYOUT, constants.GRID)
+            
+        elif self.fav_apps_layout == constants.GRID:
+            self.fav_apps_view.remove(self.app_grid)
+            self.fav_apps_view.add(self.app_list)
+
+            self.fav_layout_toggle.set_image(LIST_WHITE_ICON)
+
+            self.fav_apps_layout = constants.LIST
+            write_settings(constants.FAVORITE_APPS_LAYOUT, constants.LIST)
+
+    def _enter_layout_button(self, *args, **kwargs):
+        current_img = self.fav_layout_toggle.get_image()
+
+        if (current_img == LIST_WHITE_ICON):
+            self.fav_layout_toggle.set_image(LIST_BLACK_ICON)
+
+        elif (current_img == GRID_WHITE_ICON):
+            self.fav_layout_toggle.set_image(GRID_BLACK_ICON)
+
+    def _leave_layout_button(self, *args, **kwargs):
+        current_img = self.fav_layout_toggle.get_image()
+
+        if (current_img == LIST_BLACK_ICON):
+            self.fav_layout_toggle.set_image(LIST_WHITE_ICON)
+
+        elif (current_img == GRID_BLACK_ICON):
+            self.fav_layout_toggle.set_image(GRID_WHITE_ICON)
 
     def _load_vms_favorites(self, vm):
         """

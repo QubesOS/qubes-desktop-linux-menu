@@ -23,6 +23,10 @@ install-icons:
 	cp icons/qappmenu-bookmark-white.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-white.svg
 	cp icons/qappmenu-bookmark-fill-black.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-fill-black.svg
 	cp icons/qappmenu-bookmark-fill-white.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-fill-white.svg
+	cp icons/qappmenu-list-white.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-list-white.svg
+	cp icons/qappmenu-list-black.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-list-black.svg
+	cp icons/qappmenu-grid-white.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-grid-white.svg
+	cp icons/qappmenu-grid-black.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-grid-black.svg
 
 install-autostart:
 	mkdir -p $(DESTDIR)/etc/xdg/autostart
@@ -30,7 +34,10 @@ install-autostart:
 	mkdir -p $(DESTDIR)/usr/share/applications
 	cp desktop_files/open-qubes-app-menu.desktop $(DESTDIR)/usr/share/applications/
 
-install: install-autostart install-icons
+install-settings:
+	cp qubes_menu/qappmenu-settings.ini $(HOME)/.config/qappmenu-settings.ini
+
+install: install-autostart install-icons install-settings
 
 .PHONY: clean
 clean:

@@ -21,9 +21,16 @@
 Miscellaneous Qubes Menu utility functions.
 """
 import gi
+import logging
+import pkg_resources
+
+from qubes_menu import constants
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 
+import configparser
+
+logger = logging.getLogger('qubes-appmenu')
 
 def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
     """Load icon from provided name, if available. If not, attempt to treat
@@ -58,3 +65,21 @@ def show_error(title, text):
     dialog.set_markup(text)
     dialog.connect("response", lambda *x: dialog.destroy())
     dialog.show()
+
+def read_settings(key):
+    config = configparser.ConfigParser()
+    try:
+        config.read(constants.SETTINGS_PATH)
+        return config[constants.SETTINGS][key]
+    except (TypeError, GLib.Error):
+        logger.info('Failed to open the settings file')
+        
+
+def write_settings(key, value):
+    config = configparser.ConfigParser()
+    config[constants.SETTINGS] = {
+        key: value
+    }
+
+    with open(constants.SETTINGS_PATH, 'w') as file:
+        config.write(file)
