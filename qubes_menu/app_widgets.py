@@ -280,8 +280,6 @@ class FavoritesAppEntry(AppEntry):
                  **properties):
         super().__init__(app_info, **properties)
         self.get_style_context().add_class('favorite_entry')
-        self.grid = Gtk.Grid()
-        self.event_box.add(self.grid)
         self.remove_item = Gtk.MenuItem(label='Remove from favorites')
         self.remove_item.connect('activate', self._remove_from_favorites)
         self.menu.add(self.remove_item)
@@ -292,8 +290,6 @@ class FavoritesAppEntry(AppEntry):
         self.app_icon = Gtk.Image()
         self.vm_icon = VMIcon(vm_manager.load_vm_from_name(str(app_info.vm)))
 
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-
         self.icons = IconsLoader()
 
         self.fav_btn = Gtk.Button()
@@ -303,20 +299,6 @@ class FavoritesAppEntry(AppEntry):
         self.fav_btn.connect('clicked', self._remove_from_favorites)
         self.fav_btn.connect("enter-notify-event", self._enter_favorite_button)
         self.fav_btn.connect("leave-notify-event", self._leave_favorite_button)
-        box.pack_start(self.fav_btn, False, False, 10)
-
-
-        box.pack_start(self.vm_icon, False, False, 5)
-        box.pack_start(self.vm_label, False, False, 5)
-        self.vm_label.get_style_context().add_class('favorite_vm_name')
-        self.app_label.get_style_context().add_class('favorite_app_name')
-        self.app_label.set_halign(Gtk.Align.START)
-
-        self.grid.attach(self.app_icon, 0, 0, 1, 2)
-        self.grid.attach(self.app_label, 1, 0, 1, 1)
-        self.grid.attach(box, 1, 1, 1, 1)
-
-        self.update_contents()
 
     def update_contents(self):
         """Update application and VM icons and application and vm names"""
@@ -372,3 +354,58 @@ class FavoritesAppEntry(AppEntry):
         
         # The app is in favorites
         self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
+
+class FavoritesAppListEntry(FavoritesAppEntry):
+    """
+    FavoritesAppListEntry is used for list layout
+    """
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
+                 **properties):
+        super().__init__(app_info, vm_manager, **properties)
+        self.get_style_context().add_class('favorite_entry')
+
+        self.grid = Gtk.Grid()
+        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        self.box.pack_start(self.fav_btn, False, False, 10)
+        self.box.pack_start(self.vm_icon, False, False, 5)
+        self.box.pack_start(self.vm_label, False, False, 5)
+        self.vm_label.get_style_context().add_class('favorite_vm_name')
+        self.app_label.get_style_context().add_class('favorite_app_name')
+        self.app_label.set_halign(Gtk.Align.START)
+
+        self.grid.attach(self.app_icon, 0, 0, 1, 2)
+        self.grid.attach(self.app_label, 1, 0, 1, 1)
+        self.grid.attach(self.box, 1, 1, 1, 1)
+
+        self.event_box.add(self.grid)
+
+        self.update_contents()
+
+class FavoritesAppGridEntry(FavoritesAppEntry):
+    """
+    FavoritesAppGridEntry is used for list layout
+    """
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
+                 **properties):
+        super().__init__(app_info, vm_manager, **properties)
+        self.grid = Gtk.Grid()
+        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.connect('activate', self._testing)
+        self.box.pack_start(self.fav_btn, False, False, 10)
+        self.box.pack_start(self.vm_icon, False, False, 5)
+        self.box.pack_start(self.vm_label, False, False, 5)
+        self.vm_label.get_style_context().add_class('favorite_vm_name')
+        self.app_label.get_style_context().add_class('favorite_app_name')
+        self.app_label.set_halign(Gtk.Align.START)
+
+        self.grid.attach(self.app_icon, 0, 0, 1, 2)
+        self.grid.attach(self.app_label, 1, 0, 1, 1)
+        self.grid.attach(self.box, 1, 1, 1, 1)
+
+        self.event_box.add(self.grid)
+
+        self.update_contents()
+
+    def _testing(self):
+        print("testing")
