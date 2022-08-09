@@ -24,7 +24,7 @@ import logging
 
 import qubesadmin.events
 from .desktop_file_manager import DesktopFileManager
-from .app_widgets import AppEntry, FavoritesAppEntry
+from .app_widgets import FavoritesAppGridEntry, FavoritesAppListEntry
 from .vm_manager import VMManager
 from .utils import load_icon, read_settings, write_settings
 from . import constants
@@ -63,13 +63,11 @@ class FavoritesPage:
         self.desktop_file_manager = desktop_file_manager
         self.dispatcher = dispatcher
         self.vm_manager = vm_manager
-
-        self.fav_apps_view: Gtk.Viewport = builder.get_object('fav_view_port')
-        
         self.fav_apps_layout = read_settings(constants.FAVORITE_APPS_LAYOUT)
 
+        self.fav_apps_view: Gtk.Viewport = builder.get_object('fav_view_port')
         self.fav_layout_toggle: Gtk.Button = builder.get_object('fav_layout_toggle')
-        
+
         self.fav_layout_toggle.set_image(LIST_WHITE_ICON)\
             if self.fav_apps_layout == constants.LIST \
                 else self.fav_layout_toggle.set_image(GRID_WHITE_ICON)
@@ -78,12 +76,20 @@ class FavoritesPage:
         self.fav_layout_toggle.connect('enter-notify-event', self._enter_layout_button)
         self.fav_layout_toggle.connect('leave-notify-event', self._leave_layout_button)
 
-        self.app_grid: Gtk.FlowBox = Gtk.FlowBox()
+        self.app_grid: Gtk.FlowBox = Gtk.FlowBox(orientation=Gtk.Orientation.HORIZONTAL)
         self.app_grid.get_style_context().add_class('left_pane')
-        
+        self.app_grid.set_halign(Gtk.Align.START)
+        self.app_grid.set_valign(Gtk.Align.START)
+        self.app_grid.set_min_children_per_line(2)
+        self.app_grid.set_max_children_per_line(3)
+        # self.app_grid.connect('child-activated', self._app_clicked)
+
+        self.app_grid.show_all()
+        self.app_grid.set_selection_mode(Gtk.SelectionMode.NONE) 
+
+
         self.app_list: Gtk.ListBox = Gtk.ListBox()
         self.app_list.get_style_context().add_class('left_pane')
-        
         self.app_list.connect('row-activated', self._app_clicked)
         
         self.app_list.set_sort_func(
@@ -91,8 +97,7 @@ class FavoritesPage:
         
         self.app_list.show_all()
         self.app_list.invalidate_sort()
-        self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)
-        
+        self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)        
         
         self.fav_apps_view.add(self.app_list)\
             if self.fav_apps_layout == constants.LIST \
@@ -178,13 +183,19 @@ class FavoritesPage:
             self._add_from_app_info(app_info)
 
     def _add_from_app_info(self, app_info):
-        entry = FavoritesAppEntry(app_info, self.vm_manager)
-        app_info.entries.append(entry)
-        self.app_list.add(entry)
+        list_entry = FavoritesAppListEntry(app_info, self.vm_manager)
+        grid_entry = FavoritesAppGridEntry(app_info, self.vm_manager)
+        app_info.entries.append(list_entry)
+        app_info.entries.append(grid_entry)
+        self.app_list.add(list_entry)
+        self.app_grid.add(grid_entry)
 
     @staticmethod
-    def _app_clicked(_widget, row: AppEntry):
-        row.run_app(row.app_info.vm)
+    def _app_clicked(*args, **kwargs):
+        print(f"args = {args}")
+        print(f"kwargs = {kwargs}")
+        # print(type(entry))
+        # entry.run_app(entry.app_info.vm)
 
     # def _feature_deleted(self, vm, _event, _feature, *_args, **_kwargs):
     #     """Callback to be executed when a VM feature is deleted, and also
@@ -217,6 +228,8 @@ class FavoritesPage:
                     and child.app_info.entry_name in remove_fav:
                     child.app_info.entries.remove(child)
                     self.app_list.remove(child)
+                    self.app_grid.remove(child)
+                    self.app_grid.show_all()
                     self.app_list.show_all()
                     break
             
