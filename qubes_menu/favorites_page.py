@@ -21,10 +21,11 @@
 Qubes App Menu favorites page and related widgets.
 """
 import logging
+from typing import Optional
 
 import qubesadmin.events
 from .desktop_file_manager import DesktopFileManager
-from .app_widgets import FavoritesAppGridEntry, FavoritesAppListEntry
+from .app_widgets import AppEntry, FavoritesAppGridEntry, FavoritesAppListEntry
 from .vm_manager import VMManager
 from .utils import load_icon, read_settings, write_settings
 from . import constants
@@ -82,7 +83,11 @@ class FavoritesPage:
         self.app_grid.set_valign(Gtk.Align.START)
         self.app_grid.set_min_children_per_line(2)
         self.app_grid.set_max_children_per_line(3)
-        # self.app_grid.connect('child-activated', self._app_clicked)
+        self.app_grid.connect('child-activated', self._app_clicked_grid)
+        self.app_grid.set_sort_func(
+            lambda x, y: x.get_child().app_info.app_name > y.get_child().app_info.app_name
+        )
+        self.app_grid.invalidate_sort()
 
         self.app_grid.show_all()
         self.app_grid.set_selection_mode(Gtk.SelectionMode.NONE) 
@@ -90,7 +95,7 @@ class FavoritesPage:
 
         self.app_list: Gtk.ListBox = Gtk.ListBox()
         self.app_list.get_style_context().add_class('left_pane')
-        self.app_list.connect('row-activated', self._app_clicked)
+        self.app_list.connect('row-activated', self._app_clicked_list)
         
         self.app_list.set_sort_func(
             lambda x, y: x.app_info.app_name > y.app_info.app_name)
@@ -169,7 +174,7 @@ class FavoritesPage:
                 if app_info.entry_name in favorites:
                     self._add_from_app_info(app_info)
         self.app_list.invalidate_sort()
-        self.app_list.show_all()
+        self.app_grid.invalidate_sort()
 
     def _app_info_callback(self, app_info):
         """Callback to be executed on every newly loaded ApplicationInfo."""
@@ -191,11 +196,14 @@ class FavoritesPage:
         self.app_grid.add(grid_entry)
 
     @staticmethod
-    def _app_clicked(*args, **kwargs):
-        print(f"args = {args}")
-        print(f"kwargs = {kwargs}")
-        # print(type(entry))
-        # entry.run_app(entry.app_info.vm)
+    def _app_clicked_grid(_widget, entry: Gtk.FlowBoxChild):
+        child: FavoritesAppGridEntry = entry.get_child()
+        child.run_app(child.app_info.vm)
+
+    @staticmethod
+    def _app_clicked_list(_widget, row: AppEntry):
+        row.run_app(row.app_info.vm)
+
 
     # def _feature_deleted(self, vm, _event, _feature, *_args, **_kwargs):
     #     """Callback to be executed when a VM feature is deleted, and also
@@ -222,15 +230,21 @@ class FavoritesPage:
         # Remove a favorite app
         if old_fav and len(old_fav) > len(new_fav) or new_fav == ['']:
             remove_fav = set(old_fav) - set(new_fav)
-            
-            for child in self.app_list.get_children():
-                if str(child.app_info.vm) == str(vm) \
-                    and child.app_info.entry_name in remove_fav:
-                    child.app_info.entries.remove(child)
-                    self.app_list.remove(child)
-                    self.app_grid.remove(child)
-                    self.app_grid.show_all()
+
+            for list_child, grid_child in zip(
+                self.app_list.get_children(), self.app_grid.get_children()
+            ):                
+                if str(list_child.app_info.vm) == str(vm) \
+                    and list_child.app_info.entry_name in remove_fav:
+
+                    list_child.app_info.entries.remove(list_child)
+                    grid_child.get_child().app_info.entries.remove(grid_child.get_child())
+
+                    self.app_list.remove(list_child)
+                    self.app_grid.remove(grid_child)
+
                     self.app_list.show_all()
+                    self.app_grid.show_all()
                     break
             
         # Add a favorite app

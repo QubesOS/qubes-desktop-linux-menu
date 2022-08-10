@@ -290,6 +290,9 @@ class FavoritesAppEntry(AppEntry):
         self.app_icon = Gtk.Image()
         self.vm_icon = VMIcon(vm_manager.load_vm_from_name(str(app_info.vm)))
 
+        self.vm_label.get_style_context().add_class('favorite_vm_name')
+        self.app_label.get_style_context().add_class('favorite_app_name')
+
         self.icons = IconsLoader()
 
         self.fav_btn = Gtk.Button()
@@ -370,8 +373,7 @@ class FavoritesAppListEntry(FavoritesAppEntry):
         self.box.pack_start(self.fav_btn, False, False, 10)
         self.box.pack_start(self.vm_icon, False, False, 5)
         self.box.pack_start(self.vm_label, False, False, 5)
-        self.vm_label.get_style_context().add_class('favorite_vm_name')
-        self.app_label.get_style_context().add_class('favorite_app_name')
+
         self.app_label.set_halign(Gtk.Align.START)
 
         self.grid.attach(self.app_icon, 0, 0, 1, 2)
@@ -391,12 +393,10 @@ class FavoritesAppGridEntry(FavoritesAppEntry):
         super().__init__(app_info, vm_manager, **properties)
         self.grid = Gtk.Grid()
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.connect('activate', self._testing)
         self.box.pack_start(self.fav_btn, False, False, 10)
         self.box.pack_start(self.vm_icon, False, False, 5)
         self.box.pack_start(self.vm_label, False, False, 5)
-        self.vm_label.get_style_context().add_class('favorite_vm_name')
-        self.app_label.get_style_context().add_class('favorite_app_name')
+
         self.app_label.set_halign(Gtk.Align.START)
 
         self.grid.attach(self.app_icon, 0, 0, 1, 2)
@@ -406,6 +406,3 @@ class FavoritesAppGridEntry(FavoritesAppEntry):
         self.event_box.add(self.grid)
 
         self.update_contents()
-
-    def _testing(self):
-        print("testing")
