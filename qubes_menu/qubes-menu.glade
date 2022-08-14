@@ -246,6 +246,68 @@
             <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
+              <object class="GtkScrolledWindow">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="hscrollbar-policy">never</property>
+                <property name="shadow-type">in</property>
+                <property name="kinetic-scrolling">False</property>
+                <child>
+                  <object class="GtkViewport">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="orientation">vertical</property>
+                        <property name="homogeneous">True</property>
+                        <child>
+                          <object class="GtkListBox" id="fav_list_box">
+                            <property name="can-focus">False</property>
+                            <style>
+                              <class name="left_pane"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkFlowBox" id="fav_flow_box">
+                            <property name="can-focus">False</property>
+                            <property name="valign">start</property>
+                            <property name="column-spacing">20</property>
+                            <property name="row-spacing">5</property>
+                            <property name="min-children-per-line">3</property>
+                            <property name="max-children-per-line">3</property>
+                            <style>
+                              <class name="left_pane"/>
+                            </style>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <style>
+                  <class name="left_pane"/>
+                </style>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
               <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -264,6 +326,7 @@
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="padding">15</property>
+                    <property name="pack-type">end</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
@@ -274,33 +337,7 @@
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">False</property>
-                <property name="padding">5</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow">
-                <property name="visible">True</property>
-                <property name="can-focus">True</property>
-                <property name="hscrollbar-policy">never</property>
-                <property name="shadow-type">in</property>
-                <property name="kinetic-scrolling">False</property>
-                <child>
-                  <object class="GtkViewport" id="fav_view_port">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <placeholder/>
-                    </child>
-                  </object>
-                </child>
-                <style>
-                  <class name="left_pane"/>
-                </style>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
+                <property name="padding">15</property>
                 <property name="position">1</property>
               </packing>
             </child>
