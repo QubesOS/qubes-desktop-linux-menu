@@ -264,7 +264,7 @@ class VMIcon(Gtk.Image):
         """
         if update_label and self.vm_entry:
             vm_icon = load_icon(self.vm_entry.vm_icon_name,
-                                Gtk.IconSize.LARGE_TOOLBAR)
+                                Gtk.IconSize.SMALL_TOOLBAR)
             self.set_from_pixbuf(vm_icon)
             self.show_all()
 
@@ -285,15 +285,15 @@ class FavoritesAppEntry(AppEntry):
         self.menu.add(self.remove_item)
         self.menu.show_all()
 
-        self.app_label = LimitedWidthLabel()
+        self.app_label = Gtk.Label()
         self.vm_label = Gtk.Label()
         self.app_icon = Gtk.Image()
         self.vm_icon = VMIcon(vm_manager.load_vm_from_name(str(app_info.vm)))
 
+        self.icons = IconsLoader()
+
         self.vm_label.get_style_context().add_class('favorite_vm_name')
         self.app_label.get_style_context().add_class('favorite_app_name')
-
-        self.icons = IconsLoader()
 
         self.fav_btn = Gtk.Button()
         self.fav_btn.set_relief(Gtk.ReliefStyle.NONE)
@@ -305,7 +305,7 @@ class FavoritesAppEntry(AppEntry):
 
     def update_contents(self):
         """Update application and VM icons and application and vm names"""
-        app_icon = load_icon(self.app_info.app_icon, Gtk.IconSize.DIALOG)
+        app_icon = load_icon(self.app_info.app_icon, Gtk.IconSize.DND)
         self.app_icon.set_from_pixbuf(app_icon)
 
         if self.app_info.disposable:
@@ -365,21 +365,24 @@ class FavoritesAppListEntry(FavoritesAppEntry):
     def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
                  **properties):
         super().__init__(app_info, vm_manager, **properties)
-        self.get_style_context().add_class('favorite_entry')
-
         self.grid = Gtk.Grid()
-        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.grid.set_column_spacing(15)
+        self.grid.set_row_spacing(15)
+        
+        self.vm_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.vm_box.pack_start(self.vm_icon, False, False, 10)
+        self.vm_box.pack_start(self.vm_label, False, False, 15)
 
-        self.box.pack_start(self.fav_btn, False, False, 10)
-        self.box.pack_start(self.vm_icon, False, False, 5)
-        self.box.pack_start(self.vm_label, False, False, 5)
+        self.app_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.app_icon.set_alignment(0,0)
+        self.app_label.set_xalign(0)
+        self.app_box.pack_start(self.app_icon, False, False, 10)
+        self.app_box.pack_start(self.app_label, False, False, 10)
 
-        self.app_label.set_halign(Gtk.Align.START)
-
-        self.grid.attach(self.app_icon, 0, 0, 1, 2)
-        self.grid.attach(self.app_label, 1, 0, 1, 1)
-        self.grid.attach(self.box, 1, 1, 1, 1)
-
+        self.grid.attach(self.vm_box, 0, 0, 2, 1)
+        self.grid.attach(self.fav_btn, 0, 1, 1, 1)
+        self.grid.attach(self.app_box, 1, 1, 1, 1)
+        
         self.event_box.add(self.grid)
 
         self.update_contents()
@@ -392,16 +395,22 @@ class FavoritesAppGridEntry(FavoritesAppEntry):
                  **properties):
         super().__init__(app_info, vm_manager, **properties)
         self.grid = Gtk.Grid()
-        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.box.pack_start(self.fav_btn, False, False, 10)
-        self.box.pack_start(self.vm_icon, False, False, 5)
-        self.box.pack_start(self.vm_label, False, False, 5)
+        self.grid.set_column_spacing(15)
+        self.grid.set_row_spacing(15)
+        
+        self.vm_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.vm_box.pack_start(self.vm_icon, False, False, 10)
+        self.vm_box.pack_start(self.vm_label, False, False, 15)
 
-        self.app_label.set_halign(Gtk.Align.START)
+        self.app_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.app_icon.set_alignment(0,0)
+        self.app_label.set_xalign(0)
+        self.app_box.pack_start(self.app_icon, False, False, 5)
+        self.app_box.pack_start(self.app_label, False, False, 10)
 
-        self.grid.attach(self.app_icon, 0, 0, 1, 2)
-        self.grid.attach(self.app_label, 1, 0, 1, 1)
-        self.grid.attach(self.box, 1, 1, 1, 1)
+        self.grid.attach(self.vm_box, 0, 0, 2, 1)
+        self.grid.attach(self.fav_btn, 0, 1, 1, 1)
+        self.grid.attach(self.app_box, 1, 1, 1, 1)
 
         self.event_box.add(self.grid)
 

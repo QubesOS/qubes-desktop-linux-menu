@@ -151,7 +151,7 @@ class AppMenu(Gtk.Application):
             self.primary = True
             assert self.main_window
             if not self.start_in_background:
-                self.main_window.show_all()
+                self.main_window.show()
             self.initialize_state()
             self.hold()
         else:
