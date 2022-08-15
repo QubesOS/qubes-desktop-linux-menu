@@ -28,7 +28,6 @@ from typing import Optional
 from .custom_widgets import LimitedWidthLabel, SelfAwareMenu
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
-from .icons_loader import IconsLoader
 from .utils import load_icon
 from . import constants
 
@@ -38,6 +37,22 @@ from gi.repository import Gtk, Gdk
 
 
 logger = logging.getLogger('qubes-appmenu')
+
+class IconsLoader:
+    def __init__(self):
+        self.BOOKMARK_BLACK = Gtk.Image.new_from_pixbuf(
+            load_icon(constants.BOOKMARK_BLACK, Gtk.IconSize.LARGE_TOOLBAR)
+        )
+        self.BOOKMARK_FILL_BLACK = Gtk.Image.new_from_pixbuf(
+            load_icon(constants.BOOKMARK_FILL_BLACK, Gtk.IconSize.LARGE_TOOLBAR)
+        )
+
+        self.BOOKMARK_FILL_WHITE = Gtk.Image.new_from_pixbuf(
+            load_icon(constants.BOOKMARK_FILL_WHITE, Gtk.IconSize.LARGE_TOOLBAR)
+        )
+        self.BOOKMARK_WHITE = Gtk.Image.new_from_pixbuf(
+            load_icon(constants.BOOKMARK_WHITE, Gtk.IconSize.LARGE_TOOLBAR)
+        )
 
 class AppEntry(Gtk.ListBoxRow):
     """
