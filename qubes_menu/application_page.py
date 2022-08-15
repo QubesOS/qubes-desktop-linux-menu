@@ -394,7 +394,6 @@ class AppPage:
         self.toggle_buttons.connect_to_toggle(self._button_toggled)
 
         vm_manager.register_new_vm_callback(self._vm_callback)
-        # self.vm_list.set_sort_func(lambda x, y: x.sort_order > y.sort_order)
         self.vm_list.set_filter_func(self.toggle_buttons.filter_function)
 
         self.widget_order = [self.settings_list, self.app_list,

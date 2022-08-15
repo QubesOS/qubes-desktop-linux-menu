@@ -200,22 +200,6 @@ class FavoritesPage:
     def _app_clicked_list(_widget, row: AppEntry):
         row.run_app(row.app_info.vm)
 
-
-    # def _feature_deleted(self, vm, _event, _feature, *_args, **_kwargs):
-    #     """Callback to be executed when a VM feature is deleted, and also
-    #     used for loading favorites when VM feature is changed."""
-    #     try:
-    #         if str(vm) == self.qapp.local_name:
-    #             vm = None
-    #         for child in self.app_list.get_children():
-    #             if str(child.app_info.vm) == str(vm):
-    #                 child.app_info.entries.remove(child)
-    #                 self.app_list.remove(child)
-    #         self.app_list.invalidate_sort()
-    #     except Exception as ex:  # pylint: disable=broad-except
-    #         logger.warning(
-    #             'Encountered problem removing favorite entry: %s', repr(ex))
-
     def _feature_set(self, vm, event, feature, *_args, **_kwargs):
         """When VM feature specified in constants.py is changed, all existing
         favorites menu entries for this VM will be removed and then loaded
@@ -248,10 +232,6 @@ class FavoritesPage:
                     and app_info.entry_name in new_fav:
                     self._add_from_app_info(app_info)
                     break
-
-        # (self.app_list.show_all() and self.app_grid.hide())\
-        #     if self.fav_apps_layout == constants.LIST \
-        #         else (self.app_list.hide() and self.app_grid.show_all())
 
     def _domain_added(self, _submitter, _event, vm, **_kwargs):
         """On a newly created domain, load all favorites from features
