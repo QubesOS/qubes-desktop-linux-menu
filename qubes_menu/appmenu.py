@@ -5,6 +5,7 @@ Main Application Menu class and helpers.
 """
 # pylint: disable=import-error
 import asyncio
+from pickle import NONE
 import subprocess, threading
 import sys
 from typing import Optional
@@ -15,6 +16,7 @@ import logging
 import qubesadmin
 import qubesadmin.events
 
+from .utils import load_icon, read_settings, write_settings
 from .application_page import AppPage
 from .desktop_file_manager import DesktopFileManager
 from .favorites_page import FavoritesPage
@@ -32,6 +34,21 @@ gbulb.install()
 
 logger = logging.getLogger('qubes-appmenu')
 
+SUN_WHITE_ICON = Gtk.Image.new_from_pixbuf(
+    load_icon(constants.SUN_WHITE, Gtk.IconSize.DND)
+)
+
+SUN_BLACK_ICON = Gtk.Image.new_from_pixbuf(
+    load_icon(constants.SUN_BLACK, Gtk.IconSize.DND)
+)
+
+MOON_WHITE_ICON = Gtk.Image.new_from_pixbuf(
+    load_icon(constants.MOON_WHITE, Gtk.IconSize.DND)
+)
+
+MOON_BLACK_ICON = Gtk.Image.new_from_pixbuf(
+    load_icon(constants.MOON_BLACK, Gtk.IconSize.DND)
+)
 
 class AppMenu(Gtk.Application):
     """
@@ -53,6 +70,9 @@ class AppMenu(Gtk.Application):
         self.start_in_background = False
 
         self._add_cli_options()
+        
+        self.screen: Optional[Gdk.Screen] = None
+        self.provider: Optional[Gtk.CssProvider] = None
 
         self.builder: Optional[Gtk.Builder] = None
         self.main_window: Optional[Gtk.Window] = None
@@ -65,6 +85,9 @@ class AppMenu(Gtk.Application):
         self.favorites_page: Optional[FavoritesPage] = None
 
         self.power_button: Optional[Gtk.Button] = None
+        self.light_mode_button: Optional[Gtk.Button] = None
+
+        self.light_mode = None
 
     def _add_cli_options(self):
         self.add_main_option(
@@ -177,15 +200,23 @@ class AppMenu(Gtk.Application):
         The function that performs actual widget realization and setup. Should
         be only called once, in the main instance of this application.
         """
-        screen = Gdk.Screen.get_default()
+        self.screen = Gdk.Screen.get_default()
 
-        provider = Gtk.CssProvider()
-        provider.load_from_path(
-            pkg_resources.resource_filename(__name__, 'qubes-menu-dark.css')
-        )
+        self.provider = Gtk.CssProvider()
+
+        self.light_mode = read_settings(constants.LIGHT_MODE)
+
+        if self.light_mode == constants.DARK:
+            self.provider.load_from_path(
+                pkg_resources.resource_filename(__name__, 'qubes-menu-dark.css')
+            )
+        else:
+            self.provider.load_from_path(
+                pkg_resources.resource_filename(__name__, 'qubes-menu-light.css')
+            )
 
         Gtk.StyleContext.add_provider_for_screen(
-            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            self.screen, self.provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
         self.builder = Gtk.Builder()
@@ -194,9 +225,19 @@ class AppMenu(Gtk.Application):
             pkg_resources.resource_filename(__name__, 'qubes-menu.glade')
         )
 
+
         self.main_window = self.builder.get_object('main_window')
         self.main_notebook = self.builder.get_object('main_notebook')
         self.power_button = self.builder.get_object('power_button')
+        self.light_mode_button = self.builder.get_object('light_mode_toggle')
+
+        self.light_mode_button.connect('clicked', self._toggle_light_mode)
+        self.light_mode_button.connect('enter-notify-event', self._enter_light_mode_button)
+        self.light_mode_button.connect('leave-notify-event', self._leave_light_mode_button)
+
+        self.light_mode_button.set_image(SUN_WHITE_ICON)\
+            if self.light_mode == constants.DARK\
+                 else self.light_mode_button.set_image(MOON_BLACK_ICON)
         
         self.desktop_file_manager = DesktopFileManager(self.qapp)
         
@@ -230,6 +271,45 @@ class AppMenu(Gtk.Application):
         """
         if page_num == 0 and self.app_page:
             self.app_page.initialize_state()
+
+    def _toggle_light_mode(self, *args, **kwargs):
+        Gtk.StyleContext.remove_provider_for_screen(self.screen, self.provider)
+
+        if self.light_mode == constants.DARK:
+            self.light_mode_button.set_image(MOON_BLACK_ICON)
+            
+            self.provider.load_from_path(
+                    pkg_resources.resource_filename(__name__, 'qubes-menu-light.css')
+            )
+
+            self.light_mode = constants.LIGHT
+            write_settings(constants.LIGHT_MODE, constants.LIGHT)
+
+        else:
+            self.light_mode_button.set_image(SUN_WHITE_ICON)
+
+            self.provider.load_from_path(
+                    pkg_resources.resource_filename(__name__, 'qubes-menu-dark.css')
+            )
+
+            self.light_mode = constants.DARK
+            write_settings(constants.LIGHT_MODE, constants.DARK)
+
+        Gtk.StyleContext.add_provider_for_screen(
+            self.screen, self.provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+    def _enter_light_mode_button(self, *args, **kwargs):
+        current_img = self.light_mode_button.get_image()
+
+        if (current_img == SUN_WHITE_ICON):
+            self.light_mode_button.set_image(SUN_BLACK_ICON)
+
+    def _leave_light_mode_button(self, *args, **kwargs):
+        current_img = self.light_mode_button.get_image()
+
+        if (current_img == SUN_BLACK_ICON):
+            self.light_mode_button.set_image(SUN_WHITE_ICON)
 
     def hide_menu(self):
         """

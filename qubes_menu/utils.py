@@ -71,15 +71,19 @@ def read_settings(key):
     try:
         config.read(constants.SETTINGS_PATH)
         return config[constants.SETTINGS][key]
-    except (TypeError, GLib.Error):
+    except:
         logger.info('Failed to open the settings file')
         
 
 def write_settings(key, value):
     config = configparser.ConfigParser()
-    config[constants.SETTINGS] = {
-        key: value
-    }
+    try: 
+        config.read(constants.SETTINGS_PATH)
+    except:
+        logger.info('Failed to open the settings file')
+        return
+
+    config.set(constants.SETTINGS, key, value)
 
     with open(constants.SETTINGS_PATH, 'w') as file:
         config.write(file)

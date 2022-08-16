@@ -67,10 +67,7 @@ class VMRow(HoverListBox):
         style_context: Gtk.StyleContext = self.get_style_context()
         if self.vm_entry.is_dispvm_template:
             style_context.add_class('dvm_template_entry')
-        elif self.vm_entry.vm_klass == 'DispVM':
-            style_context.add_class('dispvm_entry')
         else:
-            style_context.remove_class('dispvm_entry')
             style_context.remove_class('dvm_template_entry')
 
         if self.vm_entry.power_state == 'Running':
