@@ -9,6 +9,7 @@
 
 #main_notebook {
     background: @left-background;
+    border-width: 0px;
 }
 
 .left_pane  {

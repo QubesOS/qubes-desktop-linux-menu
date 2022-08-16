@@ -2,7 +2,7 @@
 <svg width="29px" height="12px" viewBox="0 0 29 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>VPN</title>
     <defs>
-        <text id="text-1" font-family="Verdana-Bold, Verdana" font-size="10" font-weight="bold" letter-spacing="0.909090909" fill="#A4A4A4">
+        <text id="text-1" font-family="Verdana-Bold, Verdana" font-size="10" font-weight="bold" letter-spacing="0.909090909" fill="#999999">
             <tspan x="146" y="23">VPN</tspan>
         </text>
         <filter x="-11.1%" y="-25.0%" width="122.2%" height="150.0%" filterUnits="objectBoundingBox" id="filter-2">
@@ -12,7 +12,7 @@
         </filter>
     </defs>
     <g id="PROTOTYPE-—-Jackie" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" fill-opacity="1">
-        <g id="menuuus---colorful" transform="translate(-885.000000, -1448.000000)" fill="#b9b9b9">
+        <g id="menuuus---colorful" transform="translate(-885.000000, -1448.000000)" fill="#999999">
             <g id="••-securecomms-Dropdown" transform="translate(741.000000, 1034.000000)">
                 <g id="VPN" transform="translate(0.000000, 401.000000)">
                     <use filter="url(#filter-2)" xlink:href="#text-1"></use>
