@@ -27,6 +27,9 @@ install-icons:
 	cp icons/qappmenu-list-black.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-list-black.svg
 	cp icons/qappmenu-grid-white.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-grid-white.svg
 	cp icons/qappmenu-grid-black.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-grid-black.svg
+	cp icons/qappmenu-sun-black.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-sun-black.svg
+	cp icons/qappmenu-sun-white.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-sun-white.svg
+	cp icons/qappmenu-moon-black.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-moon-black.svg
 
 install-autostart:
 	mkdir -p $(DESTDIR)/etc/xdg/autostart

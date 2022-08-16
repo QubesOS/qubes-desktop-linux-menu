@@ -51,6 +51,10 @@ SETTINGS = 'Settings'
 LIST = 'list'
 GRID = 'grid'
 
+LIGHT_MODE = 'lightmode'
+DARK = 'dark'
+LIGHT = 'light'
+
 # Icons
 BOOKMARK_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-black.svg"
 BOOKMARK_FILL_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-bookmark-fill-black.svg"
@@ -63,3 +67,9 @@ LIST_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-list-black.svg"
 
 GRID_WHITE = "/usr/share/icons/hicolor/scalable/apps/qappmenu-grid-white.svg"
 GRID_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-grid-black.svg"
+
+SUN_WHITE = "/usr/share/icons/hicolor/scalable/apps/qappmenu-sun-white.svg"
+SUN_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-sun-black.svg"
+
+MOON_WHITE = "/usr/share/icons/hicolor/scalable/apps/qappmenu-moon-white.svg"
+MOON_BLACK = "/usr/share/icons/hicolor/scalable/apps/qappmenu-moon-black.svg"

@@ -396,7 +396,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="light_mode_toggle">
+              <object class="GtkButton" id="fav_layout_toggle1">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
