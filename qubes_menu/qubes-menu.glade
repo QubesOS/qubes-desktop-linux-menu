@@ -20,228 +20,6 @@
           <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <child>
-              <object class="GtkBox" id="vm_left_pane">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkBox" id="vm_buttons">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <child>
-                      <object class="GtkRadioButton" id="apps_toggle">
-                        <property name="label" translatable="yes">APPS</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">False</property>
-                        <property name="active">True</property>
-                        <property name="draw-indicator">False</property>
-                        <style>
-                          <class name="vm_buttons"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkRadioButton" id="service_toggle">
-                        <property name="label" translatable="yes">SERVICES</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">False</property>
-                        <property name="draw-indicator">False</property>
-                        <property name="group">apps_toggle</property>
-                        <style>
-                          <class name="vm_buttons"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkRadioButton" id="tools_toggle">
-                        <property name="label" translatable="yes">TOOLS</property>
-                        <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">False</property>
-                        <property name="draw-indicator">False</property>
-                        <property name="group">apps_toggle</property>
-                        <style>
-                          <class name="vm_buttons"/>
-                        </style>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <style>
-                      <class name="vm_list"/>
-                    </style>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hscrollbar-policy">never</property>
-                    <property name="shadow-type">in</property>
-                    <child>
-                      <object class="GtkViewport">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkListBox" id="vm_list">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <style>
-                              <class name="left_pane"/>
-                            </style>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <style>
-                      <class name="left_pane"/>
-                    </style>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <style>
-                  <class name="left_pane"/>
-                  <class name="toplevel_left_pane"/>
-                </style>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkBox" id="vm_right_pane">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkListBox" id="settings_list">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <style>
-                      <class name="right_pane"/>
-                    </style>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSeparator" id="separator_top">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkScrolledWindow">
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="vexpand">True</property>
-                    <property name="hscrollbar-policy">never</property>
-                    <property name="shadow-type">in</property>
-                    <child>
-                      <object class="GtkViewport">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <child>
-                          <object class="GtkListBox" id="app_list">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="hexpand">True</property>
-                            <property name="vexpand">True</property>
-                            <style>
-                              <class name="right_pane"/>
-                            </style>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <style>
-                      <class name="right_pane"/>
-                    </style>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSeparator" id="separator_bottom">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-                <style>
-                  <class name="right_pane"/>
-                </style>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-          </object>
-        </child>
-        <child type="tab">
-          <object class="GtkImage">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="margin-start">15</property>
-            <property name="margin-end">15</property>
-            <property name="margin-top">15</property>
-            <property name="margin-bottom">15</property>
-            <property name="icon-name">qappmenu-qube</property>
-            <property name="icon_size">5</property>
-          </object>
-          <packing>
-            <property name="tab-fill">False</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
             <property name="orientation">vertical</property>
             <child>
               <object class="GtkScrolledWindow">
@@ -264,7 +42,7 @@
                           <object class="GtkListBox" id="fav_list_box">
                             <property name="can-focus">False</property>
                             <style>
-                              <class name="left_pane"/>
+                              <class name="apps_pane"/>
                             </style>
                           </object>
                           <packing>
@@ -282,7 +60,7 @@
                             <property name="min-children-per-line">3</property>
                             <property name="max-children-per-line">3</property>
                             <style>
-                              <class name="left_pane"/>
+                              <class name="apps_pane"/>
                             </style>
                           </object>
                           <packing>
@@ -296,7 +74,7 @@
                   </object>
                 </child>
                 <style>
-                  <class name="left_pane"/>
+                  <class name="apps_pane"/>
                 </style>
               </object>
               <packing>
@@ -338,12 +116,9 @@
               </packing>
             </child>
             <style>
-              <class name="left_pane"/>
+              <class name="apps_pane"/>
             </style>
           </object>
-          <packing>
-            <property name="position">1</property>
-          </packing>
         </child>
         <child type="tab">
           <object class="GtkImage">
@@ -357,7 +132,6 @@
             <property name="icon_size">5</property>
           </object>
           <packing>
-            <property name="position">1</property>
             <property name="tab-fill">False</property>
           </packing>
         </child>
@@ -376,6 +150,8 @@
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="double-buffered">False</property>
+                    <property name="margin-left">15</property>
+                    <property name="margin-right">15</property>
                     <property name="margin-start">15</property>
                     <property name="margin-end">15</property>
                     <property name="margin-top">15</property>
