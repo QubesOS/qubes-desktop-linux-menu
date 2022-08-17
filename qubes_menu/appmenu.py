@@ -16,12 +16,13 @@ import logging
 import qubesadmin
 import qubesadmin.events
 
+from .notebook_pages import NotebookPages
 from .utils import load_icon, read_settings, write_settings
 from .application_page import AppPage
 from .desktop_file_manager import DesktopFileManager
 from .favorites_page import FavoritesPage
 from .custom_widgets import SelfAwareMenu
-from .vm_manager import VMManager
+from .vm_manager import VMEntry, VMManager
 from . import constants
 
 import gi
@@ -83,6 +84,7 @@ class AppMenu(Gtk.Application):
         self.app_page: Optional[AppPage] = None
 
         self.favorites_page: Optional[FavoritesPage] = None
+        self.notebook_pages: Optional[NotebookPages] = None
 
         self.power_button: Optional[Gtk.Button] = None
         self.light_mode_button: Optional[Gtk.Button] = None
@@ -192,8 +194,6 @@ class AppMenu(Gtk.Application):
         """
         if self.main_notebook:
             self.main_notebook.set_current_page(self.initial_page)
-        if self.app_page:
-            self.app_page.initialize_state(None)
 
     def perform_setup(self):
         """
@@ -243,16 +243,16 @@ class AppMenu(Gtk.Application):
         
         self.vm_manager = VMManager(self.qapp, self.dispatcher)
 
-        self.app_page = AppPage(
-            self.vm_manager, self.builder, self.desktop_file_manager, self.dispatcher
+        self.notebook_pages = NotebookPages(
+            self.vm_manager, self.main_notebook, self.desktop_file_manager, self.dispatcher
         )
-        
+
         self.favorites_page = FavoritesPage(
             self.qapp, self.builder, self.desktop_file_manager, self.dispatcher, self.vm_manager
         )
 
+
         self.add_window(self.main_window)
-        
 
         self.main_window.set_events(Gdk.EventMask.FOCUS_CHANGE_MASK)
         self.main_window.connect('focus-out-event', self._focus_out)
@@ -263,7 +263,7 @@ class AppMenu(Gtk.Application):
         self.power_button.connect('clicked', self._do_power_button)
         
         self.connect('shutdown', self.do_shutdown)
-
+            
     def _handle_page_switch(self, _widget, _page, page_num):
         """
         On page switch some things need to happen, mostly cleaning any old
