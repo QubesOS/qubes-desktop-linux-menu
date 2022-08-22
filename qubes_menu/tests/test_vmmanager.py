@@ -24,7 +24,7 @@ import qubesadmin.events
 from qubesadmin.tests import TestVM
 from qubesadmin.label import Label
 from ..vm_manager import VMManager
-from ..application_page import VMTypeToggle
+from ..vm_page import VMTypeToggle
 
 
 @pytest.mark.asyncio

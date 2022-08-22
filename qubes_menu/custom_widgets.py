@@ -45,62 +45,6 @@ class LimitedWidthLabel(Gtk.Label):
         self.set_xalign(0)
         self.set_ellipsize(Pango.EllipsizeMode.END)
 
-
-class HoverListBox(Gtk.ListBoxRow):
-    """
-    Gtk.ListBoxRow, but selects itself on hover (after a timeout specified in
-    constants.py)
-    """
-    def __init__(self):
-        super().__init__()
-        self.mouse = False
-        self.event_box = Gtk.EventBox()
-        self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-
-        self.event_box.add(self.main_box)
-        self.add(self.event_box)
-
-        self.event_box.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK)
-        self.event_box.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK)
-        self.event_box.connect('enter-notify-event', self._enter_event)
-        self.event_box.connect('leave-notify-event', self._leave_event)
-
-    def _enter_event(self, *_args):
-        self.mouse = True
-        GLib.timeout_add(constants.HOVER_TIMEOUT, self._select_me)
-
-    def _leave_event(self, *_args):
-        self.mouse = False
-
-    def _select_me(self, *_args):
-        if not self.mouse:
-            return False
-        self.activate()
-        self.get_parent().select_row(self)
-        return False
-
-
-class SelfAwareMenu(Gtk.Menu):
-    """
-    Gtk.Menu, but the class has a counter of number of currently opened menus.
-    """
-    OPEN_MENUS = 0
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.get_style_context().add_class('right_menu')
-        self.connect('realize', self._add_to_open)
-        self.connect('deactivate', self._remove_from_open)
-
-    @staticmethod
-    def _add_to_open(*_args):
-        SelfAwareMenu.OPEN_MENUS += 1
-
-    @staticmethod
-    def _remove_from_open(*_args):
-        SelfAwareMenu.OPEN_MENUS -= 1
-
-
 class NetworkIndicator(Gtk.Box):
     """
     Network Indicator Gtk.Box - changes appearance when set_network_state is
@@ -133,7 +77,6 @@ class NetworkIndicator(Gtk.Box):
         self.set_visible(True)
         self.network_on.set_visible(state)
         self.network_off.set_visible(not state)
-
 
 class SettingsEntry(Gtk.ListBoxRow):
     """
