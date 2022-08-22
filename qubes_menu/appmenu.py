@@ -18,11 +18,9 @@ import qubesadmin.events
 
 from .notebook_pages import NotebookPages
 from .utils import load_icon, read_settings, write_settings
-from .application_page import AppPage
 from .desktop_file_manager import DesktopFileManager
 from .favorites_page import FavoritesPage
-from .custom_widgets import SelfAwareMenu
-from .vm_manager import VMEntry, VMManager
+from .vm_manager import VMManager
 from . import constants
 
 import gi
@@ -81,7 +79,6 @@ class AppMenu(Gtk.Application):
 
         self.desktop_file_manager: Optional[DesktopFileManager] = None
         self.vm_manager: Optional[VMManager] = None
-        self.app_page: Optional[AppPage] = None
 
         self.favorites_page: Optional[FavoritesPage] = None
         self.notebook_pages: Optional[NotebookPages] = None
@@ -329,10 +326,9 @@ class AppMenu(Gtk.Application):
 
     def _focus_out(self, _widget, _event: Gdk.EventFocus):
         """
-        Hide the menu on focus out, unless a right-click menu is open
+        Hide the menu on focus out
         """
-        if SelfAwareMenu.OPEN_MENUS <= 0:
-            self.hide_menu()
+        self.hide_menu()
             
     def exit_app(self):
         """

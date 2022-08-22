@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 """
-Application page and related widgets and logic
+VM notebook page and related widgets and logic
 """
 from lib2to3.pytree import Base
 import subprocess
@@ -29,10 +29,9 @@ from qubesadmin.vm import QubesVM
 
 from . import constants
 from .desktop_file_manager import DesktopFileManager, ApplicationInfo
-from .custom_widgets import LimitedWidthLabel, NetworkIndicator, \
-    SettingsEntry, HoverListBox
+from .custom_widgets import LimitedWidthLabel, NetworkIndicator, SettingsEntry
 from .app_widgets import AppEntry, BaseAppEntry
-from .vm_manager import VMEntry, VMManager
+from .vm_manager import VMEntry
 from .utils import load_icon
 
 import gi
@@ -147,9 +146,9 @@ class ControlList(Gtk.ListBox):
             row.update_state(state)
 
 
-class AppPage(Gtk.Box):
+class VMPage(Gtk.Box):
     """
-    Helper class for managing the entirety of Applications menu page.
+    Helper class for managing the entirety of vm notebook page.
     """
     def __init__(self,
                  vm_entry,
@@ -215,7 +214,36 @@ class AppPage(Gtk.Box):
         self.pack_start(self.control_list, False, True, 0)
 
         self.show_all()
-        
+
+    def update_contents(self,
+                    update_power_state=False,
+                    update_label=False,
+                    update_has_network=False,
+                    update_type=False):
+        """
+        Update own contents (or related widgets, if applicable) based on state
+        change.
+        :param update_power_state: whether to update if VM is running or not
+        :param update_label: whether label (vm icon) should be updated
+        :param update_has_network: whether VM networking state should be
+        updated
+        :param update_type: whether VM type should be updated
+        :return:
+        """
+        if update_label:
+            icon_vm = load_icon(self.vm_entry.vm_icon_name)
+            # self.icon_img.set_from_pixbuf(icon_vm)
+        if update_type or update_power_state:
+            if self.get_parent():
+                self.get_parent().invalidate_sort()
+                self.get_parent().invalidate_filter()
+                self.get_parent().select_row(None)
+        if update_has_network:
+            if self.is_selected() and self.get_parent():
+                self.get_parent().select_row(None)
+                self.get_parent().select_row(self)
+        self.main_box.show_all()
+
     def _update_fav_btn(self, vm, event, feature, *_args, **_kwargs):
         """
         Update the favorite buttons in the app page

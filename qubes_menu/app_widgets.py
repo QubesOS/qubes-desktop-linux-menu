@@ -25,7 +25,7 @@ import logging
 from typing import Optional
 
 
-from .custom_widgets import LimitedWidthLabel, SelfAwareMenu
+from .custom_widgets import LimitedWidthLabel
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
 from .utils import load_icon
@@ -72,24 +72,9 @@ class AppEntry(Gtk.ListBoxRow):
         super().__init__(**properties)
         self.app_info = app_info
 
-        self.menu = SelfAwareMenu()
-
         self.event_box = Gtk.EventBox()
         self.add(self.event_box)
         self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
-
-    def show_menu(self, _widget, event):
-        """
-        Display own right click menu.
-        """
-        if event.button == 3:
-            self.menu.popup_at_pointer(None)  # None means current event
-
-    def update_contents(self):
-        """
-        Update any contents. To be called on changes in related .desktop
-        file.
-        """
 
     def run_app(self, vm):
         """
@@ -162,30 +147,6 @@ class BaseAppEntry(AppEntry):
                 return True
         return False
 
-    def _setup_menu(self):
-        """
-        Setup right click menu: currently only one option, add to favorites.
-        """
-        self.add_menu_item = Gtk.CheckMenuItem(label='Add to favorites')
-        self.add_menu_item.connect('activate', self._add_to_favorites)
-        self.menu.add(self.add_menu_item)
-        self.menu.show_all()
-
-    def show_menu(self, widget, event):
-        """
-        Show right click menu. For ephemeral VMs (class DispVM with a template
-        set) the menu is inactive. If the current App is already added to
-        favorites, the "add to favorites" option is checked and inactive.
-        """
-        if getattr(self.get_parent(), 'ephemeral_vm', False):
-            self.add_menu_item.set_active(False)
-            self.add_menu_item.set_sensitive(False)
-        else:
-            is_favorite = self._has_favorite_sibling()
-            self.add_menu_item.set_active(is_favorite)
-            self.add_menu_item.set_sensitive(not is_favorite)
-        super().show_menu(widget, event)
-
     def update_contents(self):
         """Update icon and app name."""
         self.icon.set_from_pixbuf(
@@ -251,39 +212,6 @@ class BaseAppEntry(AppEntry):
         # The app is in favorites
         self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
 
-
-class VMIcon(Gtk.Image):
-    """Helper class for displaying and auto-updating"""
-    def __init__(self, vm_entry: Optional[VMEntry]):
-        super().__init__()
-        self.vm_entry = vm_entry
-        if self.vm_entry:
-            self.vm_entry.entries.append(self)
-        self.update_contents(update_label=True)
-
-    def update_contents(self,
-                        update_power_state=False,
-                        update_label=False,
-                        update_has_network=False,
-                        update_type=False):
-        # pylint: disable=unused-argument
-        """
-        Update own contents (or related widgets, if applicable) based on state
-        change.
-        :param update_power_state: whether to update if VM is running or not
-        :param update_label: whether label (vm icon) should be updated
-        :param update_has_network: whether VM networking state should be
-        updated
-        :param update_type: whether VM type should be updated
-        :return:
-        """
-        if update_label and self.vm_entry:
-            vm_icon = load_icon(self.vm_entry.vm_icon_name,
-                                Gtk.IconSize.SMALL_TOOLBAR)
-            self.set_from_pixbuf(vm_icon)
-            self.show_all()
-
-
 class FavoritesAppEntry(AppEntry):
     """
     Application Gtk.ListBoxRow for use in Favorites page.
@@ -303,7 +231,13 @@ class FavoritesAppEntry(AppEntry):
         self.app_label = Gtk.Label()
         self.vm_label = Gtk.Label()
         self.app_icon = Gtk.Image()
-        self.vm_icon = VMIcon(vm_manager.load_vm_from_name(str(app_info.vm)))
+        self.vm_icon = Gtk.Image()
+        self.vm_icon.set_from_pixbuf(
+            load_icon(
+                vm_manager.vms(str(app_info.vm)),
+                Gtk.IconSize.SMALL_TOOLBAR
+            )
+        )
 
         self.icons = IconsLoader()
 
