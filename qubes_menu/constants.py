@@ -35,6 +35,11 @@ STATE_DICTIONARY = {
     'domain-shutdown-failed': 'Running'
 }
 
+RUNNING   = 'Running'
+HALTED    = 'Halted'
+TRANSIENT = 'Transient'
+PAUSED    = 'Paused'
+
 FAVORITES_FEATURE = 'menu-favorites'
 DISPOSABLE_PREFIX = '@disp:'
 

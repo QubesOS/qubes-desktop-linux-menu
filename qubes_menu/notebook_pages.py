@@ -17,7 +17,9 @@ class NotebookPages():
                 dispatcher: qubesadmin.events.EventsDispatcher):
 
         self.vm_manager = vm_manager
+
         self.notebook = notebook
+        self.notebook.connect('switch-page', self._handle_page_switch)
 
         self.desktop_file_manager = desktop_file_manager
         self.dispatcher = dispatcher
@@ -45,3 +47,6 @@ class NotebookPages():
 
             self.notebook.append_page(vm_page, notebook_page_label)
             notebook_page_label.show_all()
+
+    def _handle_page_switch(self, _widget, page: VMPage, page_num):
+        pass
