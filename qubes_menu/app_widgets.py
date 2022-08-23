@@ -223,10 +223,6 @@ class FavoritesAppEntry(AppEntry):
                  **properties):
         super().__init__(app_info, **properties)
         self.get_style_context().add_class('favorite_entry')
-        self.remove_item = Gtk.MenuItem(label='Remove from favorites')
-        self.remove_item.connect('activate', self._remove_from_favorites)
-        self.menu.add(self.remove_item)
-        self.menu.show_all()
 
         self.app_label = Gtk.Label()
         self.vm_label = Gtk.Label()
@@ -234,7 +230,7 @@ class FavoritesAppEntry(AppEntry):
         self.vm_icon = Gtk.Image()
         self.vm_icon.set_from_pixbuf(
             load_icon(
-                vm_manager.vms(str(app_info.vm)),
+                vm_manager.vms[str(app_info.vm)].vm_icon_name,
                 Gtk.IconSize.SMALL_TOOLBAR
             )
         )

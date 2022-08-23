@@ -241,7 +241,7 @@ class AppMenu(Gtk.Application):
         self.vm_manager = VMManager(self.qapp, self.dispatcher)
 
         self.notebook_pages = NotebookPages(
-            self.vm_manager, self.main_notebook, self.desktop_file_manager, self.dispatcher
+            self.vm_manager, self.main_notebook, self.desktop_file_manager, self.dispatcher, self.main_window
         )
 
         self.favorites_page = FavoritesPage(
@@ -254,20 +254,10 @@ class AppMenu(Gtk.Application):
         self.main_window.set_events(Gdk.EventMask.FOCUS_CHANGE_MASK)
         self.main_window.connect('focus-out-event', self._focus_out)
         self.main_window.connect('key_press_event', self._key_press)
-        
-        self.main_notebook.connect('switch-page', self._handle_page_switch)
-        
+                
         self.power_button.connect('clicked', self._do_power_button)
         
         self.connect('shutdown', self.do_shutdown)
-            
-    def _handle_page_switch(self, _widget, _page, page_num):
-        """
-        On page switch some things need to happen, mostly cleaning any old
-        selections/menu options highlighted.
-        """
-        if page_num == 0 and self.app_page:
-            self.app_page.initialize_state()
 
     def _toggle_light_mode(self, *args, **kwargs):
         Gtk.StyleContext.remove_provider_for_screen(self.screen, self.provider)

@@ -52,7 +52,7 @@ class VMEntry:
 
         self.vm_page = None
 
-    def update_entries(self, update_power_state=False,
+    def update_entries(self, vm_power_state=None,
                        update_label=False,
                        update_has_network=False, update_type=False):
         """
@@ -64,7 +64,7 @@ class VMEntry:
         """
         if self.vm_page:
             self.vm_page.update_contents(
-                update_power_state, update_label,
+                vm_power_state, update_label,
                 update_has_network, update_type
             )
 
@@ -79,7 +79,7 @@ class VMEntry:
     @power_state.setter
     def power_state(self, new_value):
         self._power_state = new_value
-        self.update_entries(update_power_state=True)
+        self.update_entries(vm_power_state=new_value)
 
     @property
     def vm_icon_name(self):
@@ -153,9 +153,7 @@ class VMManager:
             vm: QubesVM = self.qapp.domains[vm_name]
         except KeyError:
             return None
-        
-        # DONE: DON't LOAD TemplateVM VMs 
-        if vm.klass == 'AdminVM' or vm.klass == 'TemplateVM' or vm.features.get('internal', False):
+        if vm.klass == 'AdminVM' or vm.features.get('internal', False):
             return None
 
         return self._add_vm(vm)

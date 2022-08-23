@@ -167,9 +167,12 @@ class VMPage(Gtk.Box):
         self.vm_apps = dict()
         
         self.settings_list: Gtk.ListBox = Gtk.ListBox()
+        self.settings_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.settings_list.get_style_context().add_class('apps_pane')
         self.settings_list.add(SettingsEntry())
         self.settings_list.connect('row-activated', self._app_clicked)
+
+        self.window_stack = Gtk.Stack()
 
         self.scrolled_window: Gtk.ScrolledWindow = Gtk.ScrolledWindow()
         self.scrolled_window.get_style_context().add_class('apps_pane')
@@ -179,6 +182,7 @@ class VMPage(Gtk.Box):
         self.scrolled_window.set_min_content_width(410)
         
         self.app_list: Gtk.ListBox = Gtk.ListBox()
+        self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.app_list.get_style_context().add_class('apps_pane')
         self.app_list.connect('row-activated', self._app_clicked)
         self.app_list.set_sort_func(
@@ -193,7 +197,11 @@ class VMPage(Gtk.Box):
         self.network_indicator = NetworkIndicator()
         self.network_indicator.set_network_state(self.vm_entry.has_network)
 
+        self.spinner = Gtk.Spinner()
+        self.spinner.hide()
+
         self.control_list = ControlList(self)
+        self.control_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.control_list.connect('row-activated', self._app_clicked)
         self.control_list.update_visibility(self.vm_entry.power_state)
 
@@ -206,17 +214,21 @@ class VMPage(Gtk.Box):
         self.desktop_file_manager = desktop_file_manager
         self.desktop_file_manager.register_callback(self._app_info_callback)
 
+        self.window_stack.add_named(self.scrolled_window, 'APPS_PAGE')
+        self.window_stack.add_named(self.spinner, 'SPINNER_PAGE')
+        self.window_stack.set_visible_child(self.scrolled_window)
+
         self.pack_start(self.network_indicator, False, False, 0)
         self.pack_start(self.settings_list, False, True, 0)
         self.pack_start(self.separator_top, False, True, 0)
-        self.pack_start(self.scrolled_window, True, True, 0)
+        self.pack_start(self.window_stack, True, True, 0)
         self.pack_start(self.separator_bottom, False, True, 0)
         self.pack_start(self.control_list, False, True, 0)
 
         self.show_all()
 
     def update_contents(self,
-                    update_power_state=False,
+                    vm_power_state=None,
                     update_label=False,
                     update_has_network=False,
                     update_type=False):
@@ -231,18 +243,23 @@ class VMPage(Gtk.Box):
         :return:
         """
         if update_label:
-            icon_vm = load_icon(self.vm_entry.vm_icon_name)
-            # self.icon_img.set_from_pixbuf(icon_vm)
-        if update_type or update_power_state:
-            if self.get_parent():
-                self.get_parent().invalidate_sort()
-                self.get_parent().invalidate_filter()
-                self.get_parent().select_row(None)
+            pass
+
+        if vm_power_state:
+            if vm_power_state == constants.RUNNING:
+                self._set_right_visibility(True)
+            elif vm_power_state == constants.HALTED:
+                self._set_right_visibility(True)
+            elif vm_power_state == constants.TRANSIENT:
+                self._set_right_visibility(False)
+            elif vm_power_state == constants.PAUSED:
+                self._set_right_visibility(True)
+
+        if update_type:
+            pass
+
         if update_has_network:
-            if self.is_selected() and self.get_parent():
-                self.get_parent().select_row(None)
-                self.get_parent().select_row(self)
-        self.main_box.show_all()
+            self.network_indicator.set_network_state(self.vm_entry.has_network)
 
     def _update_fav_btn(self, vm, event, feature, *_args, **_kwargs):
         """
@@ -277,3 +294,31 @@ class VMPage(Gtk.Box):
                 self.app_list.add(entry)
                 self.app_list.show_all()
 
+
+    def _set_right_visibility(self, visibility: bool):
+        if not visibility:
+            self.control_list.hide()
+            self.settings_list.hide()
+            self.network_indicator.set_visible(False)
+            self.separator_top.hide()
+            self.separator_bottom.hide()
+
+            self.window_stack.set_visible_child(self.spinner)
+            self.spinner.start()
+        else:
+            self.network_indicator.set_network_state(self.vm_entry.has_network)
+            self.control_list.update_visibility(self.vm_entry.power_state)
+
+            self.control_list.select_row(None)
+            self.settings_list.select_row(None)
+            self.app_list.select_row(None)
+
+            self.control_list.show_all()
+            self.settings_list.show_all()
+            self.separator_top.show_all()
+            self.separator_bottom.show_all()
+
+            self.window_stack.set_visible_child(self.scrolled_window)
+            self.spinner.stop()
+
+        self.app_list.invalidate_filter()
