@@ -50,7 +50,7 @@ class VMEntry:
                                      getattr(self.vm.label, 'icon', None))
         self._power_state = self.vm.get_power_state()
 
-        self.vm_page = None
+        self.updater = None
 
     def update_entries(self, vm_power_state=None,
                        update_label=False,
@@ -62,8 +62,8 @@ class VMEntry:
         :param update_has_network: did networking state change?
         :param update_type: did type change?
         """
-        if self.vm_page:
-            self.vm_page.update_contents(
+        if self.updater:
+            self.updater(
                 vm_power_state, update_label,
                 update_has_network, update_type
             )

@@ -21,6 +21,8 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
+
+from .vm_manager import VMEntry
 from . import constants
 from .utils import load_icon
 
@@ -77,6 +79,51 @@ class NetworkIndicator(Gtk.Box):
         self.set_visible(True)
         self.network_on.set_visible(state)
         self.network_off.set_visible(not state)
+
+class ServiceVM(Gtk.ListBoxRow):
+    def __init__(self, vm_entry: VMEntry):
+        super().__init__()
+        self.get_style_context().add_class('service_vm_entry')
+
+        self.vm_entry = vm_entry
+
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        self.icon_img = Gtk.Image()
+        self.icon_img.set_from_pixbuf(
+            load_icon(
+                self.vm_entry.vm_icon_name,
+                Gtk.IconSize.DND
+            )
+        )
+        
+        self.main_box.pack_start(self.icon_img, False, False, 15)
+        self.main_box.pack_start(Gtk.Label(label=self.vm_entry.vm_name), False, False, 15)
+        
+        self.add(self.main_box)
+        self.show_all()
+
+    def update_contents(self,
+                    update_power_state=False,
+                    update_label=False,
+                    update_has_network=False,
+                    update_type=False):
+        """
+        Update own contents (or related widgets, if applicable) based on state
+        change.
+        :param update_power_state: whether to update if VM is running or not
+        :param update_label: whether label (vm icon) should be updated
+        :param update_has_network: whether VM networking state should be
+        updated
+        :param update_type: whether VM type should be updated
+        :return:
+        """
+        if update_label:
+            pass
+        if update_type or update_power_state:
+            pass
+        if update_has_network:
+            pass
 
 class SettingsEntry(Gtk.ListBoxRow):
     """

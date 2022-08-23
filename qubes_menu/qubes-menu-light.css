@@ -55,6 +55,14 @@
   background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
 }
 
+.service_vm_entry {
+  padding: 5px 0 5px 20px;
+}
+
+.service_vm_entry:hover, .service_vm_entry:focus {
+  background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
+}
+
 .bottom_toggles {
   background: @bottom-background;
 }
