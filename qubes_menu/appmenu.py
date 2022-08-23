@@ -83,6 +83,9 @@ class AppMenu(Gtk.Application):
         self.favorites_page: Optional[FavoritesPage] = None
         self.notebook_pages: Optional[NotebookPages] = None
 
+        self.service_vms_page: Optional[Gtk.Listbox] = None
+        self.qubes_settings_page: Optional[Gtk.ListBox] = None
+
         self.power_button: Optional[Gtk.Button] = None
         self.light_mode_button: Optional[Gtk.Button] = None
 
@@ -227,6 +230,8 @@ class AppMenu(Gtk.Application):
         self.main_notebook = self.builder.get_object('main_notebook')
         self.power_button = self.builder.get_object('power_button')
         self.light_mode_button = self.builder.get_object('light_mode_toggle')
+        self.service_vms_page = self.builder.get_object('service_vms_page')
+        self.qubes_settings_page = self.builder.get_object('qubes_settings_page')
 
         self.light_mode_button.connect('clicked', self._toggle_light_mode)
         self.light_mode_button.connect('enter-notify-event', self._enter_light_mode_button)
@@ -241,11 +246,20 @@ class AppMenu(Gtk.Application):
         self.vm_manager = VMManager(self.qapp, self.dispatcher)
 
         self.notebook_pages = NotebookPages(
-            self.vm_manager, self.main_notebook, self.desktop_file_manager, self.dispatcher
+            self.vm_manager, 
+            self.main_notebook, 
+            self.desktop_file_manager, 
+            self.dispatcher,
+            self.service_vms_page,
+            self.qubes_settings_page
         )
 
         self.favorites_page = FavoritesPage(
-            self.qapp, self.builder, self.desktop_file_manager, self.dispatcher, self.vm_manager
+            self.qapp, 
+            self.builder, 
+            self.desktop_file_manager, 
+            self.dispatcher, 
+            self.vm_manager
         )
 
 
