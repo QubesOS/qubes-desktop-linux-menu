@@ -241,7 +241,7 @@ class AppMenu(Gtk.Application):
         self.vm_manager = VMManager(self.qapp, self.dispatcher)
 
         self.notebook_pages = NotebookPages(
-            self.vm_manager, self.main_notebook, self.desktop_file_manager, self.dispatcher, self.main_window
+            self.vm_manager, self.main_notebook, self.desktop_file_manager, self.dispatcher
         )
 
         self.favorites_page = FavoritesPage(
