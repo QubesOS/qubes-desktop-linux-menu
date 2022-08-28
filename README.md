@@ -6,6 +6,22 @@ however the basic functionality from initial release design is done.
 
 If you would like to [leave feedback in a quick anonymous survey](https://survey.qubes-os.org/index.php?r=survey/index&sid=255277&lang=en), we are closely following what we learn and want to hear from folks! For bugs, however, please [file issues, here](https://github.com/QubesOS/qubes-issues).
 
+# mogh99 Development
+* ## Favorite Page Dark Mode
+![](readme_img/fav_dark_mode.png)
+
+* ## Favorite Page Light Mode
+![](readme_img/fav_light_mode.png)
+
+* ## Qube Page Dark Mode
+![](readme_img/vm_dark_mode.png)
+
+* ## Qube Page Light Mode
+![](readme_img/vm_light_mode.png)
+
+* ## Qube Loading (Start, Shutdown)
+![](readme_img/loading_vm.png)
+
 ## Features
 
 The menu consists of three panes: Applications, Favorites and System Tools.
