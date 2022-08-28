@@ -41,17 +41,17 @@ logger = logging.getLogger('qubes-appmenu')
 class IconsLoader:
     def __init__(self):
         self.BOOKMARK_BLACK = Gtk.Image.new_from_pixbuf(
-            load_icon(constants.BOOKMARK_BLACK, Gtk.IconSize.LARGE_TOOLBAR)
+            load_icon('qappmenu-bookmark-black', Gtk.IconSize.LARGE_TOOLBAR)
         )
         self.BOOKMARK_FILL_BLACK = Gtk.Image.new_from_pixbuf(
-            load_icon(constants.BOOKMARK_FILL_BLACK, Gtk.IconSize.LARGE_TOOLBAR)
+            load_icon('qappmenu-bookmark-fill-black', Gtk.IconSize.LARGE_TOOLBAR)
         )
 
         self.BOOKMARK_FILL_WHITE = Gtk.Image.new_from_pixbuf(
-            load_icon(constants.BOOKMARK_FILL_WHITE, Gtk.IconSize.LARGE_TOOLBAR)
+            load_icon('qappmenu-bookmark-fill-white', Gtk.IconSize.LARGE_TOOLBAR)
         )
         self.BOOKMARK_WHITE = Gtk.Image.new_from_pixbuf(
-            load_icon(constants.BOOKMARK_WHITE, Gtk.IconSize.LARGE_TOOLBAR)
+            load_icon('qappmenu-bookmark-white', Gtk.IconSize.LARGE_TOOLBAR)
         )
 
 class AppEntry(Gtk.ListBoxRow):

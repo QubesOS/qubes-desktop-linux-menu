@@ -34,19 +34,19 @@ gbulb.install()
 logger = logging.getLogger('qubes-appmenu')
 
 SUN_WHITE_ICON = Gtk.Image.new_from_pixbuf(
-    load_icon(constants.SUN_WHITE, Gtk.IconSize.DND)
+    load_icon('qappmenu-sun-white', Gtk.IconSize.DND)
 )
 
 SUN_BLACK_ICON = Gtk.Image.new_from_pixbuf(
-    load_icon(constants.SUN_BLACK, Gtk.IconSize.DND)
+    load_icon('qappmenu-sun-black', Gtk.IconSize.DND)
 )
 
 MOON_WHITE_ICON = Gtk.Image.new_from_pixbuf(
-    load_icon(constants.MOON_WHITE, Gtk.IconSize.DND)
+    load_icon('qappmenu-moon-white', Gtk.IconSize.DND)
 )
 
 MOON_BLACK_ICON = Gtk.Image.new_from_pixbuf(
-    load_icon(constants.MOON_BLACK, Gtk.IconSize.DND)
+    load_icon('qappmenu-moon-black', Gtk.IconSize.DND)
 )
 
 class AppMenu(Gtk.Application):

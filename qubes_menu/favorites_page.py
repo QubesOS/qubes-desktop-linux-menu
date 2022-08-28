@@ -37,19 +37,19 @@ from gi.repository import Gtk
 logger = logging.getLogger('qubes-appmenu')
 
 LIST_WHITE_ICON = Gtk.Image.new_from_pixbuf(
-    load_icon(constants.LIST_WHITE, Gtk.IconSize.DND)
+    load_icon('qappmenu-list-white', Gtk.IconSize.DND)
 )
     
 LIST_BLACK_ICON = Gtk.Image.new_from_pixbuf(
-    load_icon(constants.LIST_BLACK, Gtk.IconSize.DND)
+    load_icon('qappmenu-list-black', Gtk.IconSize.DND)
 )
 
 GRID_WHITE_ICON = Gtk.Image.new_from_pixbuf(
-    load_icon(constants.GRID_WHITE, Gtk.IconSize.DND)
+    load_icon('qappmenu-grid-white', Gtk.IconSize.DND)
 )
 
 GRID_BLACK_ICON = Gtk.Image.new_from_pixbuf(
-    load_icon(constants.GRID_BLACK, Gtk.IconSize.DND)
+    load_icon('qappmenu-grid-black', Gtk.IconSize.DND)
 )
 
 class FavoritesPage:
