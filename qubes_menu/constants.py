@@ -22,6 +22,8 @@ Qubes App Menu constants, like dictionary of events-to-vm-states, name of
 favorites feature etc.
 """
 
+import os
+
 STATE_DICTIONARY = {
     'domain-pre-start': 'Transient',
     'domain-start': 'Running',
@@ -33,6 +35,11 @@ STATE_DICTIONARY = {
     'domain-shutdown-failed': 'Running'
 }
 
+RUNNING   = 'Running'
+HALTED    = 'Halted'
+TRANSIENT = 'Transient'
+PAUSED    = 'Paused'
+
 FAVORITES_FEATURE = 'menu-favorites'
 DISPOSABLE_PREFIX = '@disp:'
 
@@ -40,4 +47,15 @@ RESTART_PARAM_LONG = 'restart'
 RESTART_PARAM_SHORT = 'r'
 
 # Timeout for activation change when hovering over a menu item, in microseconds
-HOVER_TIMEOUT = 20
+HOVER_TIMEOUT = 0
+
+SETTINGS_PATH = os.path.join(os.getenv('HOME'), '.config/qappmenu-settings.ini')
+
+FAVORITE_APPS_LAYOUT = 'favoriteappslayout'
+SETTINGS = 'Settings'
+LIST = 'list'
+GRID = 'grid'
+
+LIGHT_MODE = 'lightmode'
+DARK = 'dark'
+LIGHT = 'light'

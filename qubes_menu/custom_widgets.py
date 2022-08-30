@@ -21,6 +21,8 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
+
+from .vm_manager import VMEntry
 from . import constants
 from .utils import load_icon
 
@@ -44,62 +46,6 @@ class LimitedWidthLabel(Gtk.Label):
         self.set_width_chars(35)
         self.set_xalign(0)
         self.set_ellipsize(Pango.EllipsizeMode.END)
-
-
-class HoverListBox(Gtk.ListBoxRow):
-    """
-    Gtk.ListBoxRow, but selects itself on hover (after a timeout specified in
-    constants.py)
-    """
-    def __init__(self):
-        super().__init__()
-        self.mouse = False
-        self.event_box = Gtk.EventBox()
-        self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-
-        self.event_box.add(self.main_box)
-        self.add(self.event_box)
-
-        self.event_box.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK)
-        self.event_box.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK)
-        self.event_box.connect('enter-notify-event', self._enter_event)
-        self.event_box.connect('leave-notify-event', self._leave_event)
-
-    def _enter_event(self, *_args):
-        self.mouse = True
-        GLib.timeout_add(constants.HOVER_TIMEOUT, self._select_me)
-
-    def _leave_event(self, *_args):
-        self.mouse = False
-
-    def _select_me(self, *_args):
-        if not self.mouse:
-            return False
-        self.activate()
-        self.get_parent().select_row(self)
-        return False
-
-
-class SelfAwareMenu(Gtk.Menu):
-    """
-    Gtk.Menu, but the class has a counter of number of currently opened menus.
-    """
-    OPEN_MENUS = 0
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.get_style_context().add_class('right_menu')
-        self.connect('realize', self._add_to_open)
-        self.connect('deactivate', self._remove_from_open)
-
-    @staticmethod
-    def _add_to_open(*_args):
-        SelfAwareMenu.OPEN_MENUS += 1
-
-    @staticmethod
-    def _remove_from_open(*_args):
-        SelfAwareMenu.OPEN_MENUS -= 1
-
 
 class NetworkIndicator(Gtk.Box):
     """
@@ -134,6 +80,50 @@ class NetworkIndicator(Gtk.Box):
         self.network_on.set_visible(state)
         self.network_off.set_visible(not state)
 
+class ServiceVM(Gtk.ListBoxRow):
+    def __init__(self, vm_entry: VMEntry):
+        super().__init__()
+        self.get_style_context().add_class('service_vm_entry')
+
+        self.vm_entry = vm_entry
+
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        self.icon_img = Gtk.Image()
+        self.icon_img.set_from_pixbuf(
+            load_icon(
+                self.vm_entry.vm_icon_name,
+                Gtk.IconSize.DND
+            )
+        )
+        
+        self.main_box.pack_start(self.icon_img, False, False, 15)
+        self.main_box.pack_start(Gtk.Label(label=self.vm_entry.vm_name), False, False, 15)
+        
+        self.add(self.main_box)
+        self.show_all()
+
+    def update_contents(self,
+                    update_power_state=False,
+                    update_label=False,
+                    update_has_network=False,
+                    update_type=False):
+        """
+        Update own contents (or related widgets, if applicable) based on state
+        change.
+        :param update_power_state: whether to update if VM is running or not
+        :param update_label: whether label (vm icon) should be updated
+        :param update_has_network: whether VM networking state should be
+        updated
+        :param update_type: whether VM type should be updated
+        :return:
+        """
+        if update_label:
+            pass
+        if update_type or update_power_state:
+            pass
+        if update_has_network:
+            pass
 
 class SettingsEntry(Gtk.ListBoxRow):
     """

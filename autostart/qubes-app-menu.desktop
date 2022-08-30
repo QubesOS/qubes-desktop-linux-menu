@@ -6,4 +6,3 @@ Terminal=false
 Name=Qubes Application Menu
 GenericName=Qubes Application Menu
 StartupNotify=false
-Hidden=True

@@ -1,13 +1,13 @@
-@define-color highlight-blue-1 #4488df;
-@define-color highlight-blue-2 #326fbe;
-@define-color left-background #2e2e2e;
+@define-color highlight-blue-1 #7ba8e3;
+@define-color highlight-blue-2 #668bba;
+@define-color left-background #F5F5F5;
 
-@define-color apps-background #3e3e3e;
+@define-color apps-background #F5F5F5;
 
-@define-color outer-background #232323;
-@define-color bottom-background #232323;
-@define-color seperator-color #232323;
-@define-color text-color #e4e3e3;
+@define-color outer-background #E0E0E0;
+@define-color bottom-background #E0E0E0;
+@define-color seperator-color #9E9E9E;
+@define-color text-color #303030;
 
 #main_notebook {
     background: @left-background;
@@ -95,7 +95,7 @@
 
 undershoot.bottom {
   background-image: linear-gradient(to bottom, @bg-color 0%, @highlight-blue-2);
-  padding-bottom: 1px;
+  padding-bottom: 1px; 
 }
 
 undershoot.top {
@@ -116,8 +116,4 @@ separator {
 
 label {
   color: @text-color;
-}
-
-tab:hover {
-  background-color: #686868;
 }

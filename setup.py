@@ -16,5 +16,10 @@ setuptools.setup(name='qubes_menu',
                      ]
                  },
                  package_data={
-                     'qubes_menu': ["qubes-menu.glade", "qubes-menu-dark.css"]},
+                     'qubes_menu': [
+                        "qubes-menu.glade", 
+                        "qubes-menu-dark.css", 
+                        "qubes-menu-light.css",
+                     ]
+                 },
 )

@@ -49,9 +49,10 @@ class VMEntry:
         self._vm_icon_name = getattr(self.vm, 'icon',
                                      getattr(self.vm.label, 'icon', None))
         self._power_state = self.vm.get_power_state()
-        self.entries: List = []
 
-    def update_entries(self, update_power_state=False,
+        self.updater = None
+
+    def update_entries(self, vm_power_state=None,
                        update_label=False,
                        update_has_network=False, update_type=False):
         """
@@ -61,9 +62,11 @@ class VMEntry:
         :param update_has_network: did networking state change?
         :param update_type: did type change?
         """
-        for entry in self.entries:
-            entry.update_contents(update_power_state, update_label,
-                                  update_has_network, update_type)
+        if self.updater:
+            self.updater(
+                vm_power_state, update_label,
+                update_has_network, update_type
+            )
 
     @property
     def power_state(self):
@@ -76,7 +79,7 @@ class VMEntry:
     @power_state.setter
     def power_state(self, new_value):
         self._power_state = new_value
-        self.update_entries(update_power_state=True)
+        self.update_entries(vm_power_state=new_value)
 
     @property
     def vm_icon_name(self):

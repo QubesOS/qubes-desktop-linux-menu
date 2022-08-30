@@ -24,7 +24,8 @@ import subprocess
 import logging
 from typing import Optional
 
-from .custom_widgets import LimitedWidthLabel, SelfAwareMenu
+
+from .custom_widgets import LimitedWidthLabel
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
 from .utils import load_icon
@@ -37,6 +38,21 @@ from gi.repository import Gtk, Gdk
 
 logger = logging.getLogger('qubes-appmenu')
 
+class IconsLoader:
+    def __init__(self):
+        self.BOOKMARK_BLACK = Gtk.Image.new_from_pixbuf(
+            load_icon('qappmenu-bookmark-black', Gtk.IconSize.LARGE_TOOLBAR)
+        )
+        self.BOOKMARK_FILL_BLACK = Gtk.Image.new_from_pixbuf(
+            load_icon('qappmenu-bookmark-fill-black', Gtk.IconSize.LARGE_TOOLBAR)
+        )
+
+        self.BOOKMARK_FILL_WHITE = Gtk.Image.new_from_pixbuf(
+            load_icon('qappmenu-bookmark-fill-white', Gtk.IconSize.LARGE_TOOLBAR)
+        )
+        self.BOOKMARK_WHITE = Gtk.Image.new_from_pixbuf(
+            load_icon('qappmenu-bookmark-white', Gtk.IconSize.LARGE_TOOLBAR)
+        )
 
 class AppEntry(Gtk.ListBoxRow):
     """
@@ -56,25 +72,9 @@ class AppEntry(Gtk.ListBoxRow):
         super().__init__(**properties)
         self.app_info = app_info
 
-        self.menu = SelfAwareMenu()
-
         self.event_box = Gtk.EventBox()
         self.add(self.event_box)
         self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
-        self.event_box.connect('button-press-event', self.show_menu)
-
-    def show_menu(self, _widget, event):
-        """
-        Display own right click menu.
-        """
-        if event.button == 3:
-            self.menu.popup_at_pointer(None)  # None means current event
-
-    def update_contents(self):
-        """
-        Update any contents. To be called on changes in related .desktop
-        file.
-        """
 
     def run_app(self, vm):
         """
@@ -99,14 +99,43 @@ class BaseAppEntry(AppEntry):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.event_box.add(self.box)
         self.get_style_context().add_class('app_entry')
-        self._setup_menu()
 
         self.icon = Gtk.Image()
         self.label = LimitedWidthLabel()
         self.box.pack_start(self.icon, False, False, 5)
         self.box.pack_start(self.label, False, False, 5)
 
+        if 'X-XFCE-SettingsDialog' not in app_info.categories and 'qubes' not in app_info.entry_name:
+            self.fav_btn = Gtk.Button()
+
+            self.icons = IconsLoader()
+            
+            self.fav_btn.set_relief(Gtk.ReliefStyle.NONE)
+            self.init_fav_btn()
+
+            self.fav_btn.connect('clicked', self._toggle_favorites)
+            self.fav_btn.connect("enter-notify-event", self._enter_favorite_button)
+            self.fav_btn.connect("leave-notify-event", self._leave_favorite_button)
+
+            self.box.pack_start(self.fav_btn, False, False, 10)
+
         self.update_contents()
+
+
+    def init_fav_btn(self):
+        current_feature = self.app_info.vm.features.get(constants.FAVORITES_FEATURE)
+        if current_feature:
+            feature_list = current_feature.split(' ')
+        else:
+            feature_list = []
+
+        if self.app_info.entry_name in feature_list:
+            self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
+        else:
+            self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
+    
+    def update_fav_btn(self):
+        self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
 
     def _has_favorite_sibling(self):
         """
@@ -118,30 +147,6 @@ class BaseAppEntry(AppEntry):
                 return True
         return False
 
-    def _setup_menu(self):
-        """
-        Setup right click menu: currently only one option, add to favorites.
-        """
-        self.add_menu_item = Gtk.CheckMenuItem(label='Add to favorites')
-        self.add_menu_item.connect('activate', self._add_to_favorites)
-        self.menu.add(self.add_menu_item)
-        self.menu.show_all()
-
-    def show_menu(self, widget, event):
-        """
-        Show right click menu. For ephemeral VMs (class DispVM with a template
-        set) the menu is inactive. If the current App is already added to
-        favorites, the "add to favorites" option is checked and inactive.
-        """
-        if getattr(self.get_parent(), 'ephemeral_vm', False):
-            self.add_menu_item.set_active(False)
-            self.add_menu_item.set_sensitive(False)
-        else:
-            is_favorite = self._has_favorite_sibling()
-            self.add_menu_item.set_active(is_favorite)
-            self.add_menu_item.set_sensitive(not is_favorite)
-        super().show_menu(widget, event)
-
     def update_contents(self):
         """Update icon and app name."""
         self.icon.set_from_pixbuf(
@@ -149,59 +154,63 @@ class BaseAppEntry(AppEntry):
         self.label.set_label(self.app_info.app_name)
         self.show_all()
 
-    def _add_to_favorites(self, *_args, **_kwargs):
+    def _toggle_favorites(self, *_args, **_kwargs):
         """
         "Add to favorites" action: sets appropriate VM feature
         """
-        target_vm = self.app_info.vm
-        if not target_vm:
-            target_vm = self.app_info.qapp.domains[
+        target_vm = self.app_info.vm or self.app_info.qapp.domains[
                 self.app_info.qapp.local_name]
 
         current_feature = target_vm.features.get(constants.FAVORITES_FEATURE)
-        if current_feature:
-            feature_list = current_feature.split(' ')
-        else:
-            feature_list = []
 
-        if self.app_info.entry_name in feature_list:
+        current_feature = current_feature.split(' ') if current_feature else []
+        
+        current_img = self.fav_btn.get_image()
+        # Add a favorite app
+        if (current_img == self.icons.BOOKMARK_BLACK):
+            try:
+                current_feature.append(self.app_info.entry_name)
+                self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
+            except ValueError:
+                logger.info('Failed to add %s from vm favorites for vm %s: '
+                            'favorites did not contain %s',
+                            self.app_info.entry_name, str(target_vm),
+                            self.app_info.entry_name)
+        
+        # Remove a favorite app
+        elif (current_img == self.icons.BOOKMARK_FILL_BLACK):
+            try:
+                current_feature.remove(self.app_info.entry_name)
+                self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
+            except ValueError:
+                logger.info('Failed to remove %s from vm favorites for vm %s: '
+                            'favorites did not contain %s',
+                            self.app_info.entry_name, str(target_vm),
+                            self.app_info.entry_name)
+        target_vm.features[constants.FAVORITES_FEATURE] = ' '.join(current_feature)
+
+    def _enter_favorite_button(self, *args, **kwargs):
+        current_img = self.fav_btn.get_image()
+        # The app isn't in favorites
+        if (current_img == self.icons.BOOKMARK_WHITE):
+            self.fav_btn.set_image(self.icons.BOOKMARK_BLACK)
             return
-        feature_list.append(self.app_info.entry_name)
-        target_vm.features[constants.FAVORITES_FEATURE] \
-            = ' '.join(feature_list)
+        
+        # The app is in favorites
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_BLACK)
 
+    def _leave_favorite_button(self, *args, **kwargs):
+        current_img = self.fav_btn.get_image()
+        # The app isn't in favorites
+        if (
+            current_img == self.icons.BOOKMARK_BLACK or 
+            current_img == self.icons.BOOKMARK_WHITE):
 
-class VMIcon(Gtk.Image):
-    """Helper class for displaying and auto-updating"""
-    def __init__(self, vm_entry: Optional[VMEntry]):
-        super().__init__()
-        self.vm_entry = vm_entry
-        if self.vm_entry:
-            self.vm_entry.entries.append(self)
-        self.update_contents(update_label=True)
-
-    def update_contents(self,
-                        update_power_state=False,
-                        update_label=False,
-                        update_has_network=False,
-                        update_type=False):
-        # pylint: disable=unused-argument
-        """
-        Update own contents (or related widgets, if applicable) based on state
-        change.
-        :param update_power_state: whether to update if VM is running or not
-        :param update_label: whether label (vm icon) should be updated
-        :param update_has_network: whether VM networking state should be
-        updated
-        :param update_type: whether VM type should be updated
-        :return:
-        """
-        if update_label and self.vm_entry:
-            vm_icon = load_icon(self.vm_entry.vm_icon_name,
-                                Gtk.IconSize.LARGE_TOOLBAR)
-            self.set_from_pixbuf(vm_icon)
-            self.show_all()
-
+            self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
+            return
+        
+        # The app is in favorites
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
 
 class FavoritesAppEntry(AppEntry):
     """
@@ -214,34 +223,34 @@ class FavoritesAppEntry(AppEntry):
                  **properties):
         super().__init__(app_info, **properties)
         self.get_style_context().add_class('favorite_entry')
-        self.grid = Gtk.Grid()
-        self.event_box.add(self.grid)
-        self.remove_item = Gtk.MenuItem(label='Remove from favorites')
-        self.remove_item.connect('activate', self._remove_from_favorites)
-        self.menu.add(self.remove_item)
-        self.menu.show_all()
 
-        self.app_label = LimitedWidthLabel()
+        self.app_label = Gtk.Label()
         self.vm_label = Gtk.Label()
         self.app_icon = Gtk.Image()
-        self.vm_icon = VMIcon(vm_manager.load_vm_from_name(str(app_info.vm)))
+        self.vm_icon = Gtk.Image()
+        self.vm_icon.set_from_pixbuf(
+            load_icon(
+                vm_manager.vms[str(app_info.vm)].vm_icon_name,
+                Gtk.IconSize.SMALL_TOOLBAR
+            )
+        )
 
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.pack_start(self.vm_icon, False, False, 5)
-        box.pack_start(self.vm_label, False, False, 5)
+        self.icons = IconsLoader()
+
         self.vm_label.get_style_context().add_class('favorite_vm_name')
         self.app_label.get_style_context().add_class('favorite_app_name')
-        self.app_label.set_halign(Gtk.Align.START)
 
-        self.grid.attach(self.app_icon, 0, 0, 1, 2)
-        self.grid.attach(self.app_label, 1, 0, 1, 1)
-        self.grid.attach(box, 1, 1, 1, 1)
-
-        self.update_contents()
+        self.fav_btn = Gtk.Button()
+        self.fav_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
+        
+        self.fav_btn.connect('clicked', self._remove_from_favorites)
+        self.fav_btn.connect("enter-notify-event", self._enter_favorite_button)
+        self.fav_btn.connect("leave-notify-event", self._leave_favorite_button)
 
     def update_contents(self):
         """Update application and VM icons and application and vm names"""
-        app_icon = load_icon(self.app_info.app_icon, Gtk.IconSize.DIALOG)
+        app_icon = load_icon(self.app_info.app_icon, Gtk.IconSize.DND)
         self.app_icon.set_from_pixbuf(app_icon)
 
         if self.app_info.disposable:
@@ -272,3 +281,82 @@ class FavoritesAppEntry(AppEntry):
             self.get_parent().remove(self)
             return
         vm.features[constants.FAVORITES_FEATURE] = ' '.join(current_feature)
+
+    def _enter_favorite_button(self, *args, **kwargs):
+        current_img = self.fav_btn.get_image()
+        # The app isn't in favorites
+        if (current_img == self.icons.BOOKMARK_WHITE):
+            self.fav_btn.set_image(self.icons.BOOKMARK_BLACK)
+            return
+        
+        # The app is in favorites
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_BLACK)
+
+    def _leave_favorite_button(self, *args, **kwargs):
+        current_img = self.fav_btn.get_image()
+        # The app isn't in favorites
+        if (current_img == self.icons.BOOKMARK_BLACK):
+
+            self.fav_btn.set_image(self.icons.BOOKMARK_WHITE)
+            return
+        
+        # The app is in favorites
+        self.fav_btn.set_image(self.icons.BOOKMARK_FILL_WHITE)
+
+class FavoritesAppListEntry(FavoritesAppEntry):
+    """
+    FavoritesAppListEntry is used for list layout
+    """
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
+                 **properties):
+        super().__init__(app_info, vm_manager, **properties)
+        self.grid = Gtk.Grid()
+        self.grid.set_column_spacing(15)
+        self.grid.set_row_spacing(15)
+        
+        self.vm_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.vm_box.pack_start(self.vm_icon, False, False, 10)
+        self.vm_box.pack_start(self.vm_label, False, False, 15)
+
+        self.app_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.app_icon.set_alignment(0,0)
+        self.app_label.set_xalign(0)
+        self.app_box.pack_start(self.app_icon, False, False, 10)
+        self.app_box.pack_start(self.app_label, False, False, 10)
+
+        self.grid.attach(self.vm_box, 0, 0, 2, 1)
+        self.grid.attach(self.fav_btn, 0, 1, 1, 1)
+        self.grid.attach(self.app_box, 1, 1, 1, 1)
+        
+        self.event_box.add(self.grid)
+
+        self.update_contents()
+
+class FavoritesAppGridEntry(FavoritesAppEntry):
+    """
+    FavoritesAppGridEntry is used for list layout
+    """
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
+                 **properties):
+        super().__init__(app_info, vm_manager, **properties)
+        self.grid = Gtk.Grid()
+        self.grid.set_column_spacing(15)
+        self.grid.set_row_spacing(15)
+        
+        self.vm_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.vm_box.pack_start(self.vm_icon, False, False, 10)
+        self.vm_box.pack_start(self.vm_label, False, False, 15)
+
+        self.app_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.app_icon.set_alignment(0,0)
+        self.app_label.set_xalign(0)
+        self.app_box.pack_start(self.app_icon, False, False, 5)
+        self.app_box.pack_start(self.app_label, False, False, 10)
+
+        self.grid.attach(self.vm_box, 0, 0, 2, 1)
+        self.grid.attach(self.fav_btn, 0, 1, 1, 1)
+        self.grid.attach(self.app_box, 1, 1, 1, 1)
+
+        self.event_box.add(self.grid)
+
+        self.update_contents()
