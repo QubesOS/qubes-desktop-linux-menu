@@ -81,6 +81,7 @@ class AppEntry(Gtk.ListBoxRow):
         Run application from related .desktop file for a given VM.
         :param vm: QubesVM
         """
+        # pylint: disable=consider-using-with
         command = self.app_info.get_command_for_vm(vm)
         subprocess.Popen(command, stdin=subprocess.DEVNULL)
         self.get_toplevel().get_application().hide_menu()

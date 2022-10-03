@@ -134,6 +134,7 @@ class ControlRow(Gtk.ListBoxRow):
         Run related app/script.
         """
         if self.command and self.is_sensitive():
+            # pylint: disable=consider-using-with
             subprocess.Popen([self.command, str(vm)], stdin=subprocess.DEVNULL)
 
 
