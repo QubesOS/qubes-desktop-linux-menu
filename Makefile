@@ -19,6 +19,7 @@ install-icons:
 	cp icons/qappmenu-power.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-power.svg
 	cp icons/qappmenu-qube.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-qube.svg
 	cp icons/qappmenu-settings.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
+	cp icons/qappmenu-terminal.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-terminal.svg
 
 install-autostart:
 	mkdir -p $(DESTDIR)/etc/xdg/autostart

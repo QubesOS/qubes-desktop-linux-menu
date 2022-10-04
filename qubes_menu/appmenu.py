@@ -7,6 +7,7 @@ Main Application Menu class and helpers.
 import asyncio
 import subprocess
 import sys
+from pathlib import PosixPath
 from typing import Optional
 from contextlib import suppress
 import pkg_resources
@@ -244,11 +245,24 @@ class AppMenu(Gtk.Application):
         self.tasks = [
             asyncio.ensure_future(self.dispatcher.listen_for_events())]
 
-    def _handle_page_switch(self, _widget, _page, page_num):
+    def _handle_page_switch(self, _widget, page, page_num):
         """
         On page switch some things need to happen, mostly cleaning any old
         selections/menu options highlighted.
+        if corresponding page is the Terminal page, instead of switching,
+        we should just run the terminal (and return to previous page).
         """
+        if page.get_name() == 'terminal_page':
+            command = self.desktop_file_manager.app_entries.get(
+                PosixPath('/usr/share/applications/xfce4-terminal.desktop')).\
+                get_command_for_vm(None)
+            subprocess.Popen(command, stdin=subprocess.DEVNULL)
+
+            old_page_num = self.main_notebook.get_current_page()
+            GLib.timeout_add(1, lambda: self.main_notebook.set_current_page(
+                old_page_num))
+            self.hide_menu()
+
         if page_num == 0 and self.app_page:
             self.app_page.initialize_state()
         elif page_num == 2 and self.settings_page:
