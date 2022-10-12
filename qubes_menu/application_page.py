@@ -505,12 +505,14 @@ class AppPage:
     def _set_right_visibility(self, visibility: bool):
         if not visibility:
             self.control_list.hide()
+            self.app_list.hide()
             self.settings_list.hide()
             self.network_indicator.set_visible(False)
             self.separator_top.hide()
             self.separator_bottom.hide()
         else:
             self.control_list.show_all()
+            self.app_list.show_all()
             self.settings_list.show_all()
             self.separator_top.show_all()
             self.separator_bottom.show_all()
