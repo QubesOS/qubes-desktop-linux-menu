@@ -8,7 +8,6 @@ import asyncio
 import subprocess
 import sys
 from typing import Optional
-from contextlib import suppress
 import pkg_resources
 import logging
 
@@ -21,7 +20,6 @@ from .desktop_file_manager import DesktopFileManager
 from .favorites_page import FavoritesPage
 from .custom_widgets import SelfAwareMenu
 from .vm_manager import VMManager
-from . import constants
 
 import gi
 gi.require_version('Gtk', '3.0')
