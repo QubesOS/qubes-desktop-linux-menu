@@ -49,7 +49,6 @@ class AppMenu(Gtk.Application):
         self.dispatcher = dispatcher
         self.primary = False
         self.keep_visible = False
-        self.restart = False
         self.initial_page = 0
         self.start_in_background = False
 
@@ -79,14 +78,6 @@ class AppMenu(Gtk.Application):
             GLib.OptionFlags.NONE,
             GLib.OptionArg.NONE,
             "Do not hide the menu after action",
-            None,
-        )
-        self.add_main_option(
-            constants.RESTART_PARAM_LONG,
-            ord(constants.RESTART_PARAM_SHORT),
-            GLib.OptionFlags.NONE,
-            GLib.OptionArg.NONE,
-            "Restart the menu if it's running",
             None,
         )
 
@@ -123,8 +114,6 @@ class AppMenu(Gtk.Application):
 
         if "keep-visible" in options:
             self.keep_visible = True
-        if "restart" in options:
-            self.restart = True
         if "page" in options:
             self.initial_page = options['page']
         if "background" in options:
@@ -154,10 +143,16 @@ class AppMenu(Gtk.Application):
             if not self.start_in_background:
                 self.main_window.show_all()
             self.initialize_state()
-            self.hold()
+
+            loop = asyncio.get_event_loop()
+            self.tasks = [
+                asyncio.ensure_future(self.dispatcher.listen_for_events()),
+            ]
+
+            loop.run_until_complete(asyncio.wait(
+                self.tasks, return_when=asyncio.FIRST_EXCEPTION))
+
         else:
-            if self.restart:
-                self.exit_app()
             if self.main_notebook:
                 self.main_notebook.set_current_page(self.initial_page)
             if self.main_window and not self.start_in_background:
@@ -241,9 +236,6 @@ class AppMenu(Gtk.Application):
         self.main_notebook.connect('switch-page', self._handle_page_switch)
         self.connect('shutdown', self.do_shutdown)
 
-        self.tasks = [
-            asyncio.ensure_future(self.dispatcher.listen_for_events())]
-
     def _handle_page_switch(self, _widget, _page, page_num):
         """
         On page switch some things need to happen, mostly cleaning any old
@@ -254,16 +246,6 @@ class AppMenu(Gtk.Application):
         elif page_num == 2 and self.settings_page:
             self.settings_page.initialize_state()
 
-    def exit_app(self):
-        """
-        Exit. Used by restart only at the moment, as the menu is designed to
-        keep running in the background.
-        """
-        self.quit()
-        for task in self.tasks:
-            with suppress(asyncio.CancelledError):
-                task.cancel()
-
 
 def main():
     """
@@ -273,14 +255,6 @@ def main():
     dispatcher = qubesadmin.events.EventsDispatcher(qapp)
     app = AppMenu(qapp, dispatcher)
     app.run(sys.argv)
-
-    if f'--{constants.RESTART_PARAM_LONG}' in sys.argv or \
-            f'-{constants.RESTART_PARAM_SHORT}' in sys.argv:
-        sys.argv = [x for x in sys.argv if x not in
-                    (f'--{constants.RESTART_PARAM_LONG}',
-                     f'-{constants.RESTART_PARAM_SHORT}')]
-        app = AppMenu(qapp, dispatcher)
-        app.run(sys.argv)
 
 
 if __name__ == '__main__':
