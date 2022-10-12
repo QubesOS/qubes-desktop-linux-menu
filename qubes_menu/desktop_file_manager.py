@@ -86,8 +86,8 @@ class ApplicationInfo:
             self.vm = None
 
         self.app_name = entry.getName() or ''
-        if self.vm and self.app_name.startswith(self.vm.name + ": "):
-            self.app_name = self.app_name[len(self.vm.name + ": "):]
+        if self.vm:
+            self.app_name = self.app_name.split(": ", 1)[-1]
         self.vm_icon = self.vm.icon if self.vm else None
         self.app_icon = entry.getIcon()
         self.disposable = bool(entry.get('X-Qubes-NonDispvmExec'))
