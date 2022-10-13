@@ -98,6 +98,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{python3_sitelib}/qubes_menu/custom_widgets.py
 %{python3_sitelib}/qubes_menu/desktop_file_manager.py
 %{python3_sitelib}/qubes_menu/favorites_page.py
+%{python3_sitelib}/qubes_menu/page_handler.py
 %{python3_sitelib}/qubes_menu/settings_page.py
 %{python3_sitelib}/qubes_menu/utils.py
 %{python3_sitelib}/qubes_menu/vm_manager.py

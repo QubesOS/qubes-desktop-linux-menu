@@ -25,6 +25,7 @@ import qubesadmin.events
 from .desktop_file_manager import DesktopFileManager
 from . import custom_widgets
 from .app_widgets import AppEntry, BaseAppEntry
+from .page_handler import MenuPage
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -46,7 +47,7 @@ class SettingsCategoryRow(custom_widgets.HoverListBox):
         self.show_all()
 
 
-class SettingsPage:
+class SettingsPage(MenuPage):
     """
     Helper class for managing the entirety of Settings menu page.
     """
@@ -80,7 +81,7 @@ class SettingsPage:
         self.app_list.invalidate_filter()
         self.app_list.invalidate_sort()
 
-    def initialize_state(self):
+    def initialize_page(self):
         """On initialization, no category should be selected."""
         self.category_list.select_row(None)
 

@@ -7,7 +7,7 @@ Main Application Menu class and helpers.
 import asyncio
 import subprocess
 import sys
-from typing import Optional
+from typing import Optional, Dict
 import pkg_resources
 import logging
 
@@ -20,6 +20,7 @@ from .desktop_file_manager import DesktopFileManager
 from .favorites_page import FavoritesPage
 from .custom_widgets import SelfAwareMenu
 from .vm_manager import VMManager
+from .page_handler import MenuPage
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -61,10 +62,8 @@ class AppMenu(Gtk.Application):
 
         self.desktop_file_manager: Optional[DesktopFileManager] = None
         self.vm_manager: Optional[VMManager] = None
-        self.app_page: Optional[AppPage] = None
 
-        self.favorites_page: Optional[FavoritesPage] = None
-        self.settings_page: Optional[SettingsPage] = None
+        self.handlers: Dict[str, MenuPage] = {}
 
         self.power_button: Optional[Gtk.Button] = None
         self.tasks = []
@@ -163,7 +162,7 @@ class AppMenu(Gtk.Application):
         """
         Unless CLI options specified differently, the menu will try to hide
         itself. Should be called after all sorts of actions like running an
-        app or clicking outside of the menu.
+        app or clicking outside the menu.
         """
         if not self.keep_visible and self.main_window:
             self.main_window.hide()
@@ -191,8 +190,8 @@ class AppMenu(Gtk.Application):
         """
         if self.main_notebook:
             self.main_notebook.set_current_page(self.initial_page)
-        if self.app_page:
-            self.app_page.initialize_state(None)
+        for page in self.handlers.values():
+            page.initialize_page()
 
     def perform_setup(self):
         """
@@ -221,28 +220,28 @@ class AppMenu(Gtk.Application):
         self.desktop_file_manager = DesktopFileManager(self.qapp)
         self.vm_manager = VMManager(self.qapp, self.dispatcher)
 
-        self.app_page = AppPage(self.vm_manager, self.builder,
-                                self.desktop_file_manager)
-        self.favorites_page = FavoritesPage(self.qapp, self.builder,
+        self.handlers = {
+            'app_page': AppPage(self.vm_manager, self.builder,
+                                self.desktop_file_manager),
+            'favorites_page': FavoritesPage(self.qapp, self.builder,
                                             self.desktop_file_manager,
-                                            self.dispatcher, self.vm_manager)
-        self.settings_page = SettingsPage(self.qapp, self.builder,
+                                            self.dispatcher, self.vm_manager),
+            'settings_page': SettingsPage(self.qapp, self.builder,
                                           self.desktop_file_manager,
-                                          self.dispatcher)
+                                          self.dispatcher)}
         self.power_button = self.builder.get_object('power_button')
         self.power_button.connect('clicked', self._do_power_button)
         self.main_notebook.connect('switch-page', self._handle_page_switch)
         self.connect('shutdown', self.do_shutdown)
 
-    def _handle_page_switch(self, _widget, _page, page_num):
+    def _handle_page_switch(self, _widget, page, _page_num):
         """
         On page switch some things need to happen, mostly cleaning any old
         selections/menu options highlighted.
         """
-        if page_num == 0 and self.app_page:
-            self.app_page.initialize_state()
-        elif page_num == 2 and self.settings_page:
-            self.settings_page.initialize_state()
+        page_handler = self.handlers.get(page.get_name())
+        if page_handler:
+            page_handler.initialize_page()
 
 
 def main():

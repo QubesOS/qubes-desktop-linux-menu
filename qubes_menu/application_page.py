@@ -29,6 +29,7 @@ from .custom_widgets import LimitedWidthLabel, NetworkIndicator, \
 from .app_widgets import AppEntry, BaseAppEntry
 from .vm_manager import VMEntry, VMManager
 from .utils import load_icon
+from .page_handler import MenuPage
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -317,7 +318,7 @@ class VMTypeToggle:
         return vm_entry.service_vm
 
 
-class AppPage:
+class AppPage(MenuPage):
     """
     Helper class for managing the entirety of Applications menu page.
     """
@@ -478,10 +479,9 @@ class AppPage:
         self.app_list.invalidate_filter()
         self.vm_list.invalidate_filter()
 
-    def initialize_state(self, _vm=None):
+    def initialize_page(self):
         """
-        Initialize own state. Optional parameter for selecting initially
-        selected VM is currently not supported.
+        Initialize own state.
         """
         self.toggle_buttons.initialize_state()
         self.app_list.select_row(None)

@@ -26,6 +26,7 @@ import qubesadmin.events
 from .desktop_file_manager import DesktopFileManager
 from .app_widgets import AppEntry, FavoritesAppEntry
 from .vm_manager import VMManager
+from .page_handler import MenuPage
 from . import constants
 
 import gi
@@ -35,7 +36,7 @@ from gi.repository import Gtk
 logger = logging.getLogger('qubes-appmenu')
 
 
-class FavoritesPage:
+class FavoritesPage(MenuPage):
     """
     Helper class for managing the entirety of Favorites menu page.
     """
@@ -145,3 +146,6 @@ class FavoritesPage:
     def _domain_deleted(self, _submitter, event, vm, **_kwargs):
         """On domain delete, all related features should be removed."""
         self._feature_deleted(vm, event, None)
+
+    def initialize_page(self):
+        """Favorites page does not require additional post-init setup"""
