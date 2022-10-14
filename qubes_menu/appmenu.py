@@ -16,6 +16,7 @@ import qubesadmin.events
 
 from .settings_page import SettingsPage
 from .application_page import AppPage
+from .search_page import SearchPage
 from .desktop_file_manager import DesktopFileManager
 from .favorites_page import FavoritesPage
 from .custom_widgets import SelfAwareMenu
@@ -221,6 +222,8 @@ class AppMenu(Gtk.Application):
         self.vm_manager = VMManager(self.qapp, self.dispatcher)
 
         self.handlers = {
+            'search_page': SearchPage(self.vm_manager, self.builder,
+                                      self.desktop_file_manager),
             'app_page': AppPage(self.vm_manager, self.builder,
                                 self.desktop_file_manager),
             'favorites_page': FavoritesPage(self.qapp, self.builder,

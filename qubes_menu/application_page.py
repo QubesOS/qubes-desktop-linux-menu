@@ -25,91 +25,15 @@ from typing import Optional
 
 from .desktop_file_manager import DesktopFileManager
 from .custom_widgets import LimitedWidthLabel, NetworkIndicator, \
-    SettingsEntry, HoverListBox
+    SettingsEntry, VMRow
 from .app_widgets import AppEntry, BaseAppEntry
 from .vm_manager import VMEntry, VMManager
-from .utils import load_icon
 from .page_handler import MenuPage
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
-
-class VMRow(HoverListBox):
-    """
-    Helper widget representing a VM row.
-    """
-    def __init__(self, vm_entry: VMEntry):
-        """
-        :param vm_entry: VMEntry object, stored and managed by VMManager
-        """
-        super().__init__()
-        self.vm_entry = vm_entry
-        self.get_style_context().add_class('vm_entry')
-
-        self.icon_img = Gtk.Image()
-
-        self.main_box.pack_start(self.icon_img, False, False, 2)
-        self.main_box.pack_start(
-            Gtk.Label(label=self.vm_entry.vm_name), False, False, 2)
-
-        self.update_contents(update_power_state=True, update_label=True,
-                             update_has_network=True, update_type=True)
-
-    def _update_style(self):
-        """Update own style, based on whether VM is running or not and
-        what type it has."""
-        style_context: Gtk.StyleContext = self.get_style_context()
-        if self.vm_entry.is_dispvm_template:
-            style_context.add_class('dvm_template_entry')
-        elif self.vm_entry.vm_klass == 'DispVM':
-            style_context.add_class('dispvm_entry')
-        else:
-            style_context.remove_class('dispvm_entry')
-            style_context.remove_class('dvm_template_entry')
-
-        if self.vm_entry.power_state == 'Running':
-            style_context.add_class('running_vm')
-        else:
-            style_context.remove_class('running_vm')
-
-    def update_contents(self,
-                        update_power_state=False,
-                        update_label=False,
-                        update_has_network=False,
-                        update_type=False):
-        """
-        Update own contents (or related widgets, if applicable) based on state
-        change.
-        :param update_power_state: whether to update if VM is running or not
-        :param update_label: whether label (vm icon) should be updated
-        :param update_has_network: whether VM networking state should be
-        updated
-        :param update_type: whether VM type should be updated
-        :return:
-        """
-        if update_label:
-            icon_vm = load_icon(self.vm_entry.vm_icon_name)
-            self.icon_img.set_from_pixbuf(icon_vm)
-        if update_type or update_power_state:
-            self._update_style()
-            if self.get_parent():
-                self.get_parent().invalidate_sort()
-                self.get_parent().invalidate_filter()
-                self.get_parent().select_row(None)
-        if update_has_network:
-            if self.is_selected() and self.get_parent():
-                self.get_parent().select_row(None)
-                self.get_parent().select_row(self)
-        self.main_box.show_all()
-
-    @property
-    def sort_order(self):
-        """
-        Helper property exposing desired sort order.
-        """
-        return self.vm_entry.sort_name
 
 
 class ControlRow(Gtk.ListBoxRow):

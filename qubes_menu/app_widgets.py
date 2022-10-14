@@ -211,24 +211,15 @@ class VMIcon(Gtk.Image):
             self.set_from_pixbuf(vm_icon)
             self.show_all()
 
-
-class FavoritesAppEntry(AppEntry):
-    """
-    Application Gtk.ListBoxRow for use in Favorites page.
-    Favorites are stored in VM's feature, name of which is stored in
-    constants.py, as a space-separated list containing a subset of menu-items
-    feature.
-    """
+class AppEntryWithVM(AppEntry):
+    """Application Gtk.ListBoxRow with VM description underneath; to be
+    used in Search and Favorites."""
     def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
                  **properties):
         super().__init__(app_info, **properties)
         self.get_style_context().add_class('favorite_entry')
         self.grid = Gtk.Grid()
         self.event_box.add(self.grid)
-        self.remove_item = Gtk.MenuItem(label='Remove from favorites')
-        self.remove_item.connect('activate', self._remove_from_favorites)
-        self.menu.add(self.remove_item)
-        self.menu.show_all()
 
         self.app_label = LimitedWidthLabel()
         self.vm_label = Gtk.Label()
@@ -262,6 +253,22 @@ class FavoritesAppEntry(AppEntry):
             self.vm_label.set_label(str(self.app_info.qapp.local_name))
         self.app_label.set_label(str(self.app_info.app_name))
         self.show_all()
+
+
+class FavoritesAppEntry(AppEntryWithVM):
+    """
+    Application Gtk.ListBoxRow for use in Favorites page.
+    Favorites are stored in VM's feature, name of which is stored in
+    constants.py, as a space-separated list containing a subset of menu-items
+    feature.
+    """
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
+                 **properties):
+        super().__init__(app_info, vm_manager, **properties)
+        self.remove_item = Gtk.MenuItem(label='Remove from favorites')
+        self.remove_item.connect('activate', self._remove_from_favorites)
+        self.menu.add(self.remove_item)
+        self.menu.show_all()
 
     def _remove_from_favorites(self, *_args, **_kwargs):
         """Remove from favorites, that is, from an appropriate VM
