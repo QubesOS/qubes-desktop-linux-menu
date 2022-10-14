@@ -116,6 +116,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 /usr/share/icons/hicolor/scalable/apps/qappmenu-networking-yes.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-power.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-qube.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-search.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
 
 /etc/xdg/autostart/qubes-app-menu.desktop

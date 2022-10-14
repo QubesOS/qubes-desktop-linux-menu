@@ -25,9 +25,12 @@
               <object class="GtkSearchEntry" id="search_entry">
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
+                <property name="margin-top">10</property>
+                <property name="margin-bottom">10</property>
                 <property name="primary-icon-name">edit-find-symbolic</property>
                 <property name="primary-icon-activatable">False</property>
                 <property name="primary-icon-sensitive">False</property>
+                <property name="placeholder-text" translatable="yes">Start typing to search</property>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -49,6 +52,14 @@
                       <object class="GtkListBox" id="search_vm_list">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <child type="placeholder">
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="margin-start">20</property>
+                            <property name="margin-end">20</property>
+                          </object>
+                        </child>
                         <style>
                           <class name="left_pane"/>
                         </style>
@@ -102,10 +113,15 @@
           </object>
         </child>
         <child type="tab">
-          <object class="GtkLabel">
+          <object class="GtkImage">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">search</property>
+            <property name="margin-start">15</property>
+            <property name="margin-end">15</property>
+            <property name="margin-top">15</property>
+            <property name="margin-bottom">15</property>
+            <property name="icon-name">qappmenu-search</property>
+            <property name="icon_size">5</property>
           </object>
           <packing>
             <property name="tab-fill">False</property>

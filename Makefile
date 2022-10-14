@@ -18,6 +18,7 @@ install-icons:
 	cp icons/qappmenu-networking-yes.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-networking-yes.svg
 	cp icons/qappmenu-power.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-power.svg
 	cp icons/qappmenu-qube.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-qube.svg
+	cp icons/qappmenu-search.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-search.svg
 	cp icons/qappmenu-settings.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
 
 install-autostart:
