@@ -133,3 +133,4 @@ class SearchPage(MenuPage):
         self.search_entry.set_text('')
         self.app_list.invalidate_filter()
         self.vm_list.invalidate_filter()
+        self.search_entry.grab_focus_without_selecting()

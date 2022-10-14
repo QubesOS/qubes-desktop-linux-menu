@@ -211,7 +211,7 @@ class AppMenu(Gtk.Application):
         self.sys_tools_list = self.builder.get_object('sys_tools_list')
         self.builder.add_from_file(pkg_resources.resource_filename(
             __name__, 'qubes-menu.glade'))
-        self.main_window = self.builder.get_object('main_window')
+        self.main_window: Gtk.Window = self.builder.get_object('main_window')
         self.main_notebook = self.builder.get_object('main_notebook')
 
         self.main_window.set_events(Gdk.EventMask.FOCUS_CHANGE_MASK)
@@ -236,6 +236,28 @@ class AppMenu(Gtk.Application):
         self.power_button.connect('clicked', self._do_power_button)
         self.main_notebook.connect('switch-page', self._handle_page_switch)
         self.connect('shutdown', self.do_shutdown)
+
+        self.main_window.add_events(Gdk.EventMask.KEY_PRESS_MASK)
+        self.main_window.connect('key_press_event', self._key_pressed)
+
+    def _key_pressed(self, _widget, event_key: Gdk.EventKey):
+        """If user presses a key that's not a navigation key, open
+        Search. Nav keys are: arrows, esc, return, tab"""
+        if event_key.keyval not in [Gdk.KEY_Up, Gdk.KEY_Down, Gdk.KEY_Left,
+                                Gdk.KEY_Right, Gdk.KEY_Escape, Gdk.KEY_Return,
+                                    Gdk.KEY_Tab]:
+            search_page = self.handlers.get('search_page')
+
+            if not isinstance(search_page, SearchPage):
+                return False
+
+            search_page.search_entry.grab_focus_without_selecting()
+
+            if self.main_notebook.get_current_page() != 0:
+                self.main_notebook.set_current_page(0)
+            return False
+
+        return False
 
     def _handle_page_switch(self, _widget, page, _page_num):
         """
