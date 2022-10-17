@@ -49,7 +49,7 @@ class AppMenu(Gtk.Application):
         self.dispatcher = dispatcher
         self.primary = False
         self.keep_visible = False
-        self.initial_page = 0
+        self.initial_page = 1
         self.start_in_background = False
 
         self._add_cli_options()

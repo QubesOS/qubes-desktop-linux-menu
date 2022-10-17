@@ -21,6 +21,8 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
+from typing import List
+
 from . import constants
 from .utils import load_icon
 from .vm_manager import VMEntry
@@ -175,6 +177,9 @@ class VMRow(HoverListBox):
         self.main_box.pack_start(self.icon_img, False, False, 2)
         self.main_box.pack_start(
             Gtk.Label(label=self.vm_entry.vm_name), False, False, 2)
+
+        self.search_words: List[str] = self.vm_entry.vm_name.replace(
+            '_', '-').split('-')
 
         self.update_contents(update_power_state=True, update_label=True,
                              update_has_network=True, update_type=True)

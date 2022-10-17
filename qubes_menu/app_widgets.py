@@ -37,6 +37,8 @@ from gi.repository import Gtk, Gdk
 
 logger = logging.getLogger('qubes-appmenu')
 
+DISP_TEXT = 'new Disposable Qube from '
+
 
 class AppEntry(Gtk.ListBoxRow):
     """
@@ -237,6 +239,8 @@ class AppEntryWithVM(AppEntry):
         self.grid.attach(self.app_label, 1, 0, 1, 1)
         self.grid.attach(box, 1, 1, 1, 1)
 
+        self.search_words = []
+
         self.update_contents()
 
     def update_contents(self):
@@ -246,12 +250,24 @@ class AppEntryWithVM(AppEntry):
 
         if self.app_info.disposable:
             self.vm_label.set_label(
-                'new Disposable Qube from ' + str(self.app_info.vm))
+                DISP_TEXT + str(self.app_info.vm))
         elif self.app_info.vm:
             self.vm_label.set_label(str(self.app_info.vm))
         else:
             self.vm_label.set_label(str(self.app_info.qapp.local_name))
         self.app_label.set_label(str(self.app_info.app_name))
+
+        self.search_words = []
+        if self.app_info.vm:
+            self.search_words.extend(
+                self.app_info.vm.name.lower().replace('_', '-').split('-'))
+        if self.app_info.disposable:
+            self.search_words.extend(DISP_TEXT.lower().split())
+        if self.app_info.app_name:
+            self.search_words.extend(
+                self.app_info.app_name.lower().replace(
+                    '_', ' ').replace('-', ' ').split())
+
         self.show_all()
 
 

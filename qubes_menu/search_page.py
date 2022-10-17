@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 """Search page for App Menu"""
+from typing import List
 
 from .desktop_file_manager import DesktopFileManager
 from .custom_widgets import VMRow
@@ -58,8 +59,8 @@ class SearchPage(MenuPage):
         vm_manager.register_new_vm_callback(self._vm_callback)
         self.vm_list.set_filter_func(self._is_vm_fitting)
 
-        self.app_list.set_sort_func(
-            lambda x, y: x.app_info.app_name > y.app_info.app_name)
+        # TODO: improve
+        self.app_list.set_sort_func(self._sort_apps)
         self.vm_list.set_sort_func(lambda x, y: x.sort_order > y.sort_order)
         self.app_list.invalidate_sort()
         self.vm_list.invalidate_sort()
@@ -70,7 +71,7 @@ class SearchPage(MenuPage):
         """
         Callback to be performed on all newly loaded ApplicationInfo instances.
         """
-        if app_info.vm:
+        if app_info.vm or not app_info.is_qubes_specific():
             entry = AppEntryWithVM(app_info, self.vm_manager)
             app_info.entries.append(entry)
             self.app_list.add(entry)
@@ -89,39 +90,71 @@ class SearchPage(MenuPage):
 
     def _do_search(self, *_args):
         self.vm_list.invalidate_filter()
+        self.vm_list.invalidate_sort()
         self.app_list.invalidate_filter()
+        self.app_list.invalidate_sort()
+
+    def _sort_apps(self, appentry: AppEntryWithVM, other_entry: AppEntryWithVM):
+        """
+        # word is delineated by space and - and _
+        Sorting algorithm:
+        * if any searched word is at the beginning of a word in the app
+         name or vm name, the app should be before apps for which this
+          is not true
+        *
+        """
+        search_text = self.search_entry.get_text()
+        result_1 = self._text_search(search_text, appentry.search_words)
+        result_2 = self._text_search(search_text,
+                                     other_entry.search_words)
+        if result_1 > result_2:
+            return -1
+        if result_1 < result_2:
+            return 1
+        return 0
+
+# TESTING CASES:
+    # work firefox
+    # firefox
+    # firefox work
+    # fire work
+    # py dev
+    # gpg term
 
     def _is_app_fitting(self, appentry: AppEntryWithVM):
-        """
-        Filter function for applications - attempts to filter only
-        applications that have a VM same as selected VM, or, in the case
-        of disposable VMs that are children of a parent DVM template,
-        show the DVM's menu entries.
-        """
-        search_text = self.search_entry.get_text()
-        if not search_text:
-            return False
-
-        words = search_text.split(' ')
-        text_to_look_in = (getattr(appentry.app_info.vm, 'name') or '') + \
-                          ' ' + (appentry.app_info.app_name or '')
-        for word in words:
-            if word not in text_to_look_in:
-                return False
-        return True
+        """Show only apps matching the current search text"""
+        return self._text_search(
+            self.search_entry.get_text(), appentry.search_words) > 0
 
     def _is_vm_fitting(self, vmrow: VMRow):
-        search_text = self.search_entry.get_text()
-        if not search_text:
-            return False
+        """Show only vms matching the current search text"""
+        return self._text_search(self.search_entry.get_text(),
+                          vmrow.search_words) > 0
 
-        words = search_text.split(' ')
-        text_to_look_in = vmrow.vm_entry.vm_name
+    @staticmethod
+    def _text_search(search_phrase: str, text_words: List[str]):
+        """Text-searching function.
+        Returns a match rank, if greater than 0, the searched phrase was found.
+        The higher the number, the better the match.
+        All words from the searched phrase must have been found.
+        """
+        result = 0
+        if not search_phrase:
+            return result
 
-        for word in words:
-            if word not in text_to_look_in:
-                return False
-        return True
+        search_words = search_phrase.lower().split(' ')
+
+        for search_word in search_words:
+            for text_word in text_words:
+                if text_word.startswith(search_word):
+                    result += 1
+                    break
+                elif search_word in text_word:
+                    result += 0.5
+                    break
+            else:
+                return 0
+        return result
 
     def _app_clicked(self, _widget: Gtk.Widget, row: AppEntry):
         row.run_app(row.app_info.vm)
