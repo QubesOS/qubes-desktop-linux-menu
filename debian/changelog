@@ -1,3 +1,19 @@
+qubes-desktop-linux-menu (0.2.2-1) unstable; urgency=medium
+
+  [ Nina Eleanor Alter ]
+  * Update README.md
+
+  [ Marta Marczykowska-Górecka ]
+  * Fix pylint for new pylint version
+  * Add support for dragging apps from menu
+  * Fix pylint for new pylint version
+  * Fix minor display bug when switching menu tabs
+  * Fix problems with dispatching events, remove --restart
+  * Fix app names to be more flexible
+  * Remove unused imports
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Wed, 19 Oct 2022 00:42:02 +0200
+
 qubes-desktop-linux-menu (0.2.1-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
