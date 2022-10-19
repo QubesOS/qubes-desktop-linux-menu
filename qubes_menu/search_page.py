@@ -25,11 +25,52 @@ from .custom_widgets import VMRow
 from .app_widgets import AppEntry, AppEntryWithVM
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
+from .utils import load_icon
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
+
+class RecentSearchRow(Gtk.ListBoxRow):
+    """
+    Gtk.ListBoxRow with a recently searched text.
+    """
+    def __init__(self, search_text: str):
+        super().__init__()
+        self.search_text = search_text
+        self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        # TODO: replace this icon with actual icon of a clock or smth?
+        self.recent_icon = Gtk.Image.new_from_pixbuf(
+            load_icon('qappmenu-search'))
+        self.hbox.pack_start(self.recent_icon, False, False, 5)
+        self.search_label = Gtk.Label(label=search_text, xalign=0)
+        self.hbox.pack_start(self.search_label, False, False, 5)
+        self.get_style_context().add_class('app_entry')
+        self.add(self.hbox)
+        self.show_all()
+
+
+class RecentSearchManager:
+    SEARCH_VALUES_TO_KEEP = 10
+    def __init__(self, recent_list: Gtk.ListBox, search_box: Gtk.SearchEntry):
+        self.recent_list_box = recent_list
+        self.search_box = search_box
+        self.recent_list_box.connect('row-activated', self._row_clicked)
+
+    def add_new_recent_search(self, text: str):
+        if not text:
+            return
+        rows = self.recent_list_box.get_children()
+
+        if len(rows) == self.SEARCH_VALUES_TO_KEEP:
+            self.recent_list_box.remove(rows[-1])
+
+        row = RecentSearchRow(text)
+        self.recent_list_box.insert(row, 0)
+
+    def _row_clicked(self, _widget, row: RecentSearchRow):
+        self.search_box.set_text(row.search_text)
 
 class SearchPage(MenuPage):
     """
@@ -65,7 +106,23 @@ class SearchPage(MenuPage):
         self.app_list.invalidate_sort()
         self.vm_list.invalidate_sort()
 
+        self.recent_list: Gtk.ListBox = builder.get_object('search_recent_list')
+
+        self.app_view: Gtk.ScrolledWindow = builder.get_object("search_app_view")
+        self.vm_view: Gtk.ScrolledWindow = builder.get_object("search_vm_view")
+        self.recent_view: Gtk.ScrolledWindow = \
+            builder.get_object("search_recent_view")
+        self.recent_title: Gtk.Label = builder.get_object('search_recent_title')
+
+        self.recent_search_manager = RecentSearchManager(
+            self.recent_list, self.search_entry)
+
         # self.vm_list.connect('row-selected', self._vm_selected)
+
+    def _app_clicked(self, _widget, row):
+        self.recent_search_manager.add_new_recent_search(
+            self.search_entry.get_text())
+        row.run_app(row.app_info.vm)
 
     def _app_info_callback(self, app_info):
         """
@@ -89,6 +146,12 @@ class SearchPage(MenuPage):
             self.vm_list.invalidate_sort()
 
     def _do_search(self, *_args):
+        has_search = bool(self.search_entry.get_text())
+        self.vm_view.set_visible(has_search)
+        self.app_view.set_visible(has_search)
+        self.recent_view.set_visible(not has_search)
+        self.recent_title.set_visible(not has_search)
+
         self.vm_list.invalidate_filter()
         self.vm_list.invalidate_sort()
         self.app_list.invalidate_filter()
@@ -120,6 +183,7 @@ class SearchPage(MenuPage):
     # fire work
     # py dev
     # gpg term
+    # term dom0
 
     def _is_app_fitting(self, appentry: AppEntryWithVM):
         """Show only apps matching the current search text"""
@@ -149,21 +213,22 @@ class SearchPage(MenuPage):
                 if text_word.startswith(search_word):
                     result += 1
                     break
-                elif search_word in text_word:
+                if search_word in text_word:
                     result += 0.5
                     break
             else:
                 return 0
         return result
 
-    def _app_clicked(self, _widget: Gtk.Widget, row: AppEntry):
-        row.run_app(row.app_info.vm)
-
     def initialize_page(self):
         """
         Initialize own state.
         """
         self.search_entry.set_text('')
+        self.app_view.set_visible(False)
+        self.vm_view.set_visible(False)
+        self.recent_view.set_visible(True)
+
         self.app_list.invalidate_filter()
         self.vm_list.invalidate_filter()
         self.search_entry.grab_focus_without_selecting()

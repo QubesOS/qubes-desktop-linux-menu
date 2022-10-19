@@ -2,6 +2,7 @@
 <!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
+  <!-- interface-css-provider-path qubes-menu-dark.css -->
   <object class="GtkWindow" id="main_window">
     <property name="can-focus">False</property>
     <property name="window-position">mouse</property>
@@ -17,7 +18,7 @@
         <property name="can-focus">True</property>
         <property name="tab-pos">left</property>
         <child>
-          <!-- n-columns=2 n-rows=2 -->
+          <!-- n-columns=2 n-rows=4 -->
           <object class="GtkGrid" id="search_page">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -39,8 +40,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
-                <property name="visible">True</property>
+              <object class="GtkScrolledWindow" id="search_vm_view">
                 <property name="can-focus">True</property>
                 <property name="hscrollbar-policy">never</property>
                 <property name="shadow-type">in</property>
@@ -52,14 +52,6 @@
                       <object class="GtkListBox" id="search_vm_list">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <child type="placeholder">
-                          <object class="GtkLabel">
-                            <property name="visible">True</property>
-                            <property name="can-focus">False</property>
-                            <property name="margin-start">20</property>
-                            <property name="margin-end">20</property>
-                          </object>
-                        </child>
                         <style>
                           <class name="left_pane"/>
                         </style>
@@ -73,12 +65,11 @@
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">1</property>
+                <property name="top-attach">3</property>
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow">
-                <property name="visible">True</property>
+              <object class="GtkScrolledWindow" id="search_app_view">
                 <property name="can-focus">True</property>
                 <property name="hexpand">True</property>
                 <property name="vexpand">True</property>
@@ -94,6 +85,13 @@
                         <property name="can-focus">False</property>
                         <property name="hexpand">True</property>
                         <property name="vexpand">True</property>
+                        <child type="placeholder">
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">No matches found</property>
+                          </object>
+                        </child>
                         <style>
                           <class name="right_pane"/>
                         </style>
@@ -107,9 +105,71 @@
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">1</property>
+                <property name="top-attach">3</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkScrolledWindow" id="search_recent_view">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
+                <property name="hscrollbar-policy">never</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkViewport">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkListBox" id="search_recent_list">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <child type="placeholder">
+                          <object class="GtkLabel">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="label" translatable="yes">No recent searches</property>
+                            <style>
+                              <class name="placeholder"/>
+                            </style>
+                          </object>
+                        </child>
+                        <style>
+                          <class name="right_pane"/>
+                        </style>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <style>
+                  <class name="right_pane"/>
+                </style>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">2</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="search_recent_title">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">start</property>
+                <property name="label" translatable="yes">Recently searched</property>
+                <style>
+                  <class name="search_title"/>
+                </style>
+              </object>
+              <packing>
+                <property name="left-attach">0</property>
+                <property name="top-attach">1</property>
+                <property name="width">2</property>
+              </packing>
+            </child>
+            <style>
+              <class name="right_pane"/>
+            </style>
           </object>
         </child>
         <child type="tab">

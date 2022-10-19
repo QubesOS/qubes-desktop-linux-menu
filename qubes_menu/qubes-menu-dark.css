@@ -147,6 +147,12 @@ font-family: SourceSansPro;
  font-weight: bold;
 }
 
+.search_title {
+ padding: 10px;
+ font-size: 110%;
+ font-weight: bold;
+}
+
 undershoot.bottom {
   background-image: linear-gradient(to bottom, @bg-color 0%, @highlight-blue-2);
   padding-bottom: 1px; }

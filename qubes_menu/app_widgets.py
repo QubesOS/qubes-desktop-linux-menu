@@ -261,8 +261,12 @@ class AppEntryWithVM(AppEntry):
         if self.app_info.vm:
             self.search_words.extend(
                 self.app_info.vm.name.lower().replace('_', '-').split('-'))
+        else:
+            self.search_words.append('dom0')
+
         if self.app_info.disposable:
             self.search_words.extend(DISP_TEXT.lower().split())
+
         if self.app_info.app_name:
             self.search_words.extend(
                 self.app_info.app_name.lower().replace(
