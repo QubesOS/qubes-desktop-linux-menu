@@ -20,11 +20,13 @@
 """
 Helper class that manages all events related to .desktop files.
 """
-import pyinotify
 import logging
 import asyncio
 import os
 import shlex
+
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 import xdg.DesktopEntry
 import xdg.BaseDirectory
 import xdg.Menu
@@ -125,6 +127,39 @@ class ApplicationInfo:
         return 'X-Qubes-VM' in self.categories
 
 
+
+class FileChangeHandler(FileSystemEventHandler):
+    def __init__(self, manager: 'DesktopFileManager'):
+        self.manager = manager
+        super().__init__()
+
+    def try_load(self, filename):
+        try:
+            self.manager.load_file(filename)
+        except FileNotFoundError:
+            self.manager.remove_file(filename)
+
+    def on_created(self, event):
+        """On file create, attempt to load it. This can lead to spurious
+        warnings due to 0-byte files being loaded, but in some cases
+        is necessary to correctly process files."""
+        self.try_load(event.src_path)
+
+    def on_deleted(self, event):
+        """
+        On file delete, remove the tile and all its children menu entries
+        """
+        self.manager.remove_file(event.src_path)
+
+    def on_modified(self, event):
+        """On modify, simply attempt to load the file again."""
+        self.try_load(event.src_path)
+
+    def on_moved(self, event):
+        self.manager.remove_file(event.src_path)
+        self.try_load(event.dest_path)
+    
+
 class DesktopFileManager:
     """
     Class that loads, caches and observes changes in .desktop files.
@@ -133,40 +168,10 @@ class DesktopFileManager:
         Path(xdg.BaseDirectory.xdg_data_home) / 'applications',
         Path('/usr/share/applications')]
 
-    # pylint: disable=invalid-name
-    class EventProcessor(pyinotify.ProcessEvent):
-        """pyinotify helper class"""
-        def __init__(self, parent):
-            self.parent = parent
-            super().__init__()
-
-        def process_IN_CREATE(self, event):
-            """On file create, attempt to load it. This can lead to spurious
-            warnings due to 0-byte files being loaded, but in some cases
-            is necessary to correctly process files."""
-            try:
-                self.parent.load_file(event.pathname)
-            except FileNotFoundError:
-                self.parent.remove_file(event.pathname)
-
-        def process_IN_DELETE(self, event):
-            """
-            On file delete, remove the tile and all its children menu entries
-            """
-            self.parent.remove_file(event.pathname)
-
-        def process_IN_MODIFY(self, event):
-            """On modify, simply attempt to laod the file again."""
-            try:
-                self.parent.load_file(event.pathname)
-            except FileNotFoundError:
-                self.parent.remove_file(event.pathname)
-
     def __init__(self, qapp):
         self.qapp = qapp
         self.watch_manager = None
-        self.notifier = None
-        self.watches = []
+        self.observer = None
         self._callbacks: List[Callable] = []
 
         # directories used by Qubes menu tools, not necessarily all possible
@@ -273,18 +278,12 @@ class DesktopFileManager:
         """
         Initialize all watcher entities.
         """
-        self.watch_manager = pyinotify.WatchManager()
+        event_handler = FileChangeHandler(self)
+        observer = Observer()
 
-        # pylint: disable=no-member
-        mask = pyinotify.IN_CREATE | pyinotify.IN_DELETE | pyinotify.IN_MODIFY
-
-        loop = asyncio.get_event_loop()
-
-        self.notifier = pyinotify.AsyncioNotifier(
-            self.watch_manager, loop,
-            default_proc_fun=DesktopFileManager.EventProcessor(self))
+        self.observer = observer
 
         for path in self.desktop_dirs:
-            self.watches.append(
-                self.watch_manager.add_watch(
-                    str(path), mask, rec=True, auto_add=True))
+            observer.schedule(event_handler, str(path), recursive=True)
+
+        observer.start()

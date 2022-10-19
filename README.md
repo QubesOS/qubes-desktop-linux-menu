@@ -76,6 +76,14 @@ position or via executing `qubes-app-menu` with desired params in CLI.
 
 ![](readme_img/menu_howto.png)
 
+## How to test
+```
+pipenv shell
+QUBES_MENU_TEST=1 python qubes_menu
+```
+
+You also need to install `qubesadmin` from https://github.com/QubesOS/qubes-core-admin-client. Run `python setup.py` in the dowloaded repo in pipenv shell to install.
+
 ## Technical details
 
 ### New features

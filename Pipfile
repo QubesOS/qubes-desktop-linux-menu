@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+watchdog = "*"
+pyxdg = "*"
+pygobject = "*"
+gbulb = "*"
+qubesadmin = "*" # install this manually, or use the following
+# qubesadmin = {git = "https://github.com/QubesOS/qubes-core-admin-client"}
+
+[dev-packages]
+pytest = "*"
+# pytest-asyncio = "*"
+pylint = "*"
+
+[requires]
+python_version = ">=3.8"
