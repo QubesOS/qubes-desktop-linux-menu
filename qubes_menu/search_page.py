@@ -18,10 +18,10 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 """Search page for App Menu"""
-from typing import List
+from typing import List, Set, Dict
 
 from .desktop_file_manager import DesktopFileManager
-from .custom_widgets import VMRow
+from .custom_widgets import SearchVMRow
 from .app_widgets import AppEntry, AppEntryWithVM
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -56,18 +56,28 @@ class RecentSearchManager:
     def __init__(self, recent_list: Gtk.ListBox, search_box: Gtk.SearchEntry):
         self.recent_list_box = recent_list
         self.search_box = search_box
+        self.recent_searches: Dict[str, RecentSearchRow] = {}
         self.recent_list_box.connect('row-activated', self._row_clicked)
 
     def add_new_recent_search(self, text: str):
         if not text:
             return
-        rows = self.recent_list_box.get_children()
 
-        if len(rows) == self.SEARCH_VALUES_TO_KEEP:
-            self.recent_list_box.remove(rows[-1])
+        if text in self.recent_searches:
+            old_row = self.recent_searches[text]
+            # move to top of the list
+            self.recent_list_box.remove(old_row)
+            self.recent_list_box.insert(old_row, 0)
+            return
+
+        if len(self.recent_searches) == self.SEARCH_VALUES_TO_KEEP:
+            last_row: RecentSearchRow = self.recent_list_box.get_children()[-1]
+            del self.recent_searches[last_row.search_text]
+            self.recent_list_box.remove(last_row)
 
         row = RecentSearchRow(text)
         self.recent_list_box.insert(row, 0)
+        self.recent_searches[text] = row
 
     def _row_clicked(self, _widget, row: RecentSearchRow):
         self.search_box.set_text(row.search_text)
@@ -100,7 +110,7 @@ class SearchPage(MenuPage):
         vm_manager.register_new_vm_callback(self._vm_callback)
         self.vm_list.set_filter_func(self._is_vm_fitting)
 
-        # TODO: improve
+        # TODO: improve vm search
         self.app_list.set_sort_func(self._sort_apps)
         self.vm_list.set_sort_func(lambda x, y: x.sort_order > y.sort_order)
         self.app_list.invalidate_sort()
@@ -138,7 +148,7 @@ class SearchPage(MenuPage):
         Callback to be performed on all newly loaded VMEntry instances.
         """
         if vm_entry:
-            vm_row = VMRow(vm_entry)
+            vm_row = SearchVMRow(vm_entry)
             vm_row.show_all()
             vm_entry.entries.append(vm_row)
             self.vm_list.add(vm_row)
@@ -167,9 +177,8 @@ class SearchPage(MenuPage):
         *
         """
         search_text = self.search_entry.get_text()
-        result_1 = self._text_search(search_text, appentry.search_words)
-        result_2 = self._text_search(search_text,
-                                     other_entry.search_words)
+        result_1 = appentry.find_text(search_text)
+        result_2 = other_entry.find_text(search_text)
         if result_1 > result_2:
             return -1
         if result_1 < result_2:
@@ -184,41 +193,24 @@ class SearchPage(MenuPage):
     # py dev
     # gpg term
     # term dom0
+    # sys-net term
+    # net term
+    # pi
 
     def _is_app_fitting(self, appentry: AppEntryWithVM):
         """Show only apps matching the current search text"""
-        return self._text_search(
-            self.search_entry.get_text(), appentry.search_words) > 0
+        return appentry.find_text(self.search_entry.get_text()) > 0
 
-    def _is_vm_fitting(self, vmrow: VMRow):
+    def _is_vm_fitting(self, vmrow: SearchVMRow):
         """Show only vms matching the current search text"""
-        return self._text_search(self.search_entry.get_text(),
-                          vmrow.search_words) > 0
-
-    @staticmethod
-    def _text_search(search_phrase: str, text_words: List[str]):
-        """Text-searching function.
-        Returns a match rank, if greater than 0, the searched phrase was found.
-        The higher the number, the better the match.
-        All words from the searched phrase must have been found.
-        """
-        result = 0
-        if not search_phrase:
-            return result
-
-        search_words = search_phrase.lower().split(' ')
-
-        for search_word in search_words:
-            for text_word in text_words:
-                if text_word.startswith(search_word):
-                    result += 1
-                    break
-                if search_word in text_word:
-                    result += 0.5
-                    break
-            else:
-                return 0
-        return result
+        # possible options
+        # 1. show all vms where a matching app was found
+        # (add a fake ALL option on top, filtering right by found vm)
+        # 2. show all vms whose names match all search terms
+        # (what happens on click?)
+        # 3. show all vms whose names match at least one search term
+        # (all happens on click)
+        return vmrow.find_text(self.search_entry.get_text()) > 0
 
     def initialize_page(self):
         """

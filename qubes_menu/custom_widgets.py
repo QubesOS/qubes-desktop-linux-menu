@@ -24,7 +24,7 @@ import subprocess
 from typing import List
 
 from . import constants
-from .utils import load_icon
+from .utils import load_icon, text_search
 from .vm_manager import VMEntry
 
 import gi
@@ -175,11 +175,8 @@ class VMRow(HoverListBox):
         self.icon_img = Gtk.Image()
 
         self.main_box.pack_start(self.icon_img, False, False, 2)
-        self.main_box.pack_start(
-            Gtk.Label(label=self.vm_entry.vm_name), False, False, 2)
-
-        self.search_words: List[str] = self.vm_entry.vm_name.replace(
-            '_', '-').split('-')
+        self.label = Gtk.Label(label=self.vm_entry.vm_name)
+        self.main_box.pack_start(self.label, False, False, 2)
 
         self.update_contents(update_power_state=True, update_label=True,
                              update_has_network=True, update_type=True)
@@ -237,3 +234,49 @@ class VMRow(HoverListBox):
         Helper property exposing desired sort order.
         """
         return self.vm_entry.sort_name
+
+
+class SearchVMRow(VMRow):
+    def __init__(self, vm_entry: VMEntry):
+        """
+        :param vm_entry: VMEntry object, stored and managed by VMManager
+        """
+        super(SearchVMRow, self).__init__(vm_entry)
+
+        self.search_words: List[str] = self.vm_entry.vm_name.replace(
+            '_', '-').split('-')
+
+    def find_text(self, search_phrase: str):
+        """Check if provided search phrase is present in text.
+        Should return higher numbers for better match; if text found,
+        should be bolded in the labels."""
+        # this is slightly processed to improve searching in split vm names
+        # (such as sys-net)
+        search_words = search_phrase.lower().replace(
+            '-', ' ').replace('_', ' ').split(' ')
+        result = max([text_search(word, self.search_words)
+                    for word in search_words])
+        text = self.vm_entry.vm_name
+        if result:
+            for word in search_words:
+                # this will malfunction if words are perso sonal
+                start = text.find(word)
+                end = start + len(word)
+                if start >= 0:
+                    # TODO: fix color
+                    text = text[:start] + '<span background="#886E61">' + text[start:end] + '</span>' + text[end:]
+            self.label.set_markup(text)
+        return result
+
+    def update_contents(self,
+                        update_power_state=False,
+                        update_label=False,
+                        update_has_network=False,
+                        update_type=False):
+        """
+        Search rows do not show power state.
+        """
+        super().update_contents(update_power_state=False,
+                                update_label=update_label,
+                                update_has_network=False,
+                                update_type=update_type)

@@ -20,6 +20,8 @@
 """
 Miscellaneous Qubes Menu utility functions.
 """
+from typing import List
+
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
@@ -58,3 +60,19 @@ def show_error(title, text):
     dialog.set_markup(text)
     dialog.connect("response", lambda *x: dialog.destroy())
     dialog.show()
+
+
+def text_search(search_word: str, text_words: List[str]):
+    """Text-searching function.
+    Returns a match rank, if greater than 0, the searched phrase was found.
+    The higher the number, the better the match.
+    """
+    if not search_word:
+        return 0
+
+    for text_word in text_words:
+        if text_word.startswith(search_word):
+            return 1
+        if search_word in text_word:
+            return 0.5
+    return 0

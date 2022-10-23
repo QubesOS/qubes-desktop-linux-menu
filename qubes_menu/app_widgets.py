@@ -23,11 +23,12 @@ A collection of custom Gtk widgets used elsewhere in the App Menu
 import subprocess
 import logging
 from typing import Optional
+from functools import reduce
 
 from .custom_widgets import LimitedWidthLabel, SelfAwareMenu
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
-from .utils import load_icon
+from .utils import load_icon, text_search
 from . import constants
 
 import gi
@@ -273,6 +274,16 @@ class AppEntryWithVM(AppEntry):
                     '_', ' ').replace('-', ' ').split())
 
         self.show_all()
+
+    def find_text(self, search_phrase: str):
+        """Check if provided search phrase is present in text.
+        Should return higher numbers for better match"""
+        # this is slightly processed to improve searching in split vm names
+        # (such as sys-net)
+        search_words = search_phrase.lower().replace(
+            '-', ' ').replace('_', ' ').split(' ')
+        return reduce(lambda x, y: x*y, [text_search(word, self.search_words)
+                    for word in search_words])
 
 
 class FavoritesAppEntry(AppEntryWithVM):
