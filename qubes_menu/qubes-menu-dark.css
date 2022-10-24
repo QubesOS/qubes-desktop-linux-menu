@@ -171,3 +171,8 @@ separator {
     margin: 20px;
     padding: 0px;
 }
+
+.search_highlight {
+    background: @highlight-blue-2;
+    color: @white;
+}

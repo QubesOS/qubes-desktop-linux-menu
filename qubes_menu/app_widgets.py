@@ -28,7 +28,7 @@ from functools import reduce
 from .custom_widgets import LimitedWidthLabel, SelfAwareMenu
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
-from .utils import load_icon, text_search
+from .utils import load_icon, text_search, highlight_words
 from . import constants
 
 import gi
@@ -250,13 +250,13 @@ class AppEntryWithVM(AppEntry):
         self.app_icon.set_from_pixbuf(app_icon)
 
         if self.app_info.disposable:
-            self.vm_label.set_label(
+            self.vm_label.set_text(
                 DISP_TEXT + str(self.app_info.vm))
         elif self.app_info.vm:
-            self.vm_label.set_label(str(self.app_info.vm))
+            self.vm_label.set_text(str(self.app_info.vm))
         else:
-            self.vm_label.set_label(str(self.app_info.qapp.local_name))
-        self.app_label.set_label(str(self.app_info.app_name))
+            self.vm_label.set_text(str(self.app_info.qapp.local_name))
+        self.app_label.set_text(str(self.app_info.app_name))
 
         self.search_words = []
         if self.app_info.vm:
@@ -274,16 +274,6 @@ class AppEntryWithVM(AppEntry):
                     '_', ' ').replace('-', ' ').split())
 
         self.show_all()
-
-    def find_text(self, search_phrase: str):
-        """Check if provided search phrase is present in text.
-        Should return higher numbers for better match"""
-        # this is slightly processed to improve searching in split vm names
-        # (such as sys-net)
-        search_words = search_phrase.lower().replace(
-            '-', ' ').replace('_', ' ').split(' ')
-        return reduce(lambda x, y: x*y, [text_search(word, self.search_words)
-                    for word in search_words])
 
 
 class FavoritesAppEntry(AppEntryWithVM):
@@ -319,3 +309,22 @@ class FavoritesAppEntry(AppEntryWithVM):
             self.get_parent().remove(self)
             return
         vm.features[constants.FAVORITES_FEATURE] = ' '.join(current_feature)
+
+
+class SearchAppEntry(AppEntryWithVM):
+    """Entry for apps listed on the Search tab."""
+    def find_text(self, search_phrase: str):
+        """Check if provided search phrase is present in text.
+        Should return higher numbers for better match"""
+        # this is slightly processed to improve searching in split vm names
+        # (such as sys-net)
+        search_words = search_phrase.lower().replace(
+            '-', ' ').replace('_', ' ').split(' ')
+
+        result = reduce(lambda x, y: x*y, [text_search(word, self.search_words)
+                    for word in search_words])
+        if not result:
+            return 0
+        highlight_words([self.app_label, self.vm_label], search_words)
+
+        return result

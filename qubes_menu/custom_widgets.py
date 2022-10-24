@@ -24,7 +24,7 @@ import subprocess
 from typing import List
 
 from . import constants
-from .utils import load_icon, text_search
+from .utils import load_icon, text_search, highlight_words
 from .vm_manager import VMEntry
 
 import gi
@@ -237,11 +237,12 @@ class VMRow(HoverListBox):
 
 
 class SearchVMRow(VMRow):
+    """VM Row used for the Search tab."""
     def __init__(self, vm_entry: VMEntry):
         """
         :param vm_entry: VMEntry object, stored and managed by VMManager
         """
-        super(SearchVMRow, self).__init__(vm_entry)
+        super().__init__(vm_entry)
 
         self.search_words: List[str] = self.vm_entry.vm_name.replace(
             '_', '-').split('-')
@@ -256,16 +257,9 @@ class SearchVMRow(VMRow):
             '-', ' ').replace('_', ' ').split(' ')
         result = max([text_search(word, self.search_words)
                     for word in search_words])
-        text = self.vm_entry.vm_name
-        if result:
-            for word in search_words:
-                # this will malfunction if words are perso sonal
-                start = text.find(word)
-                end = start + len(word)
-                if start >= 0:
-                    # TODO: fix color
-                    text = text[:start] + '<span background="#886E61">' + text[start:end] + '</span>' + text[end:]
-            self.label.set_markup(text)
+
+        highlight_words([self.label], search_words)
+
         return result
 
     def update_contents(self,

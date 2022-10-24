@@ -67,6 +67,9 @@ class AppMenu(Gtk.Application):
         self.handlers: Dict[str, MenuPage] = {}
 
         self.power_button: Optional[Gtk.Button] = None
+
+        self.highlight_tag: Optional[str] = None
+
         self.tasks = []
 
     def _add_cli_options(self):
@@ -199,12 +202,7 @@ class AppMenu(Gtk.Application):
         The function that performs actual widget realization and setup. Should
         be only called once, in the main instance of this application.
         """
-        screen = Gdk.Screen.get_default()
-        provider = Gtk.CssProvider()
-        provider.load_from_path(pkg_resources.resource_filename(
-            __name__, 'qubes-menu-dark.css'))
-        Gtk.StyleContext.add_provider_for_screen(
-            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        self.load_style()
         self.builder = Gtk.Builder()
 
         self.fav_app_list = self.builder.get_object('fav_app_list')
@@ -239,6 +237,35 @@ class AppMenu(Gtk.Application):
 
         self.main_window.add_events(Gdk.EventMask.KEY_PRESS_MASK)
         self.main_window.connect('key_press_event', self._key_pressed)
+
+    def load_style(self):
+        """Load appropriate CSS stylesheet and associated properties."""
+        # TODO: this should be called and updated when style changes
+        # from light to dark
+        screen = Gdk.Screen.get_default()
+        provider = Gtk.CssProvider()
+        provider.load_from_path(pkg_resources.resource_filename(
+            __name__, 'qubes-menu-dark.css'))
+        Gtk.StyleContext.add_provider_for_screen(
+            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        label = Gtk.Label()
+        style_context: Gtk.StyleContext = label.get_style_context()
+        style_context.add_class('search_highlight')
+        bg_color = style_context.get_background_color(Gtk.StateType.NORMAL)
+        fg_color = style_context.get_color(Gtk.StateType.NORMAL)
+
+        # This converts a Gdk.RGBA color to a hex representation liked by span
+        # tags in Pango
+        self.highlight_tag = \
+            f'<span background="{self._rgba_color_to_hex(bg_color)}" ' \
+            f'color="{self._rgba_color_to_hex(fg_color)}">'
+
+    @staticmethod
+    def _rgba_color_to_hex(color: Gdk.RGBA):
+        return '#' + ''.join([f'{int(c*255):0>2x}'
+                              for c in (color.red, color.green, color.blue)])
+
 
     def _key_pressed(self, _widget, event_key: Gdk.EventKey):
         """If user presses a key that's not a navigation key, open

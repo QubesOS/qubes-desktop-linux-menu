@@ -18,11 +18,11 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 """Search page for App Menu"""
-from typing import List, Set, Dict
+from typing import Dict
 
 from .desktop_file_manager import DesktopFileManager
 from .custom_widgets import SearchVMRow
-from .app_widgets import AppEntry, AppEntryWithVM
+from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
 from .utils import load_icon
@@ -52,6 +52,7 @@ class RecentSearchRow(Gtk.ListBoxRow):
 
 
 class RecentSearchManager:
+    """Class for managing the list of recent searches."""
     SEARCH_VALUES_TO_KEEP = 10
     def __init__(self, recent_list: Gtk.ListBox, search_box: Gtk.SearchEntry):
         self.recent_list_box = recent_list
@@ -60,6 +61,7 @@ class RecentSearchManager:
         self.recent_list_box.connect('row-activated', self._row_clicked)
 
     def add_new_recent_search(self, text: str):
+        """Add new recent search entry"""
         if not text:
             return
 
@@ -118,7 +120,8 @@ class SearchPage(MenuPage):
 
         self.recent_list: Gtk.ListBox = builder.get_object('search_recent_list')
 
-        self.app_view: Gtk.ScrolledWindow = builder.get_object("search_app_view")
+        self.app_view: Gtk.ScrolledWindow = \
+            builder.get_object("search_app_view")
         self.vm_view: Gtk.ScrolledWindow = builder.get_object("search_vm_view")
         self.recent_view: Gtk.ScrolledWindow = \
             builder.get_object("search_recent_view")
@@ -139,7 +142,7 @@ class SearchPage(MenuPage):
         Callback to be performed on all newly loaded ApplicationInfo instances.
         """
         if app_info.vm or not app_info.is_qubes_specific():
-            entry = AppEntryWithVM(app_info, self.vm_manager)
+            entry = SearchAppEntry(app_info, self.vm_manager)
             app_info.entries.append(entry)
             self.app_list.add(entry)
 
@@ -167,7 +170,7 @@ class SearchPage(MenuPage):
         self.app_list.invalidate_filter()
         self.app_list.invalidate_sort()
 
-    def _sort_apps(self, appentry: AppEntryWithVM, other_entry: AppEntryWithVM):
+    def _sort_apps(self, appentry: SearchAppEntry, other_entry: SearchAppEntry):
         """
         # word is delineated by space and - and _
         Sorting algorithm:
@@ -197,7 +200,7 @@ class SearchPage(MenuPage):
     # net term
     # pi
 
-    def _is_app_fitting(self, appentry: AppEntryWithVM):
+    def _is_app_fitting(self, appentry: SearchAppEntry):
         """Show only apps matching the current search text"""
         return appentry.find_text(self.search_entry.get_text()) > 0
 

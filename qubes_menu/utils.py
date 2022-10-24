@@ -76,3 +76,26 @@ def text_search(search_word: str, text_words: List[str]):
         if search_word in text_word:
             return 0.5
     return 0
+
+
+def highlight_words(labels: List[Gtk.Label], search_words: List[str]):
+    """Highlight provided search_words in the provided labels."""
+    if not labels:
+        return
+    hl_tag = labels[0].get_toplevel().get_application().highlight_tag
+
+    for label in labels:
+        text = label.get_text()
+        search_text = text.lower()
+        for word in search_words:
+            # TODO: edge case
+            # this will malfunction if words are perso sonal for personal VM
+            # TODO: edge case, if looking for an th s
+            #  (the s may be found in the span)
+            start = search_text.find(word)
+            end = start + len(word)
+            if start >= 0:
+                text = text[:start] + hl_tag + \
+                       text[start:end] + '</span>' + text[end:]
+                search_text = text.lower()
+        label.set_markup(text)
