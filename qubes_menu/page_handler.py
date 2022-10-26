@@ -23,6 +23,7 @@ import abc
 
 class MenuPage(abc.ABC):
     """Abstract Menu Page."""
+    @abc.abstractmethod
     def initialize_page(self):
         """Perform all initial / post-switch configuration for the page. This
         will be called on start and whenever menu switches to the given page."""

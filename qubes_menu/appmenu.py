@@ -281,7 +281,7 @@ class AppMenu(Gtk.Application):
                 return False
 
             search_page.search_entry.grab_focus_without_selecting()
-            
+
             if not self.main_notebook:
                 return False
             if self.main_notebook.get_current_page() != 0:
