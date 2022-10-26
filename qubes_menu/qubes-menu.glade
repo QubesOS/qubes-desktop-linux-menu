@@ -32,6 +32,9 @@
                 <property name="primary-icon-activatable">False</property>
                 <property name="primary-icon-sensitive">False</property>
                 <property name="placeholder-text" translatable="yes">Start typing to search</property>
+                <style>
+                  <class name="search_entry"/>
+                </style>
               </object>
               <packing>
                 <property name="left-attach">0</property>
@@ -86,10 +89,15 @@
                         <property name="hexpand">True</property>
                         <property name="vexpand">True</property>
                         <child type="placeholder">
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="search_app_placeholder">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">start</property>
                             <property name="label" translatable="yes">No matches found</property>
+                            <style>
+                              <class name="placeholder"/>
+                            </style>
                           </object>
                         </child>
                         <style>
@@ -128,6 +136,8 @@
                           <object class="GtkLabel">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
+                            <property name="halign">start</property>
+                            <property name="valign">start</property>
                             <property name="label" translatable="yes">No recent searches</property>
                             <style>
                               <class name="placeholder"/>
@@ -135,14 +145,14 @@
                           </object>
                         </child>
                         <style>
-                          <class name="right_pane"/>
+                          <class name="left_pane"/>
                         </style>
                       </object>
                     </child>
                   </object>
                 </child>
                 <style>
-                  <class name="right_pane"/>
+                  <class name="left_pane"/>
                 </style>
               </object>
               <packing>
@@ -168,7 +178,8 @@
               </packing>
             </child>
             <style>
-              <class name="right_pane"/>
+              <class name="left_pane"/>
+              <class name="toplevel_left_pane"/>
             </style>
           </object>
         </child>

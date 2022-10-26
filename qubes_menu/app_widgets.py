@@ -22,7 +22,7 @@ A collection of custom Gtk widgets used elsewhere in the App Menu
 """
 import subprocess
 import logging
-from typing import Optional
+from typing import Optional, List
 from functools import reduce
 
 from .custom_widgets import LimitedWidthLabel, SelfAwareMenu
@@ -240,7 +240,7 @@ class AppEntryWithVM(AppEntry):
         self.grid.attach(self.app_label, 1, 0, 1, 1)
         self.grid.attach(box, 1, 1, 1, 1)
 
-        self.search_words = []
+        self.search_words: List[str] = []
 
         self.update_contents()
 
@@ -257,21 +257,6 @@ class AppEntryWithVM(AppEntry):
         else:
             self.vm_label.set_text(str(self.app_info.qapp.local_name))
         self.app_label.set_text(str(self.app_info.app_name))
-
-        self.search_words = []
-        if self.app_info.vm:
-            self.search_words.extend(
-                self.app_info.vm.name.lower().replace('_', '-').split('-'))
-        else:
-            self.search_words.append('dom0')
-
-        if self.app_info.disposable:
-            self.search_words.extend(DISP_TEXT.lower().split())
-
-        if self.app_info.app_name:
-            self.search_words.extend(
-                self.app_info.app_name.lower().replace(
-                    '_', ' ').replace('-', ' ').split())
 
         self.show_all()
 
@@ -313,18 +298,47 @@ class FavoritesAppEntry(AppEntryWithVM):
 
 class SearchAppEntry(AppEntryWithVM):
     """Entry for apps listed on the Search tab."""
-    def find_text(self, search_phrase: str):
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
+                 **properties):
+
+        super().__init__(app_info, vm_manager, **properties)
+
+        self.last_search_words: Optional[List[str]] = None
+        self.last_search_result: int = 0
+
+        self.search_words = []
+        if self.app_info.vm:
+            self.search_words.extend(
+                self.app_info.vm.name.lower().replace('_', '-').split('-'))
+        else:
+            self.search_words.append('dom0')
+
+        if self.app_info.disposable:
+            self.search_words.extend(DISP_TEXT.lower().split())
+
+        if self.app_info.app_name:
+            self.search_words.extend(
+                self.app_info.app_name.lower().replace(
+                    '_', ' ').replace('-', ' ').split())
+
+    def find_text(self, search_words: List[str]):
         """Check if provided search phrase is present in text.
         Should return higher numbers for better match"""
         # this is slightly processed to improve searching in split vm names
         # (such as sys-net)
-        search_words = search_phrase.lower().replace(
-            '-', ' ').replace('_', ' ').split(' ')
+        if search_words == self.last_search_words:
+            return self.last_search_result
 
-        result = reduce(lambda x, y: x*y, [text_search(word, self.search_words)
-                    for word in search_words])
-        if not result:
-            return 0
+        if search_words:
+            result = reduce(lambda x, y: x*y,
+                            [text_search(word, self.search_words)
+                        for word in search_words])
+        else:
+            result = 0
+
         highlight_words([self.app_label, self.vm_label], search_words)
+
+        self.last_search_words = search_words
+        self.last_search_result = result
 
         return result

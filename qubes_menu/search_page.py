@@ -25,7 +25,7 @@ from .custom_widgets import SearchVMRow
 from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
-from .utils import load_icon
+from .utils import load_icon, parse_search
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -122,6 +122,8 @@ class SearchPage(MenuPage):
 
         self.app_view: Gtk.ScrolledWindow = \
             builder.get_object("search_app_view")
+        self.app_placeholder: Gtk.Label = \
+            builder.get_object('search_app_placeholder')
         self.vm_view: Gtk.ScrolledWindow = builder.get_object("search_vm_view")
         self.recent_view: Gtk.ScrolledWindow = \
             builder.get_object("search_recent_view")
@@ -160,7 +162,6 @@ class SearchPage(MenuPage):
 
     def _do_search(self, *_args):
         has_search = bool(self.search_entry.get_text())
-        self.vm_view.set_visible(has_search)
         self.app_view.set_visible(has_search)
         self.recent_view.set_visible(not has_search)
         self.recent_title.set_visible(not has_search)
@@ -169,6 +170,10 @@ class SearchPage(MenuPage):
         self.vm_list.invalidate_sort()
         self.app_list.invalidate_filter()
         self.app_list.invalidate_sort()
+
+        self.vm_view.set_visible(has_search and
+                                 not self.app_placeholder.get_mapped())
+
 
     def _sort_apps(self, appentry: SearchAppEntry, other_entry: SearchAppEntry):
         """
@@ -179,9 +184,9 @@ class SearchPage(MenuPage):
           is not true
         *
         """
-        search_text = self.search_entry.get_text()
-        result_1 = appentry.find_text(search_text)
-        result_2 = other_entry.find_text(search_text)
+        search_words = parse_search(self.search_entry.get_text())
+        result_1 = appentry.find_text(search_words)
+        result_2 = other_entry.find_text(search_words)
         if result_1 > result_2:
             return -1
         if result_1 < result_2:
@@ -202,7 +207,8 @@ class SearchPage(MenuPage):
 
     def _is_app_fitting(self, appentry: SearchAppEntry):
         """Show only apps matching the current search text"""
-        return appentry.find_text(self.search_entry.get_text()) > 0
+        search_words = parse_search(self.search_entry.get_text())
+        return appentry.find_text(search_words) > 0
 
     def _is_vm_fitting(self, vmrow: SearchVMRow):
         """Show only vms matching the current search text"""
@@ -213,7 +219,8 @@ class SearchPage(MenuPage):
         # (what happens on click?)
         # 3. show all vms whose names match at least one search term
         # (all happens on click)
-        return vmrow.find_text(self.search_entry.get_text()) > 0
+        search_words = parse_search(self.search_entry.get_text())
+        return vmrow.find_text(search_words) > 0
 
     def initialize_page(self):
         """
@@ -227,3 +234,7 @@ class SearchPage(MenuPage):
         self.app_list.invalidate_filter()
         self.vm_list.invalidate_filter()
         self.search_entry.grab_focus_without_selecting()
+
+    def reset_page(self):
+        """Reset page after hiding the menu."""
+        self.initialize_page()

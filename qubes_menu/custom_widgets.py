@@ -21,7 +21,8 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
-from typing import List
+from functools import reduce
+from typing import List, Optional
 
 from . import constants
 from .utils import load_icon, text_search, highlight_words
@@ -244,21 +245,29 @@ class SearchVMRow(VMRow):
         """
         super().__init__(vm_entry)
 
+        self.last_search_words: Optional[List[str]] = None
+        self.last_search_result: int = 0
+
         self.search_words: List[str] = self.vm_entry.vm_name.replace(
             '_', '-').split('-')
 
-    def find_text(self, search_phrase: str):
+    def find_text(self, search_words: List[str]):
         """Check if provided search phrase is present in text.
         Should return higher numbers for better match; if text found,
         should be bolded in the labels."""
-        # this is slightly processed to improve searching in split vm names
-        # (such as sys-net)
-        search_words = search_phrase.lower().replace(
-            '-', ' ').replace('_', ' ').split(' ')
-        result = max([text_search(word, self.search_words)
-                    for word in search_words])
+        if search_words == self.last_search_words:
+            return self.last_search_result
 
+        if search_words:
+            result = reduce(lambda x, y: x*y,
+                            [text_search(word, self.search_words)
+                        for word in search_words])
+        else:
+            result = 0
         highlight_words([self.label], search_words)
+
+        self.last_search_words = search_words
+        self.last_search_result = result
 
         return result
 

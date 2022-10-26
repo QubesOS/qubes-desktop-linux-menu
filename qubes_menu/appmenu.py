@@ -168,6 +168,8 @@ class AppMenu(Gtk.Application):
         itself. Should be called after all sorts of actions like running an
         app or clicking outside the menu.
         """
+        # reset search tab
+        self.handlers['search_page'].initialize_page()
         if not self.keep_visible and self.main_window:
             self.main_window.hide()
 
@@ -209,7 +211,7 @@ class AppMenu(Gtk.Application):
         self.sys_tools_list = self.builder.get_object('sys_tools_list')
         self.builder.add_from_file(pkg_resources.resource_filename(
             __name__, 'qubes-menu.glade'))
-        self.main_window: Gtk.Window = self.builder.get_object('main_window')
+        self.main_window = self.builder.get_object('main_window')
         self.main_notebook = self.builder.get_object('main_notebook')
 
         self.main_window.set_events(Gdk.EventMask.FOCUS_CHANGE_MASK)
@@ -279,7 +281,9 @@ class AppMenu(Gtk.Application):
                 return False
 
             search_page.search_entry.grab_focus_without_selecting()
-
+            
+            if not self.main_notebook:
+                return False
             if self.main_notebook.get_current_page() != 0:
                 self.main_notebook.set_current_page(0)
             return False

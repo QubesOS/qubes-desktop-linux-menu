@@ -61,6 +61,12 @@ def show_error(title, text):
     dialog.connect("response", lambda *x: dialog.destroy())
     dialog.show()
 
+def parse_search(search_text: str) -> List[str]:
+    """Parse search text into separate words"""
+    search_words = search_text.lower().replace(
+        '-', ' ').replace('_', ' ').split(' ')
+    return [w for w in search_words if w]
+
 
 def text_search(search_word: str, text_words: List[str]):
     """Text-searching function.
@@ -82,20 +88,36 @@ def highlight_words(labels: List[Gtk.Label], search_words: List[str]):
     """Highlight provided search_words in the provided labels."""
     if not labels:
         return
+
     hl_tag = labels[0].get_toplevel().get_application().highlight_tag
 
     for label in labels:
         text = label.get_text()
+        # remove existing highlighting
+        label.set_markup(text)
         search_text = text.lower()
+        found_intervals = []
         for word in search_words:
-            # TODO: edge case
-            # this will malfunction if words are perso sonal for personal VM
-            # TODO: edge case, if looking for an th s
-            #  (the s may be found in the span)
             start = search_text.find(word)
-            end = start + len(word)
             if start >= 0:
-                text = text[:start] + hl_tag + \
-                       text[start:end] + '</span>' + text[end:]
-                search_text = text.lower()
+                found_intervals.append((start, start + len(word)))
+
+        if not found_intervals:
+            continue
+
+        found_intervals.sort(key= lambda x: x[0])
+        result_intervals = [found_intervals[0]]
+        for interval in found_intervals[1:]:
+            if interval[0] <= result_intervals[-1][1]:
+                result_intervals[-1] = \
+                    (result_intervals[-1][0],
+                     max(result_intervals[-1][1], interval[1]))
+            else:
+                result_intervals.append(interval)
+
+        for interval in reversed(result_intervals):
+            start, end = interval
+            text = text[:start] + hl_tag + \
+                   text[start:end] + '</span>' + text[end:]
+
         label.set_markup(text)

@@ -176,3 +176,12 @@ separator {
     background: @highlight-blue-2;
     color: @white;
 }
+
+.search_entry {
+    background: @outer-background;
+    color: @white;
+}
+
+.placeholder {
+ padding: 10px;
+}
