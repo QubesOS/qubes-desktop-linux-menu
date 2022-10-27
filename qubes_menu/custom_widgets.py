@@ -21,11 +21,9 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
-from functools import reduce
-from typing import List, Optional
 
 from . import constants
-from .utils import load_icon, text_search, highlight_words
+from .utils import load_icon
 from .vm_manager import VMEntry
 
 import gi
@@ -171,6 +169,7 @@ class VMRow(HoverListBox):
         """
         super().__init__()
         self.vm_entry = vm_entry
+        self.vm_name = vm_entry.vm_name
         self.get_style_context().add_class('vm_entry')
 
         self.icon_img = Gtk.Image()
@@ -182,7 +181,7 @@ class VMRow(HoverListBox):
         self.update_contents(update_power_state=True, update_label=True,
                              update_has_network=True, update_type=True)
 
-    def _update_style(self):
+    def update_style(self, update_power_state: bool = True):
         """Update own style, based on whether VM is running or not and
         what type it has."""
         style_context: Gtk.StyleContext = self.get_style_context()
@@ -194,10 +193,11 @@ class VMRow(HoverListBox):
             style_context.remove_class('dispvm_entry')
             style_context.remove_class('dvm_template_entry')
 
-        if self.vm_entry.power_state == 'Running':
-            style_context.add_class('running_vm')
-        else:
-            style_context.remove_class('running_vm')
+        if update_power_state:
+            if self.vm_entry.power_state == 'Running':
+                style_context.add_class('running_vm')
+            else:
+                style_context.remove_class('running_vm')
 
     def update_contents(self,
                         update_power_state=False,
@@ -218,7 +218,7 @@ class VMRow(HoverListBox):
             icon_vm = load_icon(self.vm_entry.vm_icon_name)
             self.icon_img.set_from_pixbuf(icon_vm)
         if update_type or update_power_state:
-            self._update_style()
+            self.update_style(update_power_state)
             if self.get_parent():
                 self.get_parent().invalidate_sort()
                 self.get_parent().invalidate_filter()
@@ -239,38 +239,6 @@ class VMRow(HoverListBox):
 
 class SearchVMRow(VMRow):
     """VM Row used for the Search tab."""
-    def __init__(self, vm_entry: VMEntry):
-        """
-        :param vm_entry: VMEntry object, stored and managed by VMManager
-        """
-        super().__init__(vm_entry)
-
-        self.last_search_words: Optional[List[str]] = None
-        self.last_search_result: int = 0
-
-        self.search_words: List[str] = self.vm_entry.vm_name.replace(
-            '_', '-').split('-')
-
-    def find_text(self, search_words: List[str]):
-        """Check if provided search phrase is present in text.
-        Should return higher numbers for better match; if text found,
-        should be bolded in the labels."""
-        if search_words == self.last_search_words:
-            return self.last_search_result
-
-        if search_words:
-            result = reduce(lambda x, y: x*y,
-                            [text_search(word, self.search_words)
-                        for word in search_words])
-        else:
-            result = 0
-        highlight_words([self.label], search_words)
-
-        self.last_search_words = search_words
-        self.last_search_result = result
-
-        return result
-
     def update_contents(self,
                         update_power_state=False,
                         update_label=False,
@@ -283,3 +251,21 @@ class SearchVMRow(VMRow):
                                 update_label=update_label,
                                 update_has_network=False,
                                 update_type=update_type)
+
+class AnyVMRow(HoverListBox):
+    """Generic Any VM row for search purposes."""
+    def __init__(self):
+        super().__init__()
+        self.vm_name = None
+        self.sort_order = ''
+        self.get_style_context().add_class('vm_entry')
+
+        icon_img = Gtk.Image()
+        icon_vm = load_icon('qubes-logo-icon')
+        icon_img.set_from_pixbuf(icon_vm)
+        self.main_box.pack_start(icon_img, False, False, 2)
+
+        self.label = Gtk.Label()
+        self.label.set_markup('<b>Any qube</b>')
+        self.main_box.pack_start(self.label, False, False, 2)
+        self.show_all()

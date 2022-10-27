@@ -18,10 +18,10 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 """Search page for App Menu"""
-from typing import Dict
+from typing import Dict, Optional, Set, Union
 
 from .desktop_file_manager import DesktopFileManager
-from .custom_widgets import SearchVMRow
+from .custom_widgets import SearchVMRow, AnyVMRow
 from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -40,7 +40,7 @@ class RecentSearchRow(Gtk.ListBoxRow):
         super().__init__()
         self.search_text = search_text
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        # TODO: replace this icon with actual icon of a clock or smth?
+
         self.recent_icon = Gtk.Image.new_from_pixbuf(
             load_icon('qappmenu-search'))
         self.hbox.pack_start(self.recent_icon, False, False, 5)
@@ -102,6 +102,9 @@ class SearchPage(MenuPage):
         self.app_list: Gtk.ListBox = builder.get_object('search_app_list')
         self.search_entry: Gtk.SearchEntry = builder.get_object('search_entry')
 
+        self.selected_vm_row: Optional[SearchVMRow] = None
+        self.filtered_vms: Set[str] = set()
+
         self.search_entry.connect('search-changed', self._do_search)
 
         desktop_file_manager.register_callback(self._app_info_callback)
@@ -109,10 +112,10 @@ class SearchPage(MenuPage):
         self.app_list.set_filter_func(self._is_app_fitting)
         self.app_list.connect('row-activated', self._app_clicked)
 
+        self.vm_list.add(AnyVMRow())
         vm_manager.register_new_vm_callback(self._vm_callback)
         self.vm_list.set_filter_func(self._is_vm_fitting)
 
-        # TODO: improve vm search
         self.app_list.set_sort_func(self._sort_apps)
         self.vm_list.set_sort_func(lambda x, y: x.sort_order > y.sort_order)
         self.app_list.invalidate_sort()
@@ -132,7 +135,7 @@ class SearchPage(MenuPage):
         self.recent_search_manager = RecentSearchManager(
             self.recent_list, self.search_entry)
 
-        # self.vm_list.connect('row-selected', self._vm_selected)
+        self.vm_list.connect('row-selected', self._selection_changed)
 
     def _app_clicked(self, _widget, row):
         self.recent_search_manager.add_new_recent_search(
@@ -161,15 +164,18 @@ class SearchPage(MenuPage):
             self.vm_list.invalidate_sort()
 
     def _do_search(self, *_args):
+        self.vm_list.select_row(self.vm_list.get_row_at_index(0))
         has_search = bool(self.search_entry.get_text())
         self.app_view.set_visible(has_search)
         self.recent_view.set_visible(not has_search)
         self.recent_title.set_visible(not has_search)
 
-        self.vm_list.invalidate_filter()
-        self.vm_list.invalidate_sort()
+        self.filtered_vms.clear()
         self.app_list.invalidate_filter()
         self.app_list.invalidate_sort()
+
+        self.vm_list.invalidate_filter()
+        self.vm_list.invalidate_sort()
 
         self.vm_view.set_visible(has_search and
                                  not self.app_placeholder.get_mapped())
@@ -178,11 +184,8 @@ class SearchPage(MenuPage):
     def _sort_apps(self, appentry: SearchAppEntry, other_entry: SearchAppEntry):
         """
         # word is delineated by space and - and _
-        Sorting algorithm:
-        * if any searched word is at the beginning of a word in the app
-         name or vm name, the app should be before apps for which this
-          is not true
-        *
+        Sorting algorithm prefers searched words being found at the start
+        of a word.
         """
         search_words = parse_search(self.search_entry.get_text())
         result_1 = appentry.find_text(search_words)
@@ -193,34 +196,26 @@ class SearchPage(MenuPage):
             return 1
         return 0
 
-# TESTING CASES:
-    # work firefox
-    # firefox
-    # firefox work
-    # fire work
-    # py dev
-    # gpg term
-    # term dom0
-    # sys-net term
-    # net term
-    # pi
-
     def _is_app_fitting(self, appentry: SearchAppEntry):
-        """Show only apps matching the current search text"""
-        search_words = parse_search(self.search_entry.get_text())
-        return appentry.find_text(search_words) > 0
+        """Show only apps matching the current search text and, if
+        qube is selected, matching a selected qube."""
+        if self.selected_vm_row:
+            if appentry.vm_name != self.selected_vm_row.vm_name:
+                return False
 
-    def _is_vm_fitting(self, vmrow: SearchVMRow):
-        """Show only vms matching the current search text"""
-        # possible options
-        # 1. show all vms where a matching app was found
-        # (add a fake ALL option on top, filtering right by found vm)
-        # 2. show all vms whose names match all search terms
-        # (what happens on click?)
-        # 3. show all vms whose names match at least one search term
-        # (all happens on click)
         search_words = parse_search(self.search_entry.get_text())
-        return vmrow.find_text(search_words) > 0
+        found_result = appentry.find_text(search_words)
+        if found_result > 0:
+            self.filtered_vms.add(appentry.vm_name)
+            return True
+        return False
+
+    def _is_vm_fitting(self, vmrow: Union[SearchVMRow, AnyVMRow]):
+        """Show all vms where a matching app was found, and show
+        the Any Qube option if any app was found."""
+        if vmrow.vm_name:
+            return vmrow.vm_name in self.filtered_vms
+        return bool(self.filtered_vms)
 
     def initialize_page(self):
         """
@@ -238,3 +233,10 @@ class SearchPage(MenuPage):
     def reset_page(self):
         """Reset page after hiding the menu."""
         self.initialize_page()
+
+    def _selection_changed(self, _widget, row: Optional[SearchVMRow]):
+        if row is None or not row.vm_name:
+            self.selected_vm_row = None
+        else:
+            self.selected_vm_row = row
+        self.app_list.invalidate_filter()

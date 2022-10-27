@@ -221,6 +221,8 @@ class VMTypeToggle:
             return False
         if vm_entry.vm_klass == 'TemplateVM':
             return False
+        if vm_entry.vm_klass == 'AdminVM':
+            return False
         return True
 
     @staticmethod

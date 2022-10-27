@@ -45,7 +45,8 @@ class VMEntry:
         self._servicevm = bool(self.vm.features.get("servicevm", False))
         self._is_dispvm_template = getattr(
             self.vm, 'template_for_dispvms', False)
-        self._has_network = self.vm.is_networked()
+        self._has_network = \
+            self.vm.is_networked() if vm.klass != 'AdminVM' else False
         self._vm_icon_name = getattr(self.vm, 'icon',
                                      getattr(self.vm.label, 'icon', None))
         self._power_state = self.vm.get_power_state()
@@ -150,7 +151,7 @@ class VMManager:
             vm: QubesVM = self.qapp.domains[vm_name]
         except KeyError:
             return None
-        if vm.klass == 'AdminVM' or vm.features.get('internal', False):
+        if vm.features.get('internal', False):
             return None
 
         return self._add_vm(vm)
