@@ -1,3 +1,23 @@
+qubes-desktop-linux-menu (0.3.0-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Introduce an abstract PageHandler
+  * First working search
+  * Add icon to search barre
+  * Switch to search on typing
+  * Improvements to search algorith
+  * Add recent searches
+  * Add highlighting of search terms
+  * Introduce working search highlighting
+  * Add highlighting of search terms and fix styles
+  * Fix missing abstract def
+  * Add functioning filter-by-qube to search
+  * Add Search to readme, update old images
+  * Make search more resilient to weird timing problems + fix keyboard
+    nav
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Fri, 28 Oct 2022 23:47:26 +0200
+
 qubes-desktop-linux-menu (0.2.2-1) unstable; urgency=medium
 
   [ Nina Eleanor Alter ]
