@@ -58,6 +58,35 @@ in the system).
 
 ![](readme_img/menu4.png)
 
+### Search pane
+
+To search in the menu, you can just start typing your search terms while
+the menu is open, or select the top tab and type there:
+
+![](readme_img/menu_search.png)
+
+You can search by program or qube name:
+
+![](readme_img/menu_search_by_program.png)
+
+and filter the search results by qube:
+
+![](readme_img/menu_search_filter.png)
+
+The search is case-insensitive and word-order-insensitive, which allows
+the user to easily keep typing to specify details of their search, e.g.:
+
+![](readme_img/menu_search_by_name_and_qube.png)
+
+Furthermore, the found search terms are highlighted in the program and
+qube name.
+
+If Search had been already used during the current session, the Search
+pane shows a list of recent searches.
+
+![](readme_img/menu_search_recent.png)
+
+
 ## How to run
 
 The menu can be started via CLI: `qubes-app-menu`. The menu remains running
