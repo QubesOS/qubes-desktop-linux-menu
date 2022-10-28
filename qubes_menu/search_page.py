@@ -164,18 +164,12 @@ class SearchPage(MenuPage):
             self.vm_list.invalidate_sort()
 
     def _do_search(self, *_args):
-        self.vm_list.select_row(self.vm_list.get_row_at_index(0))
         has_search = bool(self.search_entry.get_text())
         self.app_view.set_visible(has_search)
         self.recent_view.set_visible(not has_search)
         self.recent_title.set_visible(not has_search)
 
-        self.filtered_vms.clear()
-        self.app_list.invalidate_filter()
-        self.app_list.invalidate_sort()
-
-        self.vm_list.invalidate_filter()
-        self.vm_list.invalidate_sort()
+        self._filter_lists()
 
         self.vm_view.set_visible(has_search and
                                  not self.app_placeholder.get_mapped())
@@ -205,10 +199,7 @@ class SearchPage(MenuPage):
 
         search_words = parse_search(self.search_entry.get_text())
         found_result = appentry.find_text(search_words)
-        if found_result > 0:
-            self.filtered_vms.add(appentry.vm_name)
-            return True
-        return False
+        return found_result > 0
 
     def _is_vm_fitting(self, vmrow: Union[SearchVMRow, AnyVMRow]):
         """Show all vms where a matching app was found, and show
@@ -217,17 +208,39 @@ class SearchPage(MenuPage):
             return vmrow.vm_name in self.filtered_vms
         return bool(self.filtered_vms)
 
+    def _filter_lists(self):
+        # selection of the All Qubes row is necessary to get all
+        # possible qubes by filtering apps; if this behavior should be
+        # changed (to e.g. not deselect qube when typing), this must be
+        # refactored
+        self.vm_list.select_row(self.vm_list.get_row_at_index(0))
+
+        self.filtered_vms.clear()
+
+        self.app_list.invalidate_filter()
+        self.app_list.invalidate_sort()
+
+        for child in self.app_list.get_children():
+            if child.get_mapped():
+                self.filtered_vms.add(child.vm_name)
+
+        self.vm_list.invalidate_filter()
+        self.vm_list.invalidate_sort()
+
+
     def initialize_page(self):
         """
         Initialize own state.
         """
         self.search_entry.set_text('')
+        self.app_list.select_row(None)
+        self.vm_list.select_row(None)
         self.app_view.set_visible(False)
         self.vm_view.set_visible(False)
         self.recent_view.set_visible(True)
 
-        self.app_list.invalidate_filter()
-        self.vm_list.invalidate_filter()
+        self._filter_lists()
+
         self.search_entry.grab_focus_without_selecting()
 
     def reset_page(self):
@@ -240,3 +253,4 @@ class SearchPage(MenuPage):
         else:
             self.selected_vm_row = row
         self.app_list.invalidate_filter()
+        self.app_list.select_row(None)
