@@ -137,3 +137,11 @@ favorites option is not present
 - discuss handling resizing and moving menu in a more complex way
 - see [full Project, here on GitHub](https://github.com/QubesOS/qubes-issues/projects/12)
 
+## Acknowledgements
+
+![NLnet logo](https://nlnet.nl/logo/banner.svg)
+
+This work was made possible thanks to a grant from the [NLnet
+Foundation](https://nlnet.nl/), a nonprofit organization and [Qubes
+Partner](https://www.qubes-os.org/partners/) dedicated to supporting
+the growth of an open information society.
