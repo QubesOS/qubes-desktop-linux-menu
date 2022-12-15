@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Exec=qubes-app-menu --background
+Exec=systemctl --user start qubes-app-menu
 Icon=qubes-manager
 Terminal=false
 Name=Qubes Application Menu

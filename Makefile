@@ -26,6 +26,10 @@ install-autostart:
 	cp autostart/qubes-app-menu.desktop $(DESTDIR)/etc/xdg/autostart
 	mkdir -p $(DESTDIR)/usr/share/applications
 	cp desktop_files/open-qubes-app-menu.desktop $(DESTDIR)/usr/share/applications/
+	mkdir -p $(DESTDIR)/lib/systemd/user/
+	cp service_files/qubes-app-menu.service $(DESTDIR)/lib/systemd/user/
+	mkdir -p $(DESTDIR)/usr/share/dbus-1/services/
+	cp service_files/dbus-qubes-app-menu.service $(DESTDIR)/usr/share/dbus-1/services/
 
 install: install-autostart install-icons
 
