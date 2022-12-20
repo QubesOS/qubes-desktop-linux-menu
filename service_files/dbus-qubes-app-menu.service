@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=org.qubesos.appmenu
+SystemdService=qubes-app-menu.service
