@@ -187,7 +187,8 @@ class VMRow(HoverListBox):
         style_context: Gtk.StyleContext = self.get_style_context()
         if self.vm_entry.is_dispvm_template:
             style_context.add_class('dvm_template_entry')
-        elif self.vm_entry.vm_klass == 'DispVM':
+        elif self.vm_entry.parent_vm:
+            # has a parent VM means that it should have arrow etc.
             style_context.add_class('dispvm_entry')
         else:
             style_context.remove_class('dispvm_entry')

@@ -38,10 +38,13 @@ class VMEntry:
         self.vm_name = str(vm)
         self.vm_klass = vm.klass
 
-        self.sort_name = f'{str(self.vm.template.name)}:{self.vm_name}'\
-            if hasattr(self.vm, 'template') and self.vm_klass == 'DispVM' \
-            else self.vm_name
-        self.parent_vm = self.vm.template if self.vm.klass == 'DispVM' else None
+        if self.vm.klass == 'DispVM' and self.vm.auto_cleanup:
+            self.parent_vm = self.vm.template
+            self.sort_name = f'{str(self.parent_vm.name)}:{self.vm_name}'
+        else:
+            self.parent_vm = None
+            self.sort_name = self.vm_name
+
         self._servicevm = bool(self.vm.features.get("servicevm", False))
         self._is_dispvm_template = getattr(
             self.vm, 'template_for_dispvms', False)
