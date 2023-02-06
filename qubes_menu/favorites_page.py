@@ -81,7 +81,7 @@ class FavoritesPage(MenuPage):
         favorites = vm.features.get(constants.FAVORITES_FEATURE, '')
         favorites = favorites.split(' ')
 
-        is_local_vm = (vm.name == self.qapp.local_name)
+        is_local_vm = vm.name == self.qapp.local_name
 
         for app_info in self.desktop_file_manager.get_app_infos():
             if (not is_local_vm and app_info.vm == vm)\
