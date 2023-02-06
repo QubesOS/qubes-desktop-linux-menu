@@ -88,8 +88,14 @@ def highlight_words(labels: List[Gtk.Label], search_words: List[str]):
     """Highlight provided search_words in the provided labels."""
     if not labels:
         return
+    # try to find Application, if impossible, just give up on highlighting
+    # because it means we are trying to highlight in the middle of
+    # deleting some rows
 
-    hl_tag = labels[0].get_toplevel().get_application().highlight_tag
+    window = labels[0].get_ancestor(Gtk.Window)
+    if not window:
+        return
+    hl_tag = window.get_application().highlight_tag
 
     for label in labels:
         text = label.get_text()
