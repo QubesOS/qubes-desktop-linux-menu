@@ -1,3 +1,19 @@
+qubes-desktop-linux-menu (1.0.0-1) unstable; urgency=medium
+
+  [ Andrew David Wong ]
+  * Add Acknowledgements section thanking NLnet
+
+  [ Marta Marczykowska-Górecka ]
+  * Fix --background causing menu to be always hiddden
+  * Make the menu into a systemctl service
+  * Fix display of named disposable vms
+  * Fix move to/from events being ignored for .desktop files
+
+  [ Marek Marczykowski-Górecki ]
+  * make pylint happy
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 07 Feb 2023 00:28:51 +0100
+
 qubes-desktop-linux-menu (0.3.0-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
