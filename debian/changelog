@@ -1,3 +1,10 @@
+qubes-desktop-linux-menu (1.0.1-1) unstable; urgency=medium
+
+  * Add qubes-builderv2 integration
+  * CI: add R4.2
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 07 Feb 2023 03:47:31 +0100
+
 qubes-desktop-linux-menu (1.0.0-1) unstable; urgency=medium
 
   [ Andrew David Wong ]
