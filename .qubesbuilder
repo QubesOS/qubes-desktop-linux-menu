@@ -1,0 +1,11 @@
+host:
+ rpm:
+   build:
+   - rpm_spec/qubes-desktop-linux-menu.spec
+vm:
+ rpm:
+   build:
+   - rpm_spec/qubes-desktop-linux-menu.spec
+ deb:
+   build:
+   - debian
