@@ -187,12 +187,11 @@
           <object class="GtkImage">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-start">15</property>
-            <property name="margin-end">15</property>
-            <property name="margin-top">15</property>
-            <property name="margin-bottom">15</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">10</property>
+            <property name="margin-bottom">10</property>
             <property name="icon-name">qappmenu-search</property>
-            <property name="icon_size">5</property>
           </object>
           <packing>
             <property name="tab-fill">False</property>
@@ -415,12 +414,11 @@
           <object class="GtkImage">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-start">15</property>
-            <property name="margin-end">15</property>
-            <property name="margin-top">15</property>
-            <property name="margin-bottom">15</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">10</property>
+            <property name="margin-bottom">10</property>
             <property name="icon-name">qappmenu-qube</property>
-            <property name="icon_size">5</property>
           </object>
           <packing>
             <property name="position">1</property>
@@ -476,12 +474,11 @@
           <object class="GtkImage">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-start">15</property>
-            <property name="margin-end">15</property>
-            <property name="margin-top">15</property>
-            <property name="margin-bottom">15</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">10</property>
+            <property name="margin-bottom">10</property>
             <property name="icon-name">qappmenu-favorites</property>
-            <property name="icon_size">5</property>
           </object>
           <packing>
             <property name="position">2</property>
@@ -548,12 +545,11 @@
           <object class="GtkImage">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="margin-start">15</property>
-            <property name="margin-end">15</property>
-            <property name="margin-top">15</property>
-            <property name="margin-bottom">15</property>
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">10</property>
+            <property name="margin-bottom">10</property>
             <property name="icon-name">qappmenu-settings</property>
-            <property name="icon_size">5</property>
           </object>
           <packing>
             <property name="position">3</property>
@@ -569,12 +565,11 @@
               <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="margin-start">15</property>
-                <property name="margin-end">15</property>
-                <property name="margin-top">15</property>
-                <property name="margin-bottom">15</property>
+                <property name="margin-start">10</property>
+                <property name="margin-end">10</property>
+                <property name="margin-top">10</property>
+                <property name="margin-bottom">10</property>
                 <property name="icon-name">qappmenu-power</property>
-                <property name="icon_size">5</property>
               </object>
             </child>
             <style>
