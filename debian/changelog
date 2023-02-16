@@ -1,3 +1,12 @@
+qubes-desktop-linux-menu (1.0.2-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Set KillMode on menu to process
+  * Improve readability on normal DPI systems
+  * Try to wrangle menu into having correct env vars set
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Thu, 16 Feb 2023 01:29:49 +0100
+
 qubes-desktop-linux-menu (1.0.1-1) unstable; urgency=medium
 
   * Add qubes-builderv2 integration
