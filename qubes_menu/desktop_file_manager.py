@@ -185,8 +185,9 @@ class DesktopFileManager:
         self.app_entries: Dict[Path, ApplicationInfo] = {}
 
         for directory in self.desktop_dirs:
-            for file in os.listdir(directory):
-                self.load_file(directory / file)
+            if os.path.exists(directory):
+                for file in os.listdir(directory):
+                    self.load_file(directory / file)
         self._initialize_watchers()
 
     def register_callback(self, func):
