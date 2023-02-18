@@ -1,3 +1,10 @@
+qubes-desktop-linux-menu (1.0.3-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Don't assume system dirs exist
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sat, 18 Feb 2023 02:34:30 +0100
+
 qubes-desktop-linux-menu (1.0.2-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
