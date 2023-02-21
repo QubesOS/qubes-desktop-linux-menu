@@ -144,6 +144,13 @@ class AppMenu(Gtk.Application):
             if not self.start_in_background:
                 self.main_window.show_all()
             self.initialize_state()
+            # set size if too big
+            current_height = self.main_window.get_allocated_height()
+            max_height = self.main_window.get_screen().get_height() * 0.9
+            if current_height > max_height:
+                self.main_window.resize(self.main_window.get_allocated_width(),
+                                        int(max_height))
+
 
             loop = asyncio.get_event_loop()
             self.tasks = [

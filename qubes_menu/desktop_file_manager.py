@@ -185,9 +185,14 @@ class DesktopFileManager:
         self.app_entries: Dict[Path, ApplicationInfo] = {}
 
         for directory in self.desktop_dirs:
-            if os.path.exists(directory):
-                for file in os.listdir(directory):
-                    self.load_file(directory / file)
+            if not os.path.exists(directory):
+                try:
+                    os.makedirs(directory, exist_ok=True)
+                except OSError:
+                    # situation is strange, just ignore this directory
+                    continue
+            for file in os.listdir(directory):
+                self.load_file(directory / file)
         self._initialize_watchers()
 
     def register_callback(self, func):

@@ -136,6 +136,7 @@ class SearchPage(MenuPage):
             self.recent_list, self.search_entry)
 
         self.vm_list.connect('row-selected', self._selection_changed)
+        self.search_entry.connect('activate', self._move_to_first)
 
     def _app_clicked(self, _widget, row):
         self.recent_search_manager.add_new_recent_search(
@@ -174,6 +175,14 @@ class SearchPage(MenuPage):
         self.vm_view.set_visible(has_search and
                                  not self.app_placeholder.get_mapped())
 
+    def _move_to_first(self, *_args):
+        """
+        When Enter is pressed, we should move to first found row.
+        """
+        for row in self.app_list.get_children():
+            if row.get_mapped():
+                self.app_list.select_row(row)
+                return
 
     def _sort_apps(self, appentry: SearchAppEntry, other_entry: SearchAppEntry):
         """
