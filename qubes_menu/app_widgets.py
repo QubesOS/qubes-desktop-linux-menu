@@ -25,7 +25,7 @@ import logging
 from typing import Optional, List
 from functools import reduce
 
-from .custom_widgets import LimitedWidthLabel, SelfAwareMenu
+from .custom_widgets import LimitedWidthLabel, SelfAwareMenu, HoverEventBox
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
 from .utils import load_icon, text_search, highlight_words
@@ -62,10 +62,11 @@ class AppEntry(Gtk.ListBoxRow):
 
         self.menu = SelfAwareMenu()
 
-        self.event_box = Gtk.EventBox()
+        self.event_box = HoverEventBox(focus_widget=self)
         self.add(self.event_box)
         self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         self.event_box.connect('button-press-event', self.show_menu)
+
         self.drag_source_set(
             Gdk.ModifierType.BUTTON1_MASK, [],
             (Gdk.DragAction.COPY | Gdk.DragAction.MOVE))

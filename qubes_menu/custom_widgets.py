@@ -48,24 +48,16 @@ class LimitedWidthLabel(Gtk.Label):
         self.set_ellipsize(Pango.EllipsizeMode.END)
 
 
-class HoverListBox(Gtk.ListBoxRow):
-    """
-    Gtk.ListBoxRow, but selects itself on hover (after a timeout specified in
-    constants.py)
-    """
-    def __init__(self):
+class HoverEventBox(Gtk.EventBox):
+    def __init__(self, focus_widget: Gtk.Widget):
         super().__init__()
-        self.mouse = False
-        self.event_box = Gtk.EventBox()
-        self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
-        self.event_box.add(self.main_box)
-        self.add(self.event_box)
+        self.focus_widget = focus_widget
 
-        self.event_box.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK)
-        self.event_box.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK)
-        self.event_box.connect('enter-notify-event', self._enter_event)
-        self.event_box.connect('leave-notify-event', self._leave_event)
+        self.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK)
+        self.add_events(Gdk.EventMask.LEAVE_NOTIFY_MASK)
+        self.connect('enter-notify-event', self._enter_event)
+        self.connect('leave-notify-event', self._leave_event)
 
     def _enter_event(self, *_args):
         self.mouse = True
@@ -77,9 +69,28 @@ class HoverListBox(Gtk.ListBoxRow):
     def _select_me(self, *_args):
         if not self.mouse:
             return False
+        self.focus_widget.grab_focus()
+
+
+class HoverListBox(Gtk.ListBoxRow):
+    """
+    Gtk.ListBoxRow, but selects itself on hover (after a timeout specified in
+    constants.py)
+    """
+    def __init__(self):
+        super().__init__()
+        self.mouse = False
+        self.event_box = HoverEventBox(focus_widget=self)
+
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.event_box.add(self.main_box)
+        self.add(self.event_box)
+
+        self.connect('focus-in-event', self._on_focus)
+
+    def _on_focus(self, *_args):
         self.activate()
         self.get_parent().select_row(self)
-        return False
 
 
 class SelfAwareMenu(Gtk.Menu):
@@ -143,14 +154,17 @@ class SettingsEntry(Gtk.ListBoxRow):
     """
     def __init__(self):
         super().__init__()
+        self.event_box = HoverEventBox(focus_widget=self)
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.event_box.add(self.hbox)
         self.settings_icon = Gtk.Image.new_from_pixbuf(
             load_icon('qappmenu-settings'))
         self.hbox.pack_start(self.settings_icon, False, False, 5)
         self.settings_label = Gtk.Label(label="Settings", xalign=0)
         self.hbox.pack_start(self.settings_label, False, False, 5)
         self.get_style_context().add_class('app_entry')
-        self.add(self.hbox)
+        self.add(self.event_box)
+        self.show_all()
 
     def run_app(self, vm):
         """Run settings for specified vm."""

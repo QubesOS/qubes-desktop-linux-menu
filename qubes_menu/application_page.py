@@ -25,7 +25,7 @@ from typing import Optional
 
 from .desktop_file_manager import DesktopFileManager
 from .custom_widgets import LimitedWidthLabel, NetworkIndicator, \
-    SettingsEntry, VMRow
+    SettingsEntry, VMRow, HoverEventBox
 from .app_widgets import AppEntry, BaseAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -45,7 +45,10 @@ class ControlRow(Gtk.ListBoxRow):
         super().__init__()
         self.row_label = LimitedWidthLabel()
         self.get_style_context().add_class('app_entry')
-        self.add(self.row_label)
+        self.event_box = HoverEventBox(focus_widget=self)
+        self.add(self.event_box)
+        self.event_box.add(self.row_label)
+        self.show_all()
         self.command = None
 
     def update_state(self, state):
@@ -295,6 +298,9 @@ class AppPage(MenuPage):
         self.app_list.connect('keynav-failed', self._keynav_failed)
         self.settings_list.connect('keynav-failed', self._keynav_failed)
         self.control_list.connect('keynav-failed', self._keynav_failed)
+        self.app_list.connect('key-press-event', self._focus_vm_list)
+        self.settings_list.connect('key-press-event', self._focus_vm_list)
+        self.control_list.connect('key-press-event', self._focus_vm_list)
         self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.settings_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.control_list.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -392,6 +398,13 @@ class AppPage(MenuPage):
             return
         next_focus_widget = self._get_direction_child(next_widget, direction)
         next_focus_widget.grab_focus()
+
+    def _focus_vm_list(self, _widget, event):
+        """Move focus to VM list"""
+        if event.keyval == Gdk.KEY_Left:
+            self.vm_list.get_selected_row().grab_focus()
+            return True
+        return False
 
     def _app_clicked(self, _widget: Gtk.Widget, row: AppEntry):
         if not self.selected_vm_entry:

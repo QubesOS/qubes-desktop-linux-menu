@@ -94,7 +94,7 @@ font-family: SourceSansPro;
   padding: 4px 0 4px 5px;
 }
 
-.favorite_entry:hover {
+.favorite_entry:focus {
  background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
 }
 
@@ -111,7 +111,7 @@ font-family: SourceSansPro;
   padding: 3px 0 3px 20px;
 }
 
-.app_entry:hover, .app_entry:focus {
+.app_entry:focus {
  background-image: linear-gradient(to bottom, @highlight-blue-1, @highlight-blue-2);
 }
 
