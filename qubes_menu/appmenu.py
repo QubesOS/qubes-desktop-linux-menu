@@ -33,6 +33,37 @@ gbulb.install()
 
 logger = logging.getLogger('qubes-appmenu')
 
+def load_theme(widget: Gtk.Widget, light_theme_path: str,
+               dark_theme_path: str):
+    """
+    Load a dark or light theme to current screen, based on widget's
+    current (system) defaults.
+    :param widget: Gtk.Widget, preferably main window
+    :param light_theme_path: path to file with light theme css
+    :param dark_theme_path: path to file with dark theme css
+    """
+    path = light_theme_path if is_theme_light(widget) else dark_theme_path
+
+    screen = Gdk.Screen.get_default()
+    provider = Gtk.CssProvider()
+    provider.load_from_path(path)
+    Gtk.StyleContext.add_provider_for_screen(
+        screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+
+def is_theme_light(widget):
+    """Check if current theme is light or dark"""
+    style_context: Gtk.StyleContext = widget.get_style_context()
+    background_color: Gdk.RGBA = style_context.get_background_color(
+        Gtk.StateType.NORMAL)
+    text_color: Gdk.RGBA = style_context.get_color(
+        Gtk.StateType.NORMAL)
+    background_intensity = background_color.red + \
+                           background_color.blue + background_color.green
+    text_intensity = text_color.red + text_color.blue + text_color.green
+
+    return text_intensity < background_intensity
+
 
 class AppMenu(Gtk.Application):
     """
@@ -211,7 +242,6 @@ class AppMenu(Gtk.Application):
         The function that performs actual widget realization and setup. Should
         be only called once, in the main instance of this application.
         """
-        self.load_style()
         self.builder = Gtk.Builder()
 
         self.fav_app_list = self.builder.get_object('fav_app_list')
@@ -247,16 +277,18 @@ class AppMenu(Gtk.Application):
         self.main_window.add_events(Gdk.EventMask.KEY_PRESS_MASK)
         self.main_window.connect('key_press_event', self._key_pressed)
 
-    def load_style(self):
+        self.load_style()
+        Gtk.Settings.get_default().connect('notify::gtk-theme-name',
+                                           self.load_style)
+
+
+    def load_style(self, *_args):
         """Load appropriate CSS stylesheet and associated properties."""
-        # TODO: this should be called and updated when style changes
-        # from light to dark
-        screen = Gdk.Screen.get_default()
-        provider = Gtk.CssProvider()
-        provider.load_from_path(pkg_resources.resource_filename(
-            __name__, 'qubes-menu-dark.css'))
-        Gtk.StyleContext.add_provider_for_screen(
-            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        load_theme(self.main_window,
+                   light_theme_path=pkg_resources.resource_filename(
+                       __name__, 'qubes-menu-light.css'),
+                   dark_theme_path=pkg_resources.resource_filename(
+                       __name__, 'qubes-menu-dark.css'))
 
         label = Gtk.Label()
         style_context: Gtk.StyleContext = label.get_style_context()

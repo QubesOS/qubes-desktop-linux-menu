@@ -1,0 +1,12 @@
+@define-color highlight-blue-1 #4488df;
+@define-color highlight-blue-2 #326fbe;
+@define-color left-background #ebebeb;
+@define-color right-background #fafafa;
+@define-color outer-background #ebebeb;
+@define-color text-color #2b2b2b;
+@define-color text-color-contrast #000000;
+@define-color text-highlight #ffffff;
+@define-color buttons-bg #595959;
+@define-color separator #cecece;
+
+@import "qubes-menu-base.css";

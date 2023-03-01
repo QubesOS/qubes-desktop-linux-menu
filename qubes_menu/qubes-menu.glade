@@ -178,7 +178,6 @@
               </packing>
             </child>
             <style>
-              <class name="left_pane"/>
               <class name="toplevel_left_pane"/>
             </style>
           </object>
@@ -309,7 +308,6 @@
                   </packing>
                 </child>
                 <style>
-                  <class name="left_pane"/>
                   <class name="toplevel_left_pane"/>
                 </style>
               </object>
@@ -453,7 +451,7 @@
                   </object>
                 </child>
                 <style>
-                  <class name="left_pane"/>
+                  <class name="toplevel_left_pane"/>
                 </style>
               </object>
               <packing>
@@ -495,7 +493,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <style>
-                  <class name="left_pane"/>
+                  <class name="toplevel_left_pane"/>
                 </style>
               </object>
               <packing>

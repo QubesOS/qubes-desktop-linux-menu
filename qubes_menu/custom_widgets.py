@@ -49,9 +49,10 @@ class LimitedWidthLabel(Gtk.Label):
 
 
 class HoverEventBox(Gtk.EventBox):
+    """An EventBox that grabs provided widget on mouse hover."""
     def __init__(self, focus_widget: Gtk.Widget):
         super().__init__()
-
+        self.mouse = False
         self.focus_widget = focus_widget
 
         self.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK)
@@ -70,6 +71,7 @@ class HoverEventBox(Gtk.EventBox):
         if not self.mouse:
             return False
         self.focus_widget.grab_focus()
+        return True
 
 
 class HoverListBox(Gtk.ListBoxRow):
@@ -122,10 +124,10 @@ class NetworkIndicator(Gtk.Box):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.icon_size = Gtk.IconSize.DND
-        self.network_on = Gtk.Image.new_from_pixbuf(
+        self.icon_size = Gtk.IconSize.LARGE_TOOLBAR
+        self.network_on: Gtk.Image = Gtk.Image.new_from_pixbuf(
             load_icon('qappmenu-networking-yes', self.icon_size))
-        self.network_off = Gtk.Image.new_from_pixbuf(
+        self.network_off: Gtk.Image = Gtk.Image.new_from_pixbuf(
             load_icon('qappmenu-networking-no', self.icon_size))
 
         _, height, _ = Gtk.icon_size_lookup(self.icon_size)
@@ -134,6 +136,9 @@ class NetworkIndicator(Gtk.Box):
 
         self.pack_end(self.network_on, False, True, 10)
         self.pack_end(self.network_off, False, True, 10)
+
+        self.network_on.set_tooltip_text('Qube is networked')
+        self.network_off.set_tooltip_text('Qube is not networked')
 
         self.network_on.set_no_show_all(True)
         self.network_off.set_no_show_all(True)
