@@ -29,11 +29,11 @@ from .custom_widgets import LimitedWidthLabel, NetworkIndicator, \
 from .app_widgets import AppEntry, BaseAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
+from .utils import get_visible_child
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
-
 
 
 class ControlRow(Gtk.ListBoxRow):
@@ -135,9 +135,9 @@ class ControlList(Gtk.ListBox):
         self.get_style_context().add_class('right_pane')
 
         self.start_item = StartControlItem()
-
+        self.pause_item = PauseControlItem()
         self.add(self.start_item)
-        self.add(PauseControlItem())
+        self.add(self.pause_item)
 
     def update_visibility(self, state):
         """
@@ -172,7 +172,7 @@ class VMTypeToggle:
             button.add_events(Gdk.EventMask.ENTER_NOTIFY_MASK)
             button.set_can_focus(True)
             # the below is necessary to make sure keyboard navigation
-            # behaves corrrectly
+            # behaves correctly
             button.connect('focus', self._activate_button)
 
     def initialize_state(self):
@@ -189,6 +189,14 @@ class VMTypeToggle:
         for button in self.buttons:
             if button.get_size_request() == (-1, -1):
                 button.set_size_request(button.get_allocated_width()*1.2, -1)
+
+    def grab_focus(self):
+        """Simulates other grab_focus type functions: grabs keyboard focus
+        to currently selected toggle"""
+        for button in self.buttons:
+            if button.get_active():
+                button.grab_focus()
+                return
 
     @staticmethod
     def _activate_button(widget, _event):
@@ -294,19 +302,38 @@ class AppPage(MenuPage):
         self.control_list.connect('row-activated', self._app_clicked)
         self.vm_right_pane.pack_end(self.control_list, False, False, 0)
 
-        self._set_keyboard_focus_chain()
-        self.app_list.connect('keynav-failed', self._keynav_failed)
-        self.settings_list.connect('keynav-failed', self._keynav_failed)
-        self.control_list.connect('keynav-failed', self._keynav_failed)
-        self.app_list.connect('key-press-event', self._focus_vm_list)
-        self.settings_list.connect('key-press-event', self._focus_vm_list)
-        self.control_list.connect('key-press-event', self._focus_vm_list)
+        self.setup_keynav()
+
         self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.settings_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.control_list.set_selection_mode(Gtk.SelectionMode.NONE)
 
         self.widget_order = [self.settings_list, self.app_list,
                              self.control_list]
+
+    def setup_keynav(self):
+        """Do all the required faffing about to convince Gtk to have
+        reasonable keyboard nav"""
+        self._set_keyboard_focus_chain()
+
+        self.app_list.connect('keynav-failed', self._keynav_failed)
+        self.settings_list.connect('keynav-failed', self._keynav_failed)
+        self.control_list.connect('keynav-failed', self._keynav_failed)
+        self.vm_list.connect('keynav-failed', self._vm_keynav_failed)
+
+        self.app_list.connect('key-press-event', self._focus_vm_list)
+        self.settings_list.connect('key-press-event', self._focus_vm_list)
+        self.control_list.connect('key-press-event', self._focus_vm_list)
+
+        self.vm_list.connect('key-press-event', self._vm_key_pressed)
+
+    def _vm_key_pressed(self, _widget, event):
+        if event.keyval == Gdk.KEY_Right:
+            child = get_visible_child(self.app_list)
+            if child:
+                child.grab_focus()
+                return False
+        return True
 
     def _app_info_callback(self, app_info):
         """
@@ -351,7 +378,7 @@ class AppPage(MenuPage):
 
     def _set_keyboard_focus_chain(self):
         """
-        An somewhat hacky helper function that is used by keyboard navigation
+        A somewhat hacky helper function that is used by keyboard navigation
         functions.
         """
         # pylint: disable=attribute-defined-outside-init
@@ -368,22 +395,9 @@ class AppPage(MenuPage):
             Gtk.DirectionType.DOWN: self.app_list,
         }
 
-    def _get_direction_child(self, widget: Gtk.ListBox,
-                             direction: Gtk.DirectionType):
-        """
-        Find next widget in provided Gtk.DirectionType. Used when keyboard
-        navigation fails.
-        Due to problems in forcing Gtk.ListBox to return the rows that
-        are currently shown, we re-use filter function _is_app_fitting
-        to make sure a visible ListBoxRow is selected.
-        """
-        child_list = widget.get_children()
+    def _vm_keynav_failed(self, _widget, direction: Gtk.DirectionType):
         if direction == Gtk.DirectionType.UP:
-            child_list = reversed(child_list)
-        for child in child_list:
-            if widget != self.app_list or self._is_app_fitting(child):
-                return child
-        return widget.get_row_at_index(0)
+            self.toggle_buttons.grab_focus()
 
     def _keynav_failed(self, widget: Gtk.ListBox, direction: Gtk.DirectionType):
         """
@@ -396,8 +410,10 @@ class AppPage(MenuPage):
         next_widget = next_widget_dict.get(direction, None)
         if not next_widget:
             return
-        next_focus_widget = self._get_direction_child(next_widget, direction)
-        next_focus_widget.grab_focus()
+        next_focus_widget = get_visible_child(
+            next_widget, reverse=direction == Gtk.DirectionType.UP)
+        if next_focus_widget:
+            next_focus_widget.grab_focus()
 
     def _focus_vm_list(self, _widget, event):
         """Move focus to VM list"""

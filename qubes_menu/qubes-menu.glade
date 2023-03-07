@@ -183,7 +183,7 @@
           </object>
         </child>
         <child type="tab">
-          <object class="GtkImage">
+          <object class="GtkImage" id="search_page_tab">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="margin-start">10</property>
@@ -409,7 +409,7 @@
           </packing>
         </child>
         <child type="tab">
-          <object class="GtkImage">
+          <object class="GtkImage" id="app_page_tab">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="margin-start">10</property>
@@ -469,7 +469,7 @@
           </packing>
         </child>
         <child type="tab">
-          <object class="GtkImage">
+          <object class="GtkImage" id="favorites_page_tab">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="margin-start">10</property>
@@ -540,7 +540,7 @@
           </packing>
         </child>
         <child type="tab">
-          <object class="GtkImage">
+          <object class="GtkImage" id="settings_page_tab">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="margin-start">10</property>

@@ -127,3 +127,16 @@ def highlight_words(labels: List[Gtk.Label], search_words: List[str]):
                    text[start:end] + '</span>' + text[end:]
 
         label.set_markup(text)
+
+
+def get_visible_child(widget: Gtk.Container, reverse=False):
+    """
+    Get a first (or last, if reverse=True) visible child of provided Container.
+    """
+    iterator = widget.get_children()
+    if reverse:
+        iterator = reversed(iterator)
+    for child in iterator:
+        if child.get_mapped() and child.get_sensitive():
+            return child
+    return None

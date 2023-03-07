@@ -172,6 +172,7 @@ class AppMenu(Gtk.Application):
             self.perform_setup()
             self.primary = True
             assert self.main_window
+            assert self.main_notebook
             if not self.start_in_background:
                 self.main_window.show_all()
             self.initialize_state()
@@ -182,6 +183,11 @@ class AppMenu(Gtk.Application):
                 self.main_window.resize(self.main_window.get_allocated_width(),
                                         int(max_height))
 
+            # grab a focus on the initially selected page so that keyboard
+            # navigation works
+            self.main_notebook.get_tab_label(
+                self.main_notebook.get_nth_page(
+                    self.initial_page)).get_parent().grab_focus()
 
             loop = asyncio.get_event_loop()
             self.tasks = [
@@ -190,7 +196,6 @@ class AppMenu(Gtk.Application):
 
             loop.run_until_complete(asyncio.wait(
                 self.tasks, return_when=asyncio.FIRST_EXCEPTION))
-
         else:
             if self.main_notebook:
                 self.main_notebook.set_current_page(self.initial_page)
@@ -281,7 +286,6 @@ class AppMenu(Gtk.Application):
         Gtk.Settings.get_default().connect('notify::gtk-theme-name',
                                            self.load_style)
 
-
     def load_style(self, *_args):
         """Load appropriate CSS stylesheet and associated properties."""
         load_theme(self.main_window,
@@ -307,15 +311,10 @@ class AppMenu(Gtk.Application):
         return '#' + ''.join([f'{int(c*255):0>2x}'
                               for c in (color.red, color.green, color.blue)])
 
-
     def _key_pressed(self, _widget, event_key: Gdk.EventKey):
-        """If user presses a key that's not a navigation key, open
-        Search. Nav keys are: arrows, esc, return, tab"""
-        if event_key.keyval not in [Gdk.KEY_Up, Gdk.KEY_Down, Gdk.KEY_Left,
-                                Gdk.KEY_Right, Gdk.KEY_Escape, Gdk.KEY_Return,
-                                    Gdk.KEY_Tab]:
+        """If user presses a non-control key, move to search."""
+        if Gdk.keyval_to_unicode(event_key.keyval) > 32:
             search_page = self.handlers.get('search_page')
-
             if not isinstance(search_page, SearchPage):
                 return False
 
