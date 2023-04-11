@@ -332,8 +332,8 @@ class AppPage(MenuPage):
             child = get_visible_child(self.app_list)
             if child:
                 child.grab_focus()
-                return False
-        return True
+                return True
+        return False
 
     def _app_info_callback(self, app_info):
         """
