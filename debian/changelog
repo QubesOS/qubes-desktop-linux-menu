@@ -1,3 +1,14 @@
+qubes-desktop-linux-menu (1.1.0-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Bunch of menu fixes
+  * Improve keyboard navigation
+  * Add light mode to menu
+  * Improve keyboard navigation
+  * Fix event return value
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sun, 16 Apr 2023 16:20:55 +0200
+
 qubes-desktop-linux-menu (1.0.3-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
