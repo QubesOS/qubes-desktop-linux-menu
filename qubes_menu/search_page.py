@@ -29,7 +29,7 @@ from .utils import load_icon, parse_search
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 
 
 class RecentSearchRow(Gtk.ListBoxRow):
@@ -84,6 +84,7 @@ class RecentSearchManager:
     def _row_clicked(self, _widget, row: RecentSearchRow):
         self.search_box.set_text(row.search_text)
 
+
 class SearchPage(MenuPage):
     """
     Helper class for managing the Search menu page.
@@ -105,7 +106,10 @@ class SearchPage(MenuPage):
         self.selected_vm_row: Optional[SearchVMRow] = None
         self.filtered_vms: Set[str] = set()
 
+        self.main_notebook = builder.get_object('main_notebook')
+
         self.search_entry.connect('search-changed', self._do_search)
+        self.search_entry.connect('key-press-event', self._search_key_press)
 
         desktop_file_manager.register_callback(self._app_info_callback)
 
@@ -174,6 +178,15 @@ class SearchPage(MenuPage):
 
         self.vm_view.set_visible(has_search and
                                  not self.app_placeholder.get_mapped())
+
+    def _search_key_press(self, _widget, event):
+        """Tab on search should move focus to main notebook tabs
+        if there are no search results available."""
+        if event.keyval == Gdk.KEY_Tab:
+            if self.app_placeholder.get_mapped():
+                self.main_notebook.grab_focus()
+                return True
+        return False
 
     def _move_to_first(self, *_args):
         """
