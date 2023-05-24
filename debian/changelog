@@ -1,3 +1,12 @@
+qubes-desktop-linux-menu (1.1.1-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Enable backing out of search with keyboard nav
+  * Enforce icon size in menu
+  * Make menu slightly smaller to fit in openQA tests
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Wed, 24 May 2023 04:00:16 +0200
+
 qubes-desktop-linux-menu (1.1.0-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
