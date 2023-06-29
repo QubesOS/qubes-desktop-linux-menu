@@ -53,6 +53,8 @@ class VMEntry:
         self._vm_icon_name = getattr(self.vm, 'icon',
                                      getattr(self.vm.label, 'icon', None))
         self._power_state = self.vm.get_power_state()
+        self.show_dispvm_template_in_apps = bool(
+            vm.features.get('appmenus-dispvm', False))
         self.entries: List = []
 
     def update_entries(self, update_power_state=False,
@@ -124,6 +126,19 @@ class VMEntry:
     def service_vm(self, new_value):
         self._servicevm = new_value
         self.update_entries(update_type=True)
+
+    @property
+    def show_in_apps(self):
+        """Should this qube be shown in the Apps section of the menu?"""
+        if self.service_vm:
+            return False
+        if self.vm_klass == 'TemplateVM':
+            return False
+        if self.vm_klass == 'AdminVM':
+            return False
+        if self.is_dispvm_template and not self.show_dispvm_template_in_apps:
+            return False
+        return True
 
 
 class VMManager:
@@ -217,7 +232,8 @@ class VMManager:
             # it will disable any future event handling
             pass
 
-    def _update_domain_feature(self, vm, _event, feature=None, value=None):
+    def _update_domain_feature(self, vm, _event, feature=None, value=None,
+                               **_kwargs):
         vm_entry = self.load_vm_from_name(vm)
 
         if not vm_entry:
@@ -230,10 +246,21 @@ class VMManager:
         try:
             if feature == 'servicevm':
                 vm_entry.service_vm = value
+            if feature == 'appmenus-dispvm':
+                vm_entry.show_dispvm_template_in_apps = value
         except Exception:  # pylint: disable=broad-except
             # dispatcher functions cannot raise any Exception, because
             # it will disable any future event handling
             pass
+
+        for entry in vm_entry.entries:
+            # try to fix filtering, if appropriate
+            try:
+                entry.get_parent().invalidate_filter()
+            except Exception:  # pylint: disable=broad-except
+                # a wrapper, to make absolutely sure dispatcher is not
+                # crashed by a rogue Exception
+                continue
 
     def register_events(self):
         """Register handlers for all relevant VM events."""
@@ -264,4 +291,8 @@ class VMManager:
         self.dispatcher.add_handler('domain-feature-set:servicevm',
                                     self._update_domain_feature)
         self.dispatcher.add_handler('domain-feature-delete:servicevm',
+                                    self._update_domain_feature)
+        self.dispatcher.add_handler('domain-feature-set:appmenus-dispvm',
+                                    self._update_domain_feature)
+        self.dispatcher.add_handler('domain-feature-delete:appmenus-dispvm',
                                     self._update_domain_feature)

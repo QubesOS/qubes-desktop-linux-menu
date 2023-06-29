@@ -228,13 +228,7 @@ class VMTypeToggle:
         Filter function for normal / application VMEntries. Returns VMs that
         are not a templateVM and do not provide network.
         """
-        if vm_entry.service_vm:
-            return False
-        if vm_entry.vm_klass == 'TemplateVM':
-            return False
-        if vm_entry.vm_klass == 'AdminVM':
-            return False
-        return True
+        return vm_entry.show_in_apps
 
     @staticmethod
     def _filter_templatevms(vm_entry: VMEntry):
