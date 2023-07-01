@@ -1,3 +1,11 @@
+qubes-desktop-linux-menu (1.1.2-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Menu should react appropriately to appmenus-dispvm
+  * Fix page numbering in help and docs
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sat, 01 Jul 2023 16:16:12 +0200
+
 qubes-desktop-linux-menu (1.1.1-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
