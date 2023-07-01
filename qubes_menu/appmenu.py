@@ -118,8 +118,8 @@ class AppMenu(Gtk.Application):
             ord('p'),
             GLib.OptionFlags.NONE,
             GLib.OptionArg.INT,
-            "Open menu at selected page; 0 is the application page, 1 is the"
-            "favorites page and 2 is the system tools page"
+            "Open menu at selected page; 1 is the apps page 1 is the favorites "
+            "page and 2 is the system tools page"
         )
 
         self.add_main_option(
@@ -237,10 +237,10 @@ class AppMenu(Gtk.Application):
         some things (like widget size adjustments) must be called after
         widgets are realized and not on init.
         """
-        if self.main_notebook:
-            self.main_notebook.set_current_page(self.initial_page)
         for page in self.handlers.values():
             page.initialize_page()
+        if self.main_notebook:
+            self.main_notebook.set_current_page(self.initial_page)
 
     def perform_setup(self):
         """

@@ -95,8 +95,8 @@ in the background until killed or restarted, to facilitate faster showing.
 Useful CLI options are:
 - `--restart` - restart the running menu instance
 - `--keep-visible` - do not hide menu after actions
-- `--page N` - select page to be shown when started (with 0 standing for main
-application page, 1 being Favorites page and 2 being System Tools page.
+- `--page N` - select page to be shown when started (with 1 standing for main
+application page, 2 being Favorites page and 3 being System Tools page.
 
 The easiest way to use the menu is adding a Launcher item to XFCE4's panel that
 contains the Open Qubes Application Menu item. It's a fast and efficient 
