@@ -5,6 +5,7 @@ Main Application Menu class and helpers.
 """
 # pylint: disable=import-error
 import asyncio
+import os
 import subprocess
 import sys
 from typing import Optional, Dict
@@ -160,7 +161,26 @@ class AppMenu(Gtk.Application):
         providing our own tiny program.
         """
         # pylint: disable=consider-using-with
-        subprocess.Popen('xfce4-session-logout', stdin=subprocess.DEVNULL)
+        current_environs = os.environ.get('XDG_CURRENT_DESKTOP', '').split(':')
+
+        if 'KDE' in current_environs:
+            dbus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+            proxy = Gio.DBusProxy.new_sync(
+                dbus,  # dbus
+                Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS |
+                Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES,  # flags
+                None,  # info
+                "org.kde.LogoutPrompt",  # bus name
+                "/LogoutPrompt",  # object_path
+                "org.kde.LogoutPrompt")  # interface
+            proxy.call(
+                'promptLogout',  # method name
+                None,  # parameters
+                0,  # flags
+                0  # timeout_msec
+            )
+        else:
+            subprocess.Popen('xfce4-session-logout', stdin=subprocess.DEVNULL)
 
     def do_activate(self, *args, **kwargs):
         """
