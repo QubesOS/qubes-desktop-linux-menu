@@ -6,4 +6,4 @@ Terminal=false
 Name=Open Qubes Application Menu
 GenericName=Open Qubes Application Menu
 StartupNotify=false
-Hidden=True
+OnlyShowIn=X-Invalid;

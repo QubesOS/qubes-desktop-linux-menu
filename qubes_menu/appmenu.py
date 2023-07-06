@@ -200,6 +200,7 @@ class AppMenu(Gtk.Application):
             if self.main_notebook:
                 self.main_notebook.set_current_page(self.initial_page)
             if self.main_window:
+                self.main_window.set_keep_above(True)
                 if self.main_window.is_visible() and not self.keep_visible:
                     self.main_window.hide()
                 else:
