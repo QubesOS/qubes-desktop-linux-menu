@@ -1,3 +1,13 @@
+qubes-desktop-linux-menu (1.1.3-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Menu should be always on top
+  * Workaround for .desktop file
+  * Dragging from menu should never result in a MOVE operation
+  * Run KDE logout dialog in KDE
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Fri, 07 Jul 2023 03:18:22 +0200
+
 qubes-desktop-linux-menu (1.1.2-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
