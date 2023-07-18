@@ -70,6 +70,7 @@ class ApplicationInfo:
         self.app_icon: Optional[str] = None
         self.vm_icon: Optional[str] = None
         self.app_name: Optional[str] = None
+        self.sort_name: Optional[str] = None
         self.vm: Optional[qubesadmin.vm.QubesVM] = None
         self.entry_name: Optional[str] = None
         self.exec: List[str] = []
@@ -88,6 +89,7 @@ class ApplicationInfo:
         self.app_name = entry.getName() or ''
         if self.vm:
             self.app_name = self.app_name.split(": ", 1)[-1]
+        self.sort_name = str(self.app_name).lower()
         self.vm_icon = self.vm.icon if self.vm else None
         self.app_icon = entry.getIcon()
         self.disposable = bool(entry.get('X-Qubes-NonDispvmExec'))

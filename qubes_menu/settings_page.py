@@ -61,7 +61,7 @@ class SettingsPage(MenuPage):
         self.app_list: Gtk.ListBox = builder.get_object('sys_tools_list')
         self.app_list.connect('row-activated', self._app_clicked)
         self.app_list.set_sort_func(
-            lambda x, y: x.app_info.app_name > y.app_info.app_name)
+            lambda x, y: x.app_info.sort_name > y.app_info.sort_name)
         self.app_list.set_filter_func(self._filter_apps)
 
         self.category_list: Gtk.ListBox = builder.get_object(

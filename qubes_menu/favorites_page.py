@@ -53,7 +53,7 @@ class FavoritesPage(MenuPage):
         self.app_list.connect('row-activated', self._app_clicked)
 
         self.app_list.set_sort_func(
-            lambda x, y: x.app_info.app_name > y.app_info.app_name)
+            lambda x, y: x.app_info.sort_name > y.app_info.sort_name)
         self.desktop_file_manager.register_callback(self._app_info_callback)
         self.app_list.show_all()
         self.app_list.invalidate_sort()

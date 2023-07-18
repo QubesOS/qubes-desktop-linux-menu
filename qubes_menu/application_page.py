@@ -280,7 +280,8 @@ class AppPage(MenuPage):
         self.app_list.set_filter_func(self._is_app_fitting)
         self.app_list.connect('row-activated', self._app_clicked)
         self.app_list.set_sort_func(
-            lambda x, y: x.app_info.app_name > y.app_info.app_name)
+            lambda x, y:
+            x.app_info.sort_name > y.app_info.sort_name)
         self.app_list.invalidate_sort()
 
         vm_manager.register_new_vm_callback(self._vm_callback)

@@ -40,10 +40,11 @@ class VMEntry:
 
         if self.vm.klass == 'DispVM' and self.vm.auto_cleanup:
             self.parent_vm = self.vm.template
-            self.sort_name = f'{str(self.parent_vm.name)}:{self.vm_name}'
+            self.sort_name = \
+                f'{str(self.parent_vm.name).lower()}:{self.vm_name.lower()}'
         else:
             self.parent_vm = None
-            self.sort_name = self.vm_name
+            self.sort_name = self.vm_name.lower()
 
         self._servicevm = bool(self.vm.features.get("servicevm", False))
         self._is_dispvm_template = getattr(
