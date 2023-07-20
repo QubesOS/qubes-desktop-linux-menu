@@ -424,7 +424,7 @@ class AppPage(MenuPage):
     def _button_toggled(self, widget: Gtk.ToggleButton):
         if not widget.get_active():
             return
-        self.vm_list.select_row(None)
+        self.vm_list.unselect_all()
         self.app_list.invalidate_filter()
         self.vm_list.invalidate_filter()
 
@@ -433,11 +433,12 @@ class AppPage(MenuPage):
         Initialize own state.
         """
         self.toggle_buttons.initialize_state()
-        self.app_list.select_row(None)
-        self._set_right_visibility(False)
+        self.vm_list.unselect_all()
+        self.app_list.unselect_all()
 
     def _selection_changed(self, _widget, row: Optional[VMRow]):
         if row is None:
+            self.vm_list.unselect_all()
             self.selected_vm_entry = None
             self.app_list.ephemeral_vm = False
             self._set_right_visibility(False)
@@ -446,22 +447,17 @@ class AppPage(MenuPage):
             self._set_right_visibility(True)
             self.network_indicator.set_network_state(row.vm_entry.has_network)
             self.control_list.update_visibility(row.vm_entry.power_state)
-            self.control_list.select_row(None)
+            self.control_list.unselect_all()
             self.app_list.ephemeral_vm = bool(
                 self.selected_vm_entry.vm_entry.parent_vm)
         self.app_list.invalidate_filter()
 
     def _set_right_visibility(self, visibility: bool):
+        self.vm_right_pane.set_visible(visibility)
+        self.control_list.set_visible(visibility)
+        self.app_list.set_visible(visibility)
+        self.settings_list.set_visible(visibility)
+        self.separator_top.set_visible(visibility)
+        self.separator_bottom.set_visible(visibility)
         if not visibility:
-            self.control_list.hide()
-            self.app_list.hide()
-            self.settings_list.hide()
             self.network_indicator.set_visible(False)
-            self.separator_top.hide()
-            self.separator_bottom.hide()
-        else:
-            self.control_list.show_all()
-            self.app_list.show_all()
-            self.settings_list.show_all()
-            self.separator_top.show_all()
-            self.separator_bottom.show_all()

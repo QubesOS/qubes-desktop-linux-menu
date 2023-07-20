@@ -91,8 +91,9 @@ class HoverListBox(Gtk.ListBoxRow):
         self.connect('focus-in-event', self._on_focus)
 
     def _on_focus(self, *_args):
-        self.activate()
-        self.get_parent().select_row(self)
+        if self.get_mapped():
+            self.activate()
+            self.get_parent().select_row(self)
 
 
 class SelfAwareMenu(Gtk.Menu):
