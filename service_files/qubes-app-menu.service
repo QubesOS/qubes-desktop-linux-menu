@@ -10,3 +10,4 @@ RestartSec=1
 BusName=org.qubesos.appmenu
 Type=dbus
 KillMode=process
+RestartPreventExitStatus=6
