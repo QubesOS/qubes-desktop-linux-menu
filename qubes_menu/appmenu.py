@@ -366,7 +366,7 @@ def main():
     # if X is not running or other weird stuff is happening, exit with exit code
     # 6 to signal to the service that this should not be restarted
     if not Gtk.init_check()[0]:
-        exit(6)
+        sys.exit(6)
 
     qapp = qubesadmin.Qubes()
     dispatcher = qubesadmin.events.EventsDispatcher(qapp)
