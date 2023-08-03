@@ -306,6 +306,9 @@ class AppPage(MenuPage):
         self.widget_order = [self.settings_list, self.app_list,
                              self.control_list]
 
+        self.vm_list.select_row(None)
+        self._selection_changed(None, None)
+
     def setup_keynav(self):
         """Do all the required faffing about to convince Gtk to have
         reasonable keyboard nav"""
