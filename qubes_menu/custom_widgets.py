@@ -144,6 +144,8 @@ class NetworkIndicator(Gtk.Box):
         self.network_on.set_no_show_all(True)
         self.network_off.set_no_show_all(True)
 
+        self.get_style_context().add_class('network_indicator')
+
     def set_network_state(self, state: bool):
         """
         :param state: boolean, True indicates network is on and False indicates

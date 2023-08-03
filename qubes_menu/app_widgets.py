@@ -215,6 +215,7 @@ class VMIcon(Gtk.Image):
             self.set_from_pixbuf(vm_icon)
             self.show_all()
 
+
 class AppEntryWithVM(AppEntry):
     """Application Gtk.ListBoxRow with VM description underneath; to be
     used in Search and Favorites."""

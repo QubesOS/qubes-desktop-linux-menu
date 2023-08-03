@@ -3,6 +3,12 @@ font-family: SourceSansPro;
   font-size: 100%;
 }
 
+/* this is a silly workaround for some window managers like KDE
+ that insist on providing their own background for listrows*/
+list :not(:selected) {
+background: inherit;
+}
+
 #main_notebook {
     padding-top: 10px;
     background: @left-background;
@@ -116,6 +122,7 @@ font-family: SourceSansPro;
 .network_indicator {
     font-style: italic;
     color: @buttons-bg;
+    background: inherit;
 }
 
 .power {
@@ -182,4 +189,12 @@ separator {
 
 .placeholder {
  padding: 10px;
+}
+
+.network_indicator * {
+background: inherit;
+}
+
+.favorite_entry grid {
+background: none;
 }
