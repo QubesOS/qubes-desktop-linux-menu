@@ -1,3 +1,15 @@
+qubes-desktop-linux-menu (1.1.5-1) unstable; urgency=medium
+
+  [ Marek Marczykowski-Górecki ]
+  * Make pylint happy - use sys.exit
+
+  [ Marta Marczykowska-Górecka ]
+  * Fix styles for certain themes
+  * Add a placeholder if there are no apps in vm
+  * Fix error with showing bare settings on menu start
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sat, 05 Aug 2023 15:20:49 +0200
+
 qubes-desktop-linux-menu (1.1.4-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
