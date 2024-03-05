@@ -20,20 +20,26 @@
 """
 Miscellaneous Qubes Menu utility functions.
 """
-from typing import List
+from typing import List, Optional
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 
 
-def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
+def load_icon(icon_name,
+              size: Optional[Gtk.IconSize] = Gtk.IconSize.LARGE_TOOLBAR,
+              pixel_size: Optional[int] = None):
     """Load icon from provided name, if available. If not, attempt to treat
     provided name as a path. If icon not found in any of the above ways,
     load a blank icon of specified size.
     Returns GdkPixbuf.Pixbuf
     """
-    _, width, height = Gtk.icon_size_lookup(size)
+    if size:
+        _, width, height = Gtk.icon_size_lookup(size)
+    else:
+        width = pixel_size
+        height = pixel_size
     try:
         return GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, width, height)
     except (GLib.Error, TypeError):
