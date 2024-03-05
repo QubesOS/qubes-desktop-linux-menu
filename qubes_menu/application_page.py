@@ -309,6 +309,17 @@ class AppPage(MenuPage):
         self.vm_list.select_row(None)
         self._selection_changed(None, None)
 
+        self.vm_list.connect('map', self._on_map_vm_list)
+
+    def _on_map_vm_list(self, *_args):
+        # workaround for https://gitlab.gnome.org/GNOME/gtk/-/issues/4977
+        # doesn't always fix it on the first try, but improves behavior in
+        # case of unexpected focus chain changes, like pgup in some cases
+        self.vm_list.select_row(self.vm_list.get_row_at_y(0))
+        self.app_list.set_filter_func(None)
+        self.app_list.invalidate_filter()
+        self.app_list.set_filter_func(self._is_app_fitting)
+
     def setup_keynav(self):
         """Do all the required faffing about to convince Gtk to have
         reasonable keyboard nav"""
