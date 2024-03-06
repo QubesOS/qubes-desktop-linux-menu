@@ -284,6 +284,7 @@ class SearchVMRow(VMRow):
                                 update_has_network=False,
                                 update_type=update_type)
 
+
 class AnyVMRow(HoverListBox):
     """Generic Any VM row for search purposes."""
     def __init__(self):
