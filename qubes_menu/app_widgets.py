@@ -309,6 +309,14 @@ class SearchAppEntry(AppEntryWithVM):
         self.last_search_result: int = 0
 
         self.search_words = []
+
+        # search uses partial matching in search words, those being:
+        # application name
+        # vm name
+        # disposable parent name if applicable
+        # "new disposable qube from" if applicable
+        # desktop file keywords if applicable
+
         if self.app_info.vm:
             self.search_words.extend(
                 self.app_info.vm.name.lower().replace('_', '-').split('-'))
@@ -322,6 +330,9 @@ class SearchAppEntry(AppEntryWithVM):
             self.search_words.extend(
                 self.app_info.app_name.lower().replace(
                     '_', ' ').replace('-', ' ').split())
+
+        if self.app_info.keywords:
+            self.search_words.extend(k.lower() for k in self.app_info.keywords)
 
     def find_text(self, search_words: List[str]):
         """Check if provided search phrase is present in text.
