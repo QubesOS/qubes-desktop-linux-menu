@@ -99,27 +99,18 @@ class AppEntry(Gtk.ListBoxRow):
         self.get_toplevel().get_application().hide_menu()
 
 
-class BaseAppEntry(AppEntry):
+class FavoritesMenu(SelfAwareMenu):
     """
-    A 'normal' Application row, used by main applications menu and system tools.
+    Menu for showing add to favorites option.
     """
-    def __init__(self, app_info: ApplicationInfo, **properties):
-        """
-        :param app_info: ApplicationInfo obj with data about related app file
-        :param properties: additional Gtk.ListBoxRow properties
-        """
-        super().__init__(app_info, **properties)
-        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.event_box.add(self.box)
-        self.get_style_context().add_class('app_entry')
-        self._setup_menu()
+    def __init__(self, app_info: ApplicationInfo):
+        super().__init__()
+        self.app_info = app_info
 
-        self.icon = Gtk.Image()
-        self.label = LimitedWidthLabel()
-        self.box.pack_start(self.icon, False, False, 5)
-        self.box.pack_start(self.label, False, False, 5)
-
-        self.update_contents()
+        self.add_menu_item = Gtk.CheckMenuItem(label='Add to favorites')
+        self.add_menu_item.connect('activate', self._add_to_favorites)
+        self.add(self.add_menu_item)
+        self.show_all()
 
     def _has_favorite_sibling(self):
         """
@@ -130,37 +121,6 @@ class BaseAppEntry(AppEntry):
             if isinstance(entry, FavoritesAppEntry):
                 return True
         return False
-
-    def _setup_menu(self):
-        """
-        Setup right click menu: currently only one option, add to favorites.
-        """
-        self.add_menu_item = Gtk.CheckMenuItem(label='Add to favorites')
-        self.add_menu_item.connect('activate', self._add_to_favorites)
-        self.menu.add(self.add_menu_item)
-        self.menu.show_all()
-
-    def show_menu(self, widget, event):
-        """
-        Show right click menu. For ephemeral VMs (class DispVM with a template
-        set) the menu is inactive. If the current App is already added to
-        favorites, the "add to favorites" option is checked and inactive.
-        """
-        if getattr(self.get_parent(), 'ephemeral_vm', False):
-            self.add_menu_item.set_active(False)
-            self.add_menu_item.set_sensitive(False)
-        else:
-            is_favorite = self._has_favorite_sibling()
-            self.add_menu_item.set_active(is_favorite)
-            self.add_menu_item.set_sensitive(not is_favorite)
-        super().show_menu(widget, event)
-
-    def update_contents(self):
-        """Update icon and app name."""
-        self.icon.set_from_pixbuf(
-            load_icon(self.app_info.app_icon, Gtk.IconSize.LARGE_TOOLBAR))
-        self.label.set_label(self.app_info.app_name)
-        self.show_all()
 
     def _add_to_favorites(self, *_args, **_kwargs):
         """
@@ -182,6 +142,62 @@ class BaseAppEntry(AppEntry):
         feature_list.append(self.app_info.entry_name)
         target_vm.features[constants.FAVORITES_FEATURE] \
             = ' '.join(feature_list)
+
+    def set_menu_state(self):
+        """
+        Set appropriate menu item state:
+        For ephemeral VMs (class DispVM with a template
+        set) the menu is inactive. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+
+        :return:
+        """
+        if getattr(self.get_parent(), 'ephemeral_vm', False):
+            self.add_menu_item.set_active(False)
+            self.add_menu_item.set_sensitive(False)
+        else:
+            is_favorite = self._has_favorite_sibling()
+            self.add_menu_item.set_active(is_favorite)
+            self.add_menu_item.set_sensitive(not is_favorite)
+
+
+class BaseAppEntry(AppEntry):
+    """
+    A 'normal' Application row, used by main applications menu and system tools.
+    """
+    def __init__(self, app_info: ApplicationInfo, **properties):
+        """
+        :param app_info: ApplicationInfo obj with data about related app file
+        :param properties: additional Gtk.ListBoxRow properties
+        """
+        super().__init__(app_info, **properties)
+        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.event_box.add(self.box)
+        self.get_style_context().add_class('app_entry')
+        self.menu = FavoritesMenu(self.app_info)
+
+        self.icon = Gtk.Image()
+        self.label = LimitedWidthLabel()
+        self.box.pack_start(self.icon, False, False, 5)
+        self.box.pack_start(self.label, False, False, 5)
+
+        self.update_contents()
+
+    def show_menu(self, widget, event):
+        """
+        Show right click menu. For ephemeral VMs (class DispVM with a template
+        set) the menu is inactive. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+        """
+        self.menu.set_menu_state()
+        super().show_menu(widget, event)
+
+    def update_contents(self):
+        """Update icon and app name."""
+        self.icon.set_from_pixbuf(
+            load_icon(self.app_info.app_icon, Gtk.IconSize.LARGE_TOOLBAR))
+        self.label.set_label(self.app_info.app_name)
+        self.show_all()
 
 
 class VMIcon(Gtk.Image):
@@ -304,6 +320,7 @@ class SearchAppEntry(AppEntryWithVM):
                  **properties):
 
         super().__init__(app_info, vm_manager, **properties)
+        self.menu = FavoritesMenu(self.app_info)
 
         self.last_search_words: Optional[List[str]] = None
         self.last_search_result: int = 0
@@ -355,3 +372,12 @@ class SearchAppEntry(AppEntryWithVM):
         self.last_search_result = result
 
         return result
+
+    def show_menu(self, widget, event):
+        """
+        Show right click menu. For ephemeral VMs (class DispVM with a template
+        set) the menu is inactive. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+        """
+        self.menu.set_menu_state()
+        super().show_menu(widget, event)

@@ -33,12 +33,12 @@ def test_add_to_favorites(tmp_path, test_qapp):
     app_info.vm_icon = None
 
     base_entry = BaseAppEntry(app_info)
-    base_entry._add_to_favorites()
+    base_entry.menu._add_to_favorites()
 
     assert vm.features.get('menu-favorites') == 'org.test.app'
 
-    base_entry._add_to_favorites()
-    base_entry._add_to_favorites()
+    base_entry.menu._add_to_favorites()
+    base_entry.menu._add_to_favorites()
 
     assert vm.features.get('menu-favorites') == 'org.test.app'
 
@@ -47,7 +47,7 @@ def test_add_to_favorites(tmp_path, test_qapp):
     fav_entry = FavoritesAppEntry(app_info, mock_manager)
     fav_entry._remove_from_favorites()
     assert vm.features.get('menu-favorites') == ''
-    base_entry._add_to_favorites()
+    base_entry.menu._add_to_favorites()
     assert vm.features.get('menu-favorites') == 'org.test.app'
 
     second_app_info = ApplicationInfo(test_qapp, tmp_path)
@@ -63,10 +63,10 @@ def test_add_to_favorites(tmp_path, test_qapp):
     with patch.object(second_fav_entry, 'get_parent'):
         second_fav_entry._remove_from_favorites()
     assert vm.features.get('menu-favorites') == 'org.test.app'
-    second_base_entry._add_to_favorites()
+    second_base_entry.menu._add_to_favorites()
     assert vm.features.get('menu-favorites') == 'org.test.app org.second.app'
     second_fav_entry._remove_from_favorites()
     assert vm.features.get('menu-favorites') == 'org.test.app'
-    second_base_entry._add_to_favorites()
+    second_base_entry.menu._add_to_favorites()
     fav_entry._remove_from_favorites()
     assert vm.features.get('menu-favorites') == 'org.second.app'
