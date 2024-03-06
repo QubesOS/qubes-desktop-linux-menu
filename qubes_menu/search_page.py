@@ -180,12 +180,25 @@ class SearchPage(MenuPage):
                                  not self.app_placeholder.get_mapped())
 
     def _search_key_press(self, _widget, event):
-        """Tab on search should move focus to main notebook tabs
-        if there are no search results available."""
+        """
+        Tab on search should move focus to main notebook tabs
+        if there are no search results available.
+        Enter should activate the first search result.
+        """
         if event.keyval == Gdk.KEY_Tab:
             if self.app_placeholder.get_mapped():
                 self.main_notebook.grab_focus()
                 return True
+        if event.keyval == Gdk.KEY_Return:
+            if self.app_placeholder.get_mapped():
+                # this is needed because placeholder is technically a child
+                # of the app_list
+                return False
+            for row in self.app_list.get_children():
+                if row.get_mapped():
+                    self.app_list.select_row(row)
+                    row.activate()
+                    return True
         return False
 
     def _move_to_first(self, *_args):
