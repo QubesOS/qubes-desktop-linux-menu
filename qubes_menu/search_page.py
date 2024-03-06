@@ -262,7 +262,6 @@ class SearchPage(MenuPage):
         self.vm_list.invalidate_filter()
         self.vm_list.invalidate_sort()
 
-
     def initialize_page(self):
         """
         Initialize own state.

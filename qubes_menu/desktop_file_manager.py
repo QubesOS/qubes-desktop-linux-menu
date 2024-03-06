@@ -77,6 +77,7 @@ class ApplicationInfo:
         self.disposable: bool = False
         self.categories = []
         self.entries: List = []
+        self.keywords: List[str] = []
 
     def load_data(self, entry):
         """Fill own data with information from xdg.DesktopEntry provided."""
@@ -99,6 +100,7 @@ class ApplicationInfo:
         self.exec = exec_parse(entry)
 
         self.categories = entry.getCategories()
+        self.keywords = entry.getKeywords()
 
         for menu_entry in self.entries:
             menu_entry.update_contents()
