@@ -213,8 +213,7 @@ class DesktopFileManager:
     def get_app_infos(self):
         """Get all available ApplicationInfos. Needed for initial loading
         of favorites."""
-        for info in self.app_entries.values():
-            yield info
+        yield from self.app_entries.values()
 
     def remove_file(self, path: Union[str, Path]):
         """Remove a file provided by path from local cache. Also removes
