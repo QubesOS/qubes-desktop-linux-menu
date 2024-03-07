@@ -62,7 +62,7 @@ def test_qapp():
              TestVM('template-dvm', klass='AppVM', label='red',
                     icon='templatevm-red', template_for_dispvms=True,
                     netvm=TestVM('sys-net'), template=TestVM('template'),
-                    features={})),
+                    features={'appmenus-dispvm': 1})),
         ]
     )
     return app
