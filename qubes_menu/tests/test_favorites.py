@@ -31,6 +31,7 @@ def test_add_to_favorites(tmp_path, test_qapp):
     app_info.entry_name = 'org.test.app'
     app_info.app_icon = None
     app_info.vm_icon = None
+    vm.features = {}  # overwrite smart features object with a dumb dict
 
     base_entry = BaseAppEntry(app_info)
     base_entry.menu._add_to_favorites()
