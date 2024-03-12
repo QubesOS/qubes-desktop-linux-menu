@@ -6,7 +6,7 @@ font-family: SourceSansPro;
 /* this is a silly workaround for some window managers like KDE
  that insist on providing their own background for listrows*/
 list :not(:selected) {
-background: inherit;
+    background: inherit;
 }
 
 #main_notebook {
@@ -78,10 +78,11 @@ background: inherit;
 .dispvm_entry {
   padding-left: 40px;
   font-style: italic;
-  background-image: -gtk-icontheme('qappmenu-dispvm-child');
-  background-position: 15px top;
-  background-repeat: no-repeat;
-  background-size: 25px 25px;
+}
+
+.dispvm_icon {
+    padding-top: 0;
+    margin-top: 0;
 }
 
 .dvm_template_entry {

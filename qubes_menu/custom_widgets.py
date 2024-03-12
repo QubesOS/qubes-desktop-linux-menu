@@ -196,6 +196,15 @@ class VMRow(HoverListBox):
 
         self.icon_img = Gtk.Image()
 
+        # add the icon for dispvm parent existing
+        if self.vm_entry.parent_vm:
+            self.dispvm_icon = Gtk.Image()
+            dispvm_icon_img = load_icon('qappmenu-dispvm-child', None, 15)
+            self.dispvm_icon.set_from_pixbuf(dispvm_icon_img)
+            self.dispvm_icon.get_style_context().add_class('dispvm_icon')
+            self.dispvm_icon.set_valign(Gtk.Align.START)
+            self.main_box.pack_start(self.dispvm_icon, False, False, 2)
+
         self.main_box.pack_start(self.icon_img, False, False, 2)
         self.label = Gtk.Label(label=self.vm_entry.vm_name)
         self.main_box.pack_start(self.label, False, False, 2)
@@ -274,6 +283,7 @@ class SearchVMRow(VMRow):
                                 update_label=update_label,
                                 update_has_network=False,
                                 update_type=update_type)
+
 
 class AnyVMRow(HoverListBox):
     """Generic Any VM row for search purposes."""

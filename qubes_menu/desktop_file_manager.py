@@ -77,6 +77,7 @@ class ApplicationInfo:
         self.disposable: bool = False
         self.categories = []
         self.entries: List = []
+        self.keywords: List[str] = []
 
     def load_data(self, entry):
         """Fill own data with information from xdg.DesktopEntry provided."""
@@ -99,6 +100,7 @@ class ApplicationInfo:
         self.exec = exec_parse(entry)
 
         self.categories = entry.getCategories()
+        self.keywords = entry.getKeywords()
 
         for menu_entry in self.entries:
             menu_entry.update_contents()
@@ -211,8 +213,7 @@ class DesktopFileManager:
     def get_app_infos(self):
         """Get all available ApplicationInfos. Needed for initial loading
         of favorites."""
-        for info in self.app_entries.values():
-            yield info
+        yield from self.app_entries.values()
 
     def remove_file(self, path: Union[str, Path]):
         """Remove a file provided by path from local cache. Also removes

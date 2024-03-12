@@ -118,7 +118,7 @@ def test_appinfo_correct_file(tmp_path, test_qapp):
     assert app_info.app_name == 'XTerm'
     assert str(app_info.vm) == str(TestVM('test-vm'))
     assert app_info.app_icon == '/tmp/test.png'
-    assert app_info.vm_icon == 'appvm-blue'
+    assert app_info.vm_icon == 'appvm-green'
 
     assert app_info.entry_name == 'XTerm'\
            or app_info.entry_name == 'test.desktop'
@@ -140,14 +140,14 @@ def test_file_dvmtemplate(tmp_path, test_qapp):
     Version=1.0
     Type=Application
     Terminal=false
-    X-Qubes-VmName=template-dvm
+    X-Qubes-VmName=default-dvm
     Icon=/test/firefox.png
-    Name=template-dvm: Firefox
+    Name=default-dvm: Firefox
     GenericName=template-dvm: Web Browser
     Comment=Browse the Web
     Categories=Network;WebBrowser;X-Qubes-VM;
-    X-Qubes-NonDispvmExec=qvm-run -q -a --service -- template-dvm qubes.StartApp+firefox
-    Exec=qvm-run -q -a --service --dispvm=template-dvm -- qubes.StartApp+firefox
+    X-Qubes-NonDispvmExec=qvm-run -q -a --service -- default-dvm qubes.StartApp+firefox
+    Exec=qvm-run -q -a --service --dispvm=default-dvm -- qubes.StartApp+firefox
     '''
 
     file_path = tmp_path / 'test.desktop'
@@ -159,13 +159,13 @@ def test_file_dvmtemplate(tmp_path, test_qapp):
     app_info.load_data(desktop_entry)
 
     assert app_info.app_name == 'Firefox'
-    assert str(app_info.vm) == str(TestVM('template-dvm'))
+    assert str(app_info.vm) == str(TestVM('default-dvm'))
     assert app_info.app_icon == '/test/firefox.png'
-    assert app_info.vm_icon == 'templatevm-red'
+    assert app_info.vm_icon == 'dispvm-green'
     assert app_info.disposable
     assert app_info.is_qubes_specific()
-    assert app_info.get_command_for_vm('template-dvm') == [
-        'qvm-run', '-q', '-a', '--service', '--dispvm=template-dvm', '--',
+    assert app_info.get_command_for_vm('default-dvm') == [
+        'qvm-run', '-q', '-a', '--service', '--dispvm=default-dvm', '--',
         'qubes.StartApp+firefox']
 
 

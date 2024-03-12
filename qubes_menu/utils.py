@@ -20,20 +20,26 @@
 """
 Miscellaneous Qubes Menu utility functions.
 """
-from typing import List
+from typing import List, Optional
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 
 
-def load_icon(icon_name, size: Gtk.IconSize = Gtk.IconSize.LARGE_TOOLBAR):
+def load_icon(icon_name,
+              size: Optional[Gtk.IconSize] = Gtk.IconSize.LARGE_TOOLBAR,
+              pixel_size: Optional[int] = None):
     """Load icon from provided name, if available. If not, attempt to treat
     provided name as a path. If icon not found in any of the above ways,
     load a blank icon of specified size.
     Returns GdkPixbuf.Pixbuf
     """
-    _, width, height = Gtk.icon_size_lookup(size)
+    if size:
+        _, width, height = Gtk.icon_size_lookup(size)
+    else:
+        width = pixel_size
+        height = pixel_size
     try:
         return GdkPixbuf.Pixbuf.new_from_file_at_size(icon_name, width, height)
     except (GLib.Error, TypeError):
@@ -84,18 +90,22 @@ def text_search(search_word: str, text_words: List[str]):
     return 0
 
 
-def highlight_words(labels: List[Gtk.Label], search_words: List[str]):
+def highlight_words(labels: List[Gtk.Label], search_words: List[str],
+                    hl_tag: Optional[str] = None):
     """Highlight provided search_words in the provided labels."""
     if not labels:
         return
-    # try to find Application, if impossible, just give up on highlighting
-    # because it means we are trying to highlight in the middle of
-    # deleting some rows
 
-    window = labels[0].get_ancestor(Gtk.Window)
-    if not window:
-        return
-    hl_tag = window.get_application().highlight_tag
+    if not hl_tag:
+        # try to find Application, if impossible, just give up on highlighting
+        # because it means we are trying to highlight in the middle of
+        # deleting some rows
+
+        try:
+            window = labels[0].get_ancestor(Gtk.Window)
+            hl_tag = window.get_application().highlight_tag
+        except AttributeError:
+            return
 
     for label in labels:
         text = label.get_text()
