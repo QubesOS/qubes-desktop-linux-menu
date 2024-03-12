@@ -350,7 +350,6 @@ class AppPage(MenuPage):
         """
         if app_info.vm:
             entry = BaseAppEntry(app_info)
-            app_info.entries.append(entry)
             self.app_list.add(entry)
 
     def _vm_callback(self, vm_entry: VMEntry):

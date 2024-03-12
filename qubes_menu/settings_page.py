@@ -124,5 +124,4 @@ class SettingsPage(MenuPage):
         """
         if not app_info.vm and not app_info.is_qubes_specific():
             entry = BaseAppEntry(app_info)
-            app_info.entries.append(entry)
             self.app_list.add(entry)
