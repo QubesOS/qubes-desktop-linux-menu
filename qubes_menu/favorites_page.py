@@ -104,7 +104,6 @@ class FavoritesPage(MenuPage):
 
     def _add_from_app_info(self, app_info):
         entry = FavoritesAppEntry(app_info, self.vm_manager)
-        app_info.entries.append(entry)
         self.app_list.add(entry)
 
     @staticmethod

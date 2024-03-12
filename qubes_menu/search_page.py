@@ -153,7 +153,6 @@ class SearchPage(MenuPage):
         """
         if app_info.vm or not app_info.is_qubes_specific():
             entry = SearchAppEntry(app_info, self.vm_manager)
-            app_info.entries.append(entry)
             self.app_list.add(entry)
 
     def _vm_callback(self, vm_entry: VMEntry):

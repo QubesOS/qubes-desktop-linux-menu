@@ -90,18 +90,22 @@ def text_search(search_word: str, text_words: List[str]):
     return 0
 
 
-def highlight_words(labels: List[Gtk.Label], search_words: List[str]):
+def highlight_words(labels: List[Gtk.Label], search_words: List[str],
+                    hl_tag: Optional[str] = None):
     """Highlight provided search_words in the provided labels."""
     if not labels:
         return
-    # try to find Application, if impossible, just give up on highlighting
-    # because it means we are trying to highlight in the middle of
-    # deleting some rows
 
-    window = labels[0].get_ancestor(Gtk.Window)
-    if not window:
-        return
-    hl_tag = window.get_application().highlight_tag
+    if not hl_tag:
+        # try to find Application, if impossible, just give up on highlighting
+        # because it means we are trying to highlight in the middle of
+        # deleting some rows
+
+        try:
+            window = labels[0].get_ancestor(Gtk.Window)
+            hl_tag = window.get_application().highlight_tag
+        except AttributeError:
+            return
 
     for label in labels:
         text = label.get_text()

@@ -58,6 +58,7 @@ class AppEntry(Gtk.ListBoxRow):
         """
         super().__init__(**properties)
         self.app_info = app_info
+        self.app_info.entries.append(self)
         self.vm_name = app_info.vm.name if app_info.vm else 'dom0'
 
         self.menu = SelfAwareMenu()

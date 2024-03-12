@@ -18,17 +18,13 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 
-import pytest
 import qubesadmin
 import qubesadmin.events
-from qubesadmin.tests import TestVM
-from qubesadmin.label import Label
 from ..vm_manager import VMManager
 from ..application_page import VMTypeToggle
 from qubesadmin.tests.mock_app import Property
 
 
-@pytest.mark.asyncio
 def test_vm_manager(test_qapp):
     dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
