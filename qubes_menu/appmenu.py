@@ -23,6 +23,7 @@ from .favorites_page import FavoritesPage
 from .custom_widgets import SelfAwareMenu
 from .vm_manager import VMManager
 from .page_handler import MenuPage
+from .constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -82,6 +83,7 @@ class AppMenu(Gtk.Application):
         self.primary = False
         self.keep_visible = False
         self.initial_page = 1
+        self.sort_running = False
         self.start_in_background = False
 
         self._add_cli_options()
@@ -275,6 +277,7 @@ class AppMenu(Gtk.Application):
         The function that performs actual widget realization and setup. Should
         be only called once, in the main instance of this application.
         """
+        # build the frontend
         self.builder = Gtk.Builder()
 
         self.fav_app_list = self.builder.get_object('fav_app_list')
@@ -314,6 +317,17 @@ class AppMenu(Gtk.Application):
         Gtk.Settings.get_default().connect('notify::gtk-theme-name',
                                            self.load_style)
 
+        self.load_settings()
+
+        # monitor for settings changes
+        for feature in [INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE]:
+            self.dispatcher.add_handler(
+                'domain-feature-set:' + feature,
+                self._update_settings)
+            self.dispatcher.add_handler(
+                'domain-feature-delete:' + feature,
+                self._update_settings)
+
     def load_style(self, *_args):
         """Load appropriate CSS stylesheet and associated properties."""
         load_theme(self.main_window,
@@ -333,6 +347,28 @@ class AppMenu(Gtk.Application):
         self.highlight_tag = \
             f'<span background="{self._rgba_color_to_hex(bg_color)}" ' \
             f'color="{self._rgba_color_to_hex(fg_color)}">'
+
+    def load_settings(self):
+        """Load settings from dom0 features."""
+        local_vm = self.qapp.domains[self.qapp.local_name]
+
+        try:
+            initial_page = int(local_vm.features.get(INITIAL_PAGE_FEATURE, 1))
+        except ValueError:
+            initial_page = 1
+        self.initial_page = initial_page
+
+        self.sort_running = \
+            bool(local_vm.features.get(SORT_RUNNING_FEATURE, False))
+
+        for handler in self.handlers.values():
+            handler.set_sorting_order(self.sort_running)
+
+    def _update_settings(self, vm, _event, **_kwargs):
+        if not str(vm) == self.qapp.local_name:
+            return
+
+        self.load_settings()
 
     @staticmethod
     def _rgba_color_to_hex(color: Gdk.RGBA):

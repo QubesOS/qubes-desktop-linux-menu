@@ -33,6 +33,9 @@ STATE_DICTIONARY = {
     'domain-shutdown-failed': 'Running'
 }
 
+INITIAL_PAGE_FEATURE = 'menu-initial-page'
+SORT_RUNNING_FEATURE = 'menu-sort-running'
+
 FAVORITES_FEATURE = 'menu-favorites'
 DISPOSABLE_PREFIX = '@disp:'
 

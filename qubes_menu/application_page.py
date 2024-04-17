@@ -261,6 +261,7 @@ class AppPage(MenuPage):
         :param desktop_file_manager: Desktop File Manager object
         """
         self.selected_vm_entry: Optional[VMRow] = None
+        self.sort_running = False # Sort running VMs to top
 
         self.vm_list: Gtk.ListBox = builder.get_object('vm_list')
         self.app_list: Gtk.ListBox = builder.get_object('app_list')
@@ -285,7 +286,7 @@ class AppPage(MenuPage):
         self.app_list.invalidate_sort()
 
         vm_manager.register_new_vm_callback(self._vm_callback)
-        self.vm_list.set_sort_func(lambda x, y: x.sort_order > y.sort_order)
+        self.vm_list.set_sort_func(self._sort_vms)
         self.vm_list.set_filter_func(self.toggle_buttons.filter_function)
 
         self.vm_list.connect('row-selected', self._selection_changed)
@@ -319,6 +320,18 @@ class AppPage(MenuPage):
         self.app_list.set_filter_func(None)
         self.app_list.invalidate_filter()
         self.app_list.set_filter_func(self._is_app_fitting)
+
+    def _sort_vms(self, vmentry: VMRow, other_entry: VMRow):
+        if self.sort_running:
+            if vmentry.vm_entry.power_state != other_entry.vm_entry.power_state:
+                if vmentry.vm_entry.power_state == "Running":
+                    return -1
+                return 1
+        return vmentry.sort_order > other_entry.sort_order
+
+    def set_sorting_order(self, sort_running: bool = False):
+        self.sort_running = sort_running
+        self.vm_list.invalidate_sort()
 
     def setup_keynav(self):
         """Do all the required faffing about to convince Gtk to have

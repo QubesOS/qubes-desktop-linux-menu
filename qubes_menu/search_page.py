@@ -99,6 +99,8 @@ class SearchPage(MenuPage):
         self.vm_manager = vm_manager
         self.desktop_file_manager = desktop_file_manager
 
+        self.sort_running = False  # sort running vms to top
+
         self.vm_list: Gtk.ListBox = builder.get_object('search_vm_list')
         self.app_list: Gtk.ListBox = builder.get_object('search_app_list')
         self.search_entry: Gtk.SearchEntry = builder.get_object('search_entry')
@@ -121,7 +123,7 @@ class SearchPage(MenuPage):
         self.vm_list.set_filter_func(self._is_vm_fitting)
 
         self.app_list.set_sort_func(self._sort_apps)
-        self.vm_list.set_sort_func(lambda x, y: x.sort_order > y.sort_order)
+        self.vm_list.set_sort_func(self._sort_vms)
         self.app_list.invalidate_sort()
         self.vm_list.invalidate_sort()
 
@@ -215,6 +217,18 @@ class SearchPage(MenuPage):
                 self.app_list.select_row(row)
                 return
 
+    def _sort_vms(self, vmentry: SearchVMRow, other_entry: SearchVMRow):
+        if isinstance(vmentry, AnyVMRow):
+            return -1
+        if isinstance(other_entry, AnyVMRow):
+            return 1
+        if self.sort_running:
+            if vmentry.vm_entry.power_state != other_entry.vm_entry.power_state:
+                if vmentry.vm_entry.power_state == "Running":
+                    return -1
+                return 1
+        return vmentry.sort_order > other_entry.sort_order
+
     def _sort_apps(self, appentry: SearchAppEntry, other_entry: SearchAppEntry):
         """
         # word is delineated by space and - and _
@@ -293,3 +307,7 @@ class SearchPage(MenuPage):
             self.selected_vm_row = row
         self.app_list.invalidate_filter()
         self.app_list.select_row(None)
+
+    def set_sorting_order(self, sort_running: bool = False):
+        self.sort_running = sort_running
+        self.vm_list.invalidate_sort()

@@ -27,3 +27,6 @@ class MenuPage(abc.ABC):
     def initialize_page(self):
         """Perform all initial / post-switch configuration for the page. This
         will be called on start and whenever menu switches to the given page."""
+
+    def set_sorting_order(self, sort_running: bool = False):
+        """Set special sorting order options."""
