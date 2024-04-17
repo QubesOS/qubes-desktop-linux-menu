@@ -239,10 +239,17 @@ class AppMenu(Gtk.Application):
 
     def _key_press(self, _widget, event):
         """
-        Keypress handler, to allow closing the menu with an ESC key
+        Keypress handler, to allow closing the menu with an ESC key and to fix
+        some issues with space (as we have search by default, we should not
+        react to space with launching an app).
         """
         if event.keyval == Gdk.KEY_Escape:
             self.hide_menu()
+        if event.keyval == Gdk.KEY_space:
+            if not isinstance(self.get_active_window().get_focus(),
+                              Gtk.SearchEntry):
+                return True
+        return False
 
     def _focus_out(self, _widget, _event: Gdk.EventFocus):
         """
@@ -334,7 +341,8 @@ class AppMenu(Gtk.Application):
 
     def _key_pressed(self, _widget, event_key: Gdk.EventKey):
         """If user presses a non-control key, move to search."""
-        if Gdk.keyval_to_unicode(event_key.keyval) > 32:
+        if Gdk.keyval_to_unicode(event_key.keyval) > 32 or \
+                event_key.keyval == Gdk.KEY_BackSpace:
             search_page = self.handlers.get('search_page')
             if not isinstance(search_page, SearchPage):
                 return False

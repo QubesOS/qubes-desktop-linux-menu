@@ -178,6 +178,12 @@ class SearchPage(MenuPage):
         self.vm_view.set_visible(has_search and
                                  not self.app_placeholder.get_mapped())
 
+        if not self.app_placeholder.get_mapped():
+            for row in self.app_list.get_children():
+                if row.get_mapped():
+                    self.app_list.select_row(row)
+                    break
+
     def _search_key_press(self, _widget, event):
         """
         Tab on search should move focus to main notebook tabs
