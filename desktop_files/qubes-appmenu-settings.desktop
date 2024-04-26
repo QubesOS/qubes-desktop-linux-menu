@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Exec=qubes-appmenu-settings
+Icon=appmenu-settings-program-icon
+Terminal=false
+Name=Qubes Menu Settings
+GenericName=Qubes Menu Settings
+StartupNotify=false
+Categories=Settings;X-XFCE-SettingsDialog

@@ -20,12 +20,14 @@ install-icons:
 	cp icons/qappmenu-qube.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-qube.svg
 	cp icons/qappmenu-search.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-search.svg
 	cp icons/qappmenu-settings.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
+	cp icons/appmenu-settings-program-icon.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/appmenu-settings-program-icon.svg
 
 install-autostart:
 	mkdir -p $(DESTDIR)/etc/xdg/autostart
 	cp autostart/qubes-app-menu.desktop $(DESTDIR)/etc/xdg/autostart
 	mkdir -p $(DESTDIR)/usr/share/applications
 	cp desktop_files/open-qubes-app-menu.desktop $(DESTDIR)/usr/share/applications/
+	cp desktop_files/qubes-appmenu-settings.desktop $(DESTDIR)/usr/share/applications/
 	mkdir -p $(DESTDIR)/lib/systemd/user/
 	cp service_files/qubes-app-menu.service $(DESTDIR)/lib/systemd/user/
 	mkdir -p $(DESTDIR)/usr/share/dbus-1/services/

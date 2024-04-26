@@ -51,8 +51,8 @@ Requires:  python%{python3_pkgversion}-gbulb
 Requires:  gtk3
 Requires:  python%{python3_pkgversion}-qubesadmin >= 4.1.8
 Requires:  qubes-artwork >= 4.1.5
-
-Provides:   qubes_menu = %{version}-%{release}
+Requires:  qubes-desktop-linux-manager
+Provides:  qubes_menu = %{version}-%{release}
 
 
 %description
@@ -108,7 +108,16 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{python3_sitelib}/qubes_menu/qubes-menu-light.css
 %{python3_sitelib}/qubes_menu/qubes-menu-base.css
 
+%dir %{python3_sitelib}/qubes_menu_settings
+%dir %{python3_sitelib}/qubes_menu_settings/__pycache__
+%{python3_sitelib}/qubes_menu_settings/__pycache__/*
+%{python3_sitelib}/qubes_menu_settings/__init__.py
+%{python3_sitelib}/qubes_menu_settings/menu_settings.py
+%{python3_sitelib}/qubes_menu_settings/menu_settings.glade
+%{python3_sitelib}/qubes_menu_settings/menu_settings.css
+
 %{_bindir}/qubes-app-menu
+%{_bindir}/qubes-appmenu-settings
 /usr/share/icons/hicolor/scalable/apps/qappmenu-dispvm-child.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-favorites.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-favorites-blue.svg
@@ -120,9 +129,11 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 /usr/share/icons/hicolor/scalable/apps/qappmenu-qube.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-search.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
+/usr/share/icons/hicolor/scalable/apps/appmenu-settings-program-icon.svg
 
 /etc/xdg/autostart/qubes-app-menu.desktop
 /usr/share/applications/open-qubes-app-menu.desktop
+/usr/share/applications/qubes-appmenu-settings.desktop
 
 /lib/systemd/user/qubes-app-menu.service
 /usr/share/dbus-1/services/dbus-qubes-app-menu.service

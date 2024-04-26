@@ -9,10 +9,11 @@ setuptools.setup(name='qubes_menu',
                  description='Qubes App Menu',
                  license='GPL2+',
                  url='https://www.qubes-os.org/',
-                 packages=["qubes_menu"],
+                 packages=["qubes_menu", "qubes_menu_settings"],
                  entry_points={
                      'gui_scripts': [
                          'qubes-app-menu = qubes_menu.appmenu:main',
+                         'qubes-appmenu-settings = qubes_menu_settings.menu_settings:main',
                      ]
                  },
                  package_data={
@@ -20,5 +21,8 @@ setuptools.setup(name='qubes_menu',
                                     "qubes-menu-dark.css",
                                     "qubes-menu-light.css",
                                     "qubes-menu-base.css",
-                                    ]},
+                                    ],
+                     "qubes_menu_settings": ["menu_settings.glade",
+                                             "menu_settings.css"]
+                 },
 )
