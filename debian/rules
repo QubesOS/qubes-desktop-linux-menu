@@ -6,7 +6,7 @@ DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/default.mk
 
 %:
-	dh $@ --with python3 --buildsystem=pybuild
+	dh $@ --with python3 --buildsystem=pybuild --test-pytest
 
 override_dh_auto_build: export http_proxy=127.0.0.1:9
 override_dh_auto_build: export https_proxy=127.0.0.1:9

@@ -17,6 +17,9 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
+"""
+Settings for Qubes App Menu.
+"""
 import sys
 
 import gi
@@ -27,7 +30,7 @@ import qubesadmin
 from qubes_config.widgets.gtk_widgets import ImageListModeler
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gio, Gdk
+from gi.repository import Gtk, Gdk
 
 from qubes_menu.constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE
 
@@ -109,6 +112,9 @@ class AppMenuSettings(Gtk.Application):
         self.load_state()
 
     def load_state(self):
+        """
+        Load current settings from local vm's features.
+        """
         try:
             initial_page = int(self.vm.features.get(INITIAL_PAGE_FEATURE, 1))
         except ValueError:
@@ -121,7 +127,7 @@ class AppMenuSettings(Gtk.Application):
 
         # this can sometimes be None, thus, the "or False)
         sort_running = \
-            bool(self.vm.features.get(SORT_RUNNING_FEATURE, False) or False)
+            bool(self.vm.features.get(SORT_RUNNING_FEATURE, False))
         self.sort_running_check.set_active(sort_running)
 
     def _quit(self, *_args):

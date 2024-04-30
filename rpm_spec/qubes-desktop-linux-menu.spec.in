@@ -113,6 +113,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{python3_sitelib}/qubes_menu_settings/__pycache__/*
 %{python3_sitelib}/qubes_menu_settings/__init__.py
 %{python3_sitelib}/qubes_menu_settings/menu_settings.py
+%{python3_sitelib}/qubes_menu_settings/test_menu_settings.py
 %{python3_sitelib}/qubes_menu_settings/menu_settings.glade
 %{python3_sitelib}/qubes_menu_settings/menu_settings.css
 

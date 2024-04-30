@@ -19,7 +19,7 @@ checks:pylint:
     - pip3 install --quiet -r ci/requirements.txt
     - git clone https://github.com/QubesOS/qubes-core-admin-client ~/core-admin-client
   script:
-    - PYTHONPATH=~/core-admin-client:. python3 -m pylint --rcfile=.pylintrc qubes_menu
+    - PYTHONPATH=~/core-admin-client:. python3 -m pylint --rcfile=.pylintrc qubes_menu qubes_menu_settings
     - mypy
 
 checks:tests:
@@ -32,8 +32,9 @@ checks:tests:
       python3-coverage xorg-x11-server-Xvfb python3-inotify sequoia-sqv
     - pip3 install --quiet -r ci/requirements.txt
     - git clone https://github.com/QubesOS/qubes-core-admin-client ~/core-admin-client
+    - git clone https://github.com/QubesOS/qubes-desktop-linux-manager ~/desktop-linux-manager
   script:
-    - PYTHONPATH=~/core-admin-client:~/core-qrexec xvfb-run ./run-tests.sh
+    - PYTHONPATH=~/core-admin-client:~/desktop-linux-manager:. xvfb-run ./run-tests.sh
   after_script:
     - "PATH=$PATH:$HOME/.local/bin"
     - ci/codecov-wrapper
