@@ -19,7 +19,7 @@
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 
 import pytest
-import pkg_resources
+import importlib.resources
 from qubesadmin.tests.mock_app import MockQubesComplete
 
 
@@ -37,8 +37,12 @@ def test_qapp():
 def test_builder():
     """Gtk builder with correct menu glade file"""
     builder = Gtk.Builder()
-    builder.add_from_file(pkg_resources.resource_filename(
-        'qubes_menu', 'qubes-menu.glade'))
+
+    glade_path = (importlib.resources.files('qubes_menu') /
+                  'qubes-menu.glade')
+    with importlib.resources.as_file(glade_path) as path:
+        builder.add_from_file(str(path))
+
     return builder
 
 

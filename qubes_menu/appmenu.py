@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 from typing import Optional, Dict
-import pkg_resources
+import importlib.resources
 import logging
 
 import qubesadmin
@@ -282,8 +282,12 @@ class AppMenu(Gtk.Application):
 
         self.fav_app_list = self.builder.get_object('fav_app_list')
         self.sys_tools_list = self.builder.get_object('sys_tools_list')
-        self.builder.add_from_file(pkg_resources.resource_filename(
-            __name__, 'qubes-menu.glade'))
+
+        glade_path = (importlib.resources.files('qubes_menu') /
+                      'qubes-menu.glade')
+        with importlib.resources.as_file(glade_path) as path:
+            self.builder.add_from_file(str(path))
+
         self.main_window = self.builder.get_object('main_window')
         self.main_notebook = self.builder.get_object('main_notebook')
 
@@ -330,11 +334,16 @@ class AppMenu(Gtk.Application):
 
     def load_style(self, *_args):
         """Load appropriate CSS stylesheet and associated properties."""
-        load_theme(self.main_window,
-                   light_theme_path=pkg_resources.resource_filename(
-                       __name__, 'qubes-menu-light.css'),
-                   dark_theme_path=pkg_resources.resource_filename(
-                       __name__, 'qubes-menu-dark.css'))
+        light_ref = (importlib.resources.files('qubes_menu') /
+                     'qubes-menu-light.css')
+        dark_ref = (importlib.resources.files('qubes_menu') /
+                    'qubes-menu-dark.css')
+
+        with importlib.resources.as_file(light_ref) as light_path, \
+                importlib.resources.as_file(dark_ref) as dark_path:
+            load_theme(self.main_window,
+                       light_theme_path=str(light_path),
+                       dark_theme_path=str(dark_path))
 
         label = Gtk.Label()
         style_context: Gtk.StyleContext = label.get_style_context()

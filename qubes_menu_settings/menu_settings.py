@@ -23,7 +23,7 @@ Settings for Qubes App Menu.
 import sys
 
 import gi
-import pkg_resources
+import importlib.resources
 
 import qubesadmin
 
@@ -72,8 +72,11 @@ class AppMenuSettings(Gtk.Application):
         The function that performs actual widget realization and setup.
         """
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(pkg_resources.resource_filename(
-            'qubes_menu_settings', 'menu_settings.glade'))
+
+        glade_path = (importlib.resources.files('qubes_menu_settings') /
+                      'menu_settings.glade')
+        with importlib.resources.as_file(glade_path) as path:
+            self.builder.add_from_file(str(path))
 
         self.main_window : Gtk.ApplicationWindow = \
             self.builder.get_object('main_window')
@@ -92,8 +95,12 @@ class AppMenuSettings(Gtk.Application):
 
         screen = Gdk.Screen.get_default()
         provider = Gtk.CssProvider()
-        provider.load_from_path(pkg_resources.resource_filename(
-                       'qubes_menu_settings', 'menu_settings.css'))
+
+        css_path = (importlib.resources.files('qubes_menu_settings') /
+                      'menu_settings.css')
+        with importlib.resources.as_file(css_path) as path:
+            provider.load_from_path(str(path))
+
         Gtk.StyleContext.add_provider_for_screen(
             screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
 
