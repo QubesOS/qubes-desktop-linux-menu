@@ -263,6 +263,8 @@ class AppPage(MenuPage):
         self.selected_vm_entry: Optional[VMRow] = None
         self.sort_running = False # Sort running VMs to top
 
+        self.page_widget: Gtk.Box = builder.get_object("app_page")
+
         self.vm_list: Gtk.ListBox = builder.get_object('vm_list')
         self.app_list: Gtk.ListBox = builder.get_object('app_list')
         self.settings_list: Gtk.ListBox = builder.get_object('settings_list')

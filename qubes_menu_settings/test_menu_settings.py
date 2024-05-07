@@ -24,7 +24,7 @@ from qubesadmin.tests.mock_app import MockQubesComplete
 
 def test_menu_settings_load():
     qapp = MockQubesComplete()
-    qapp._qubes['dom0'].features['menu-initial-page'] = '2'
+    qapp._qubes['dom0'].features['menu-initial-page'] = 'favorites_page'
     qapp._qubes['dom0'].features['menu-sort-running'] = '1'
     qapp._qubes['dom0'].features['menu-favorites'] = ''
 
@@ -34,13 +34,13 @@ def test_menu_settings_load():
 
     app.perform_setup()
 
-    assert app.initial_page_model.get_selected() == 2
+    assert app.initial_page_model.get_selected() == "favorites_page"
     assert app.sort_running_check.get_active()
 
 
 def test_menu_settings_change():
     qapp = MockQubesComplete()
-    qapp._qubes['dom0'].features['menu-initial-page'] = '1'
+    qapp._qubes['dom0'].features['menu-initial-page'] = 'app_page'
     qapp._qubes['dom0'].features['menu-sort-running'] = ''
     qapp._qubes['dom0'].features['menu-favorites'] = ''
 
@@ -50,21 +50,21 @@ def test_menu_settings_change():
 
     app.perform_setup()
 
-    assert app.initial_page_model.get_selected() == 1
+    assert app.initial_page_model.get_selected() == "app_page"
     assert not app.sort_running_check.get_active()
 
     app.starting_page_combo.set_active_id("Search")  # the first option is search
     app.sort_running_check.set_active(True)
 
     qapp.expected_calls[('dom0', 'admin.vm.feature.Set', 'menu-sort-running', b'1')] = b'0\0'
-    qapp.expected_calls[('dom0', 'admin.vm.feature.Set', 'menu-initial-page', b'0')] = b'0\0'
+    qapp.expected_calls[('dom0', 'admin.vm.feature.Set', 'menu-initial-page', b'search_page')] = b'0\0'
 
     app._save()
 
 
 def test_menu_settings_change2():
     qapp = MockQubesComplete()
-    qapp._qubes['dom0'].features['menu-initial-page'] = '1'
+    qapp._qubes['dom0'].features['menu-initial-page'] = 'app_page'
     qapp._qubes['dom0'].features['menu-sort-running'] = ''
     qapp._qubes['dom0'].features['menu-favorites'] = ''
 
@@ -74,11 +74,11 @@ def test_menu_settings_change2():
 
     app.perform_setup()
 
-    assert app.initial_page_model.get_selected() == 1
+    assert app.initial_page_model.get_selected() == "app_page"
     assert not app.sort_running_check.get_active()
 
     app.starting_page_combo.set_active_id("Favorites")
 
-    qapp.expected_calls[('dom0', 'admin.vm.feature.Set', 'menu-initial-page', b'2')] = b'0\0'
+    qapp.expected_calls[('dom0', 'admin.vm.feature.Set', 'menu-initial-page', b'favorites_page')] = b'0\0'
 
     app._save()

@@ -32,6 +32,12 @@ from gi.repository import Gtk, Gdk, GLib, Gio
 import gbulb
 gbulb.install()
 
+PAGE_NUMS = {
+    "search_page": 0,
+    "app_page": 1,
+    "favorites_page": 2,
+    "settings_page": 3
+}
 
 logger = logging.getLogger('qubes-appmenu')
 
@@ -82,7 +88,7 @@ class AppMenu(Gtk.Application):
         self.dispatcher = dispatcher
         self.primary = False
         self.keep_visible = False
-        self.initial_page = 1
+        self.initial_page = "app_page"
         self.sort_running = False
         self.start_in_background = False
 
@@ -150,7 +156,7 @@ class AppMenu(Gtk.Application):
         if "keep-visible" in options:
             self.keep_visible = True
         if "page" in options:
-            self.initial_page = options['page']
+            self.initial_page = self.handles.keys()[options['page']]
         if "background" in options:
             self.start_in_background = True
         self.activate()
@@ -207,9 +213,7 @@ class AppMenu(Gtk.Application):
 
             # grab a focus on the initially selected page so that keyboard
             # navigation works
-            self.main_notebook.get_tab_label(
-                self.main_notebook.get_nth_page(
-                    self.initial_page)).get_parent().grab_focus()
+            self.handlers[self.initial_page].page_widget.grab_focus()
 
             loop = asyncio.get_event_loop()
             self.tasks = [
@@ -220,7 +224,8 @@ class AppMenu(Gtk.Application):
                 self.tasks, return_when=asyncio.FIRST_EXCEPTION))
         else:
             if self.main_notebook:
-                self.main_notebook.set_current_page(self.initial_page)
+                self.main_notebook.set_current_page(
+                    PAGE_NUMS[self.initial_page])
             if self.main_window:
                 self.main_window.set_keep_above(True)
                 if self.main_window.is_visible() and not self.keep_visible:
@@ -270,7 +275,7 @@ class AppMenu(Gtk.Application):
         for page in self.handlers.values():
             page.initialize_page()
         if self.main_notebook:
-            self.main_notebook.set_current_page(self.initial_page)
+            self.main_notebook.set_current_page(PAGE_NUMS[self.initial_page])
 
     def perform_setup(self):
         """
@@ -361,10 +366,9 @@ class AppMenu(Gtk.Application):
         """Load settings from dom0 features."""
         local_vm = self.qapp.domains[self.qapp.local_name]
 
-        try:
-            initial_page = int(local_vm.features.get(INITIAL_PAGE_FEATURE, 1))
-        except ValueError:
-            initial_page = 1
+        initial_page = local_vm.features.get(INITIAL_PAGE_FEATURE, "app_page")
+        if initial_page not in PAGE_NUMS:
+            initial_page = "app_page"
         self.initial_page = initial_page
 
         self.sort_running = \

@@ -99,6 +99,8 @@ class SearchPage(MenuPage):
         self.vm_manager = vm_manager
         self.desktop_file_manager = desktop_file_manager
 
+        self.page_widget: Gtk.Grid = builder.get_object("search_page")
+
         self.sort_running = False  # sort running vms to top
 
         self.vm_list: Gtk.ListBox = builder.get_object('search_vm_list')

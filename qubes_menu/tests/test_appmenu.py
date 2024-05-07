@@ -26,7 +26,7 @@ def test_app_menu_conffeatures():
 
     qapp._qubes['test-vm2'] = MockQube(name="test-vm2", qapp=qapp,
                                        features={'menu-favorites': ''})
-    qapp._qubes['dom0'].features['menu-initial-page'] = '2'
+    qapp._qubes['dom0'].features['menu-initial-page'] = 'favorites_page'
     qapp._qubes['dom0'].features['menu-sort-running'] = '1'
     qapp.update_vm_calls()
 
@@ -36,7 +36,7 @@ def test_app_menu_conffeatures():
     app_menu.perform_setup()
 
     # check that initial page is correct
-    assert app_menu.initial_page == 2
+    assert app_menu.initial_page == "favorites_page"
     assert app_menu.sort_running
 
 
@@ -57,5 +57,5 @@ def test_app_menu_conffeatures_default():
     app_menu.perform_setup()
 
     # check that default configuration is correct
-    assert app_menu.initial_page == 1
+    assert app_menu.initial_page == "app_page"
     assert not app_menu.sort_running

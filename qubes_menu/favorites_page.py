@@ -49,6 +49,8 @@ class FavoritesPage(MenuPage):
         self.dispatcher = dispatcher
         self.vm_manager = vm_manager
 
+        self.page_widget: Gtk.Box = builder.get_object("favorites_page")
+
         self.app_list: Gtk.ListBox = builder.get_object('fav_app_list')
         self.app_list.connect('row-activated', self._app_clicked)
 

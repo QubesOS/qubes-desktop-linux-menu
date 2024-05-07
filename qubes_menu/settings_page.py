@@ -58,6 +58,8 @@ class SettingsPage(MenuPage):
         self.desktop_file_manager = desktop_file_manager
         self.dispatcher = dispatcher
 
+        self.page_widget: Gtk.Box = builder.get_object("settings_page")
+
         self.app_list: Gtk.ListBox = builder.get_object('sys_tools_list')
         self.app_list.connect('row-activated', self._app_clicked)
         self.app_list.set_sort_func(

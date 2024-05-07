@@ -35,12 +35,16 @@ from gi.repository import Gtk, Gdk
 from qubes_menu.constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE
 
 
-MENU_PAGES = ["Search", "Applications", "Favorites"]
+MENU_PAGES = {
+    "search_page": "Search",
+    "app_page": "Applications",
+    "favorites_page": "Favorites"
+}
 
 MENU_PAGES_DICT = {
-    "Search": {"icon": "qappmenu-search", "object": 0},
-    "Applications": {"icon": "qappmenu-qube", "object": 1},
-    "Favorites": {"icon": "qappmenu-favorites", "object": 2}}
+    "Search": {"icon": "qappmenu-search", "object": "search_page"},
+    "Applications": {"icon": "qappmenu-qube", "object": "app_page"},
+    "Favorites": {"icon": "qappmenu-favorites", "object": "favorites_page"}}
 
 
 class AppMenuSettings(Gtk.Application):
@@ -109,12 +113,7 @@ class AppMenuSettings(Gtk.Application):
         self.cancel_button.connect("clicked", self._quit)
 
         self.initial_page_model = ImageListModeler(
-            self.starting_page_combo,
-            {
-                "Search": {"icon": "qappmenu-search", "object": 0},
-                "Applications": {"icon": "qappmenu-qube", "object": 1},
-                "Favorites": {"icon": "qappmenu-favorites", "object": 2},
-            })
+            self.starting_page_combo, MENU_PAGES_DICT)
 
         self.load_state()
 
@@ -122,12 +121,9 @@ class AppMenuSettings(Gtk.Application):
         """
         Load current settings from local vm's features.
         """
-        try:
-            initial_page = int(self.vm.features.get(INITIAL_PAGE_FEATURE, 1))
-        except ValueError:
-            initial_page = 1
-        if initial_page < 0 or initial_page > 2:
-            initial_page = 1
+        initial_page = self.vm.features.get(INITIAL_PAGE_FEATURE, "app_page")
+        if initial_page not in MENU_PAGES:
+            initial_page = "app_page"
 
         self.initial_page_model.select_name(MENU_PAGES[initial_page])
         self.initial_page_model.update_initial()
@@ -151,7 +147,8 @@ class AppMenuSettings(Gtk.Application):
             if old_sort_running:
                 del self.vm.features[SORT_RUNNING_FEATURE]
 
-        old_initial_page = int(self.vm.features.get(INITIAL_PAGE_FEATURE, 1))
+        old_initial_page = self.vm.features.get(INITIAL_PAGE_FEATURE,
+                                                "app_page")
 
         if self.initial_page_model.get_selected() != old_initial_page:
             self.vm.features[INITIAL_PAGE_FEATURE] = \

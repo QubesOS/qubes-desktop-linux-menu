@@ -20,9 +20,15 @@
 """Abstract Menu page"""
 import abc
 
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+
 
 class MenuPage(abc.ABC):
     """Abstract Menu Page."""
+    page_widget: Gtk.Widget
+
     @abc.abstractmethod
     def initialize_page(self):
         """Perform all initial / post-switch configuration for the page. This
