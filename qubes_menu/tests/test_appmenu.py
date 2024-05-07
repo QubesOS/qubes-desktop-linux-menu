@@ -59,3 +59,30 @@ def test_app_menu_conffeatures_default():
     # check that default configuration is correct
     assert app_menu.initial_page == "app_page"
     assert not app_menu.sort_running
+
+
+def test_appmenu_options():
+    qapp = MockQubesComplete()
+
+    qapp._qubes['test-vm2'] = MockQube(name="test-vm2", qapp=qapp,
+                                       features={'menu-favorites': ''})
+    qapp._qubes['dom0'].features['menu-initial-page'] = 'app_page'
+    qapp._qubes['dom0'].features['menu-sort-running'] = '1'
+    qapp.update_vm_calls()
+
+    dispatcher = MockDispatcher(qapp)
+    app_menu = AppMenu(qapp, dispatcher)
+
+    app_menu.perform_setup()
+
+    assert app_menu.initial_page == "app_page"
+    assert not app_menu.keep_visible
+    options = {
+        "keep-visible": True,
+        "page": "2"
+    }
+
+    app_menu.parse_options(options)
+
+    assert app_menu.initial_page == "favorites_page"
+    assert app_menu.keep_visible

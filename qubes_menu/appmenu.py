@@ -8,7 +8,7 @@ import asyncio
 import os
 import subprocess
 import sys
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 import importlib.resources
 import logging
 
@@ -152,15 +152,19 @@ class AppMenu(Gtk.Application):
         options = command_line.get_options_dict()
         # convert GVariantDict -> GVariant -> dict
         options = options.end().unpack()
+        self.parse_options(options)
+        self.activate()
+        return 0
 
+    def parse_options(self, options: Dict[str, Any]):
+        """Parse command-line options."""
         if "keep-visible" in options:
             self.keep_visible = True
         if "page" in options:
-            self.initial_page = self.handles.keys()[options['page']]
+            self.initial_page = [k for k, v in PAGE_NUMS.items()
+                                 if int(v) == int(options["page"])][0]
         if "background" in options:
             self.start_in_background = True
-        self.activate()
-        return 0
 
     @staticmethod
     def _do_power_button(_widget):
