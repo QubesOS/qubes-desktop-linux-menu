@@ -1,3 +1,27 @@
+qubes-desktop-linux-menu (1.2.0-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Run tests in CI
+  * Make the dispvm child icon an icon, not a background
+  * Add explanation how to add things to favorites
+  * Provide a workaround for PageUp / focus chain bug
+  * Launch first search result on Enter
+  * Use keywords in menu search
+  * Fix pylint complaint about yield from
+  * Fix favorites menu in search
+  * Move tests to new Mock Qubes object from core-admin-client
+  * Add and update tests for Menu
+  * Search and space/backspace interactions
+  * Implement menu settings as features
+  * Add a GUI program to manage menu settings
+  * Add tests to menu settings
+  * Stop building for r4.1
+  * Remove deprecated pkg_resources, replace it with importlib
+  * Use page name instead of page number for initial page
+  * Add test for command line parsing
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Wed, 08 May 2024 01:53:16 +0200
+
 qubes-desktop-linux-menu (1.1.5-1) unstable; urgency=medium
 
   [ Marek Marczykowski-Górecki ]
