@@ -76,11 +76,11 @@ list :not(:selected) {
 }
 
 .dispvm_entry {
-  padding-left: 40px;
   font-style: italic;
 }
 
 .dispvm_icon {
+    padding-left: 40px;
     padding-top: 0;
     margin-top: 0;
 }

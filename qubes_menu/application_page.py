@@ -324,15 +324,22 @@ class AppPage(MenuPage):
         self.app_list.set_filter_func(self._is_app_fitting)
 
     def _sort_vms(self, vmentry: VMRow, other_entry: VMRow):
+        my_sort_name = vmentry.sort_order
+        other_sort_name = other_entry.sort_order
         if self.sort_running:
-            if vmentry.vm_entry.power_state != other_entry.vm_entry.power_state:
-                if vmentry.vm_entry.power_state == "Running":
-                    return -1
-                return 1
-        return vmentry.sort_order > other_entry.sort_order
+            my_sort_name = "0" if (vmentry.vm_entry.power_state == "Running") \
+                else "1" + my_sort_name
+            other_sort_name = "0" if \
+                (other_entry.vm_entry.power_state == "Running") \
+                else "1" + other_sort_name
+        return my_sort_name > other_sort_name
 
     def set_sorting_order(self, sort_running: bool = False):
         self.sort_running = sort_running
+        for child in self.vm_list.get_children():
+            if isinstance(child, VMRow):
+                child.show_dispvm_inheritance = not self.sort_running
+                child.update_style(False)
         self.vm_list.invalidate_sort()
 
     def setup_keynav(self):
@@ -372,7 +379,8 @@ class AppPage(MenuPage):
         Callback to be performed on all newly loaded VMEntry instances.
         """
         if vm_entry:
-            vm_row = VMRow(vm_entry)
+            vm_row = VMRow(vm_entry,
+                           show_dispvm_inheritance=not self.sort_running)
             vm_row.show_all()
             vm_entry.entries.append(vm_row)
             self.vm_list.add(vm_row)

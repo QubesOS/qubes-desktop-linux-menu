@@ -21,6 +21,7 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
+from typing import Optional
 
 from . import constants
 from .utils import load_icon
@@ -181,29 +182,34 @@ class SettingsEntry(Gtk.ListBoxRow):
             ['qubes-vm-settings', vm.name], stdin=subprocess.DEVNULL)
         self.get_toplevel().get_application().hide_menu()
 
+
 class VMRow(HoverListBox):
     """
     Helper widget representing a VM row.
     """
-    def __init__(self, vm_entry: VMEntry):
+    def __init__(self, vm_entry: VMEntry,
+                 show_dispvm_inheritance: Optional[bool] = True):
         """
         :param vm_entry: VMEntry object, stored and managed by VMManager
+        :param show_dispvm_inheritance: bool, should dispvm children be shown
+        with an arrow signifying inheritance
         """
         super().__init__()
         self.vm_entry = vm_entry
         self.vm_name = vm_entry.vm_name
+        self.show_dispvm_inheritance = show_dispvm_inheritance
         self.get_style_context().add_class('vm_entry')
 
         self.icon_img = Gtk.Image()
-
+        self.dispvm_icon = Gtk.Image()
         # add the icon for dispvm parent existing
         if self.vm_entry.parent_vm:
-            self.dispvm_icon = Gtk.Image()
             dispvm_icon_img = load_icon('qappmenu-dispvm-child', None, 15)
             self.dispvm_icon.set_from_pixbuf(dispvm_icon_img)
             self.dispvm_icon.get_style_context().add_class('dispvm_icon')
             self.dispvm_icon.set_valign(Gtk.Align.START)
             self.main_box.pack_start(self.dispvm_icon, False, False, 2)
+            self.dispvm_icon.set_no_show_all(True)
 
         self.main_box.pack_start(self.icon_img, False, False, 2)
         self.label = Gtk.Label(label=self.vm_entry.vm_name)
@@ -230,6 +236,8 @@ class VMRow(HoverListBox):
                 style_context.add_class('running_vm')
             else:
                 style_context.remove_class('running_vm')
+
+        self.dispvm_icon.set_visible(self.show_dispvm_inheritance)
 
     def update_contents(self,
                         update_power_state=False,
