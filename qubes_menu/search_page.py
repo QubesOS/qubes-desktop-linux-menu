@@ -21,7 +21,7 @@
 from typing import Dict, Optional, Set, Union
 
 from .desktop_file_manager import DesktopFileManager
-from .custom_widgets import SearchVMRow, AnyVMRow
+from .custom_widgets import SearchVMRow, AnyVMRow, ControlList
 from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -146,10 +146,18 @@ class SearchPage(MenuPage):
         self.vm_list.connect('row-selected', self._selection_changed)
         self.search_entry.connect('activate', self._move_to_first)
 
+        self.control_list = ControlList(self)
+        self.page_widget.attach(self.control_list, 1, 4, 1, 1)
+        self.control_list.connect('row-activated', self._app_clicked)
+        self.control_list.set_selection_mode(Gtk.SelectionMode.NONE)
+
     def _app_clicked(self, _widget, row):
         self.recent_search_manager.add_new_recent_search(
             self.search_entry.get_text())
-        row.run_app(row.app_info.vm)
+        if self.selected_vm_row:
+            row.run_app(self.selected_vm_row.vm_entry.vm)
+        elif hasattr(row, 'app_info'):
+            row.run_app(row.app_info.vm)
 
     def _app_info_callback(self, app_info):
         """
@@ -305,8 +313,12 @@ class SearchPage(MenuPage):
     def _selection_changed(self, _widget, row: Optional[SearchVMRow]):
         if row is None or not row.vm_name:
             self.selected_vm_row = None
+            self.control_list.hide()
         else:
             self.selected_vm_row = row
+            self.control_list.show()
+            self.control_list.update_visibility(row.vm_entry.power_state)
+            self.control_list.unselect_all()
         self.app_list.invalidate_filter()
         self.app_list.select_row(None)
 

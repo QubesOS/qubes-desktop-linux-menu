@@ -167,7 +167,7 @@ class SettingsEntry(Gtk.ListBoxRow):
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.event_box.add(self.hbox)
         self.settings_icon = Gtk.Image.new_from_pixbuf(
-            load_icon('qappmenu-settings'))
+            load_icon('settings-black'))
         self.hbox.pack_start(self.settings_icon, False, False, 5)
         self.settings_label = Gtk.Label(label="Settings", xalign=0)
         self.hbox.pack_start(self.settings_label, False, False, 5)
@@ -181,6 +181,10 @@ class SettingsEntry(Gtk.ListBoxRow):
         subprocess.Popen(
             ['qubes-vm-settings', vm.name], stdin=subprocess.DEVNULL)
         self.get_toplevel().get_application().hide_menu()
+
+    def update_state(self, state):
+        """Update state: should be always visible."""
+        self.show_all()
 
 
 class VMRow(HoverListBox):
@@ -310,3 +314,137 @@ class AnyVMRow(HoverListBox):
         self.label.set_markup('<b>Any qube</b>')
         self.main_box.pack_start(self.label, False, False, 2)
         self.show_all()
+
+
+class ControlRow(Gtk.ListBoxRow):
+    """
+    Gtk.ListBoxRow representing one of the VM control options: start/shutdown/
+    pause etc.
+    """
+    def __init__(self):
+        super().__init__()
+        self.row_label = LimitedWidthLabel()
+        self.get_style_context().add_class('app_entry')
+        self.event_box = HoverEventBox(focus_widget=self)
+        self.add(self.event_box)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.event_box.add(box)
+
+        self.icon = Gtk.Image()
+        box.pack_start(self.icon, False, False, 10)
+        box.pack_start(self.row_label, False, False, 5)
+
+        self.show_all()
+        self.command = None
+
+    def update_state(self, state):
+        """
+        Update own state (visibility/text/sensitivity) based on provided VM
+        state.
+        """
+
+    def run_app(self, vm):
+        """
+        Run related app/script.
+        """
+        if self.command and self.is_sensitive():
+            # pylint: disable=consider-using-with
+            subprocess.Popen([self.command, str(vm)], stdin=subprocess.DEVNULL)
+
+
+class StartControlItem(ControlRow):
+    """
+    Control Row item representing changing VM state: start if it's not running,
+    shutdown if it's running, unpause if it's paused, and kill if it's
+    transient.
+    """
+    def __init__(self):
+        super().__init__()
+        self.state = None
+
+    def update_state(self, state):
+        """
+        Update own state (visibility/text/sensitivity) based on provided VM
+        state.
+        """
+        self.state = state
+        if state == 'Running':
+            self.row_label.set_label('Shutdown qube')
+            self.command = 'qvm-shutdown'
+            self.icon.set_from_pixbuf(load_icon("qappmenu-shutdown", size=None,
+                                                pixel_size=15))
+            return
+        if state == 'Transient':
+            self.row_label.set_label('Kill qube')
+            self.command = 'qvm-kill'
+            self.icon.set_from_pixbuf(load_icon("qappmenu-shutdown", size=None,
+                                                pixel_size=15))
+            return
+        if state == 'Halted':
+            self.row_label.set_label('Start qube')
+            self.command = 'qvm-start'
+            self.icon.set_from_pixbuf(load_icon("qappmenu-start", size=None,
+                                                pixel_size=15))
+
+            return
+        if state == 'Paused':
+            self.row_label.set_label('Unpause qube')
+            self.command = 'qvm-unpause'
+            self.icon.set_from_pixbuf(load_icon("qappmenu-start", size=None,
+                                                pixel_size=15))
+            return
+
+
+class PauseControlItem(ControlRow):
+    """
+    Control Row item representing pausing VM: visible only when it's running.
+    """
+    def __init__(self):
+        super().__init__()
+        self.icon.set_from_pixbuf(load_icon("qappmenu-pause", size=None,
+                                            pixel_size=15))
+        self.state = None
+
+    def update_state(self, state):
+        """
+        Update own state (visibility/text/sensitivity) based on provided VM
+        state.
+        """
+        self.state = state
+        if state == 'Running':
+            self.row_label.set_label('Pause qube')
+            self.set_sensitive(True)
+            self.command = 'qvm-pause'
+            self.icon.show()
+            return
+        self.row_label.set_label(' ')
+        self.set_sensitive(False)
+        self.command = None
+        self.icon.hide()
+
+
+class ControlList(Gtk.ListBox):
+    """
+    ListBox containing VM state control items.
+    """
+    def __init__(self, app_page):
+        super().__init__()
+        self.app_page = app_page
+
+        self.get_style_context().add_class('control_panel')
+
+        self.settings_item = SettingsEntry()
+
+        self.start_item = StartControlItem()
+        self.pause_item = PauseControlItem()
+        self.add(self.settings_item)
+        self.add(self.start_item)
+        self.add(self.pause_item)
+
+    def update_visibility(self, state):
+        """
+        Update children's state based on provided VM state.
+        """
+        for row in self.get_children():
+            row.update_state(state)
+

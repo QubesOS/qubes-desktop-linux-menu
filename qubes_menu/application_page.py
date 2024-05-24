@@ -25,126 +25,15 @@ from typing import Optional
 
 from .desktop_file_manager import DesktopFileManager
 from .custom_widgets import LimitedWidthLabel, NetworkIndicator, \
-    SettingsEntry, VMRow, HoverEventBox
+    SettingsEntry, VMRow, HoverEventBox, ControlList
 from .app_widgets import AppEntry, BaseAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
-from .utils import get_visible_child
+from .utils import get_visible_child, load_icon
 
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
-
-
-class ControlRow(Gtk.ListBoxRow):
-    """
-    Gtk.ListBoxRow representing one of the VM control options: start/shutdown/
-    pause etc.
-    """
-    def __init__(self):
-        super().__init__()
-        self.row_label = LimitedWidthLabel()
-        self.get_style_context().add_class('app_entry')
-        self.event_box = HoverEventBox(focus_widget=self)
-        self.add(self.event_box)
-        self.event_box.add(self.row_label)
-        self.show_all()
-        self.command = None
-
-    def update_state(self, state):
-        """
-        Update own state (visibility/text/sensitivity) based on provided VM
-        state.
-        """
-
-    def run_app(self, vm):
-        """
-        Run related app/script.
-        """
-        if self.command and self.is_sensitive():
-            # pylint: disable=consider-using-with
-            subprocess.Popen([self.command, str(vm)], stdin=subprocess.DEVNULL)
-
-
-class StartControlItem(ControlRow):
-    """
-    Control Row item representing changing VM state: start if it's not running,
-    shutdown if it's running, unpause if it's paused, and kill if it's
-    transient.
-    """
-    def __init__(self):
-        super().__init__()
-        self.state = None
-
-    def update_state(self, state):
-        """
-        Update own state (visibility/text/sensitivity) based on provided VM
-        state.
-        """
-        self.state = state
-        if state == 'Running':
-            self.row_label.set_label('Shutdown qube')
-            self.command = 'qvm-shutdown'
-            return
-        if state == 'Transient':
-            self.row_label.set_label('Kill qube')
-            self.command = 'qvm-kill'
-            return
-        if state == 'Halted':
-            self.row_label.set_label('Start qube')
-            self.command = 'qvm-start'
-            return
-        if state == 'Paused':
-            self.row_label.set_label('Unpause qube')
-            self.command = 'qvm-unpause'
-            return
-
-
-class PauseControlItem(ControlRow):
-    """
-    Control Row item representing pausing VM: visible only when it's running.
-    """
-    def __init__(self):
-        super().__init__()
-        self.state = None
-
-    def update_state(self, state):
-        """
-        Update own state (visibility/text/sensitivity) based on provided VM
-        state.
-        """
-        self.state = state
-        if state == 'Running':
-            self.row_label.set_label('Pause qube')
-            self.set_sensitive(True)
-            self.command = 'qvm-pause'
-            return
-        self.row_label.set_label(' ')
-        self.set_sensitive(False)
-        self.command = None
-
-
-class ControlList(Gtk.ListBox):
-    """
-    ListBox containing VM state control items.
-    """
-    def __init__(self, app_page):
-        super().__init__()
-        self.app_page = app_page
-
-        self.get_style_context().add_class('right_pane')
-
-        self.start_item = StartControlItem()
-        self.pause_item = PauseControlItem()
-        self.add(self.start_item)
-        self.add(self.pause_item)
-
-    def update_visibility(self, state):
-        """
-        Update children's state based on provided VM state.
-        """
-        for row in self.get_children():
-            row.update_state(state)
 
 
 class VMTypeToggle:
@@ -267,9 +156,7 @@ class AppPage(MenuPage):
 
         self.vm_list: Gtk.ListBox = builder.get_object('vm_list')
         self.app_list: Gtk.ListBox = builder.get_object('app_list')
-        self.settings_list: Gtk.ListBox = builder.get_object('settings_list')
         self.vm_right_pane: Gtk.Box = builder.get_object('vm_right_pane')
-        self.separator_top = builder.get_object('separator_top')
         self.separator_bottom = builder.get_object('separator_bottom')
 
         self.network_indicator = NetworkIndicator()
@@ -293,9 +180,6 @@ class AppPage(MenuPage):
 
         self.vm_list.connect('row-selected', self._selection_changed)
 
-        self.settings_list.add(SettingsEntry())
-        self.settings_list.connect('row-activated', self._app_clicked)
-
         self.control_list = ControlList(self)
         self.control_list.connect('row-activated', self._app_clicked)
         self.vm_right_pane.pack_end(self.control_list, False, False, 0)
@@ -303,10 +187,9 @@ class AppPage(MenuPage):
         self.setup_keynav()
 
         self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)
-        self.settings_list.set_selection_mode(Gtk.SelectionMode.NONE)
         self.control_list.set_selection_mode(Gtk.SelectionMode.NONE)
 
-        self.widget_order = [self.settings_list, self.app_list,
+        self.widget_order = [self.app_list,
                              self.control_list]
 
         self.vm_list.select_row(None)
@@ -348,12 +231,10 @@ class AppPage(MenuPage):
         self._set_keyboard_focus_chain()
 
         self.app_list.connect('keynav-failed', self._keynav_failed)
-        self.settings_list.connect('keynav-failed', self._keynav_failed)
         self.control_list.connect('keynav-failed', self._keynav_failed)
         self.vm_list.connect('keynav-failed', self._vm_keynav_failed)
 
         self.app_list.connect('key-press-event', self._focus_vm_list)
-        self.settings_list.connect('key-press-event', self._focus_vm_list)
         self.control_list.connect('key-press-event', self._focus_vm_list)
 
         self.vm_list.connect('key-press-event', self._vm_key_pressed)
@@ -415,15 +296,11 @@ class AppPage(MenuPage):
         # pylint: disable=attribute-defined-outside-init
         self.control_list.focus_neighbors = {
             Gtk.DirectionType.UP: self.app_list,
-            Gtk.DirectionType.DOWN: self.settings_list,
+            Gtk.DirectionType.DOWN: self.app_list,
         }
         self.app_list.focus_neighbors = {
-            Gtk.DirectionType.UP: self.settings_list,
-            Gtk.DirectionType.DOWN: self.control_list,
-        }
-        self.settings_list.focus_neighbors = {
             Gtk.DirectionType.UP: self.control_list,
-            Gtk.DirectionType.DOWN: self.app_list,
+            Gtk.DirectionType.DOWN: self.control_list,
         }
 
     def _vm_keynav_failed(self, _widget, direction: Gtk.DirectionType):
@@ -493,8 +370,6 @@ class AppPage(MenuPage):
         self.vm_right_pane.set_visible(visibility)
         self.control_list.set_visible(visibility)
         self.app_list.set_visible(visibility)
-        self.settings_list.set_visible(visibility)
-        self.separator_top.set_visible(visibility)
         self.separator_bottom.set_visible(visibility)
         if not visibility:
             self.network_indicator.set_visible(False)

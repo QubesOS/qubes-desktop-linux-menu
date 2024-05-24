@@ -18,7 +18,7 @@
         <property name="can-focus">True</property>
         <property name="tab-pos">left</property>
         <child>
-          <!-- n-columns=2 n-rows=4 -->
+          <!-- n-columns=2 n-rows=5 -->
           <object class="GtkGrid" id="search_page">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -69,6 +69,7 @@
               <packing>
                 <property name="left-attach">0</property>
                 <property name="top-attach">3</property>
+                <property name="height">2</property>
               </packing>
             </child>
             <child>
@@ -176,6 +177,9 @@
                 <property name="top-attach">1</property>
                 <property name="width">2</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
             </child>
             <style>
               <class name="toplevel_left_pane"/>
@@ -323,31 +327,6 @@
                 <property name="can-focus">False</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkListBox" id="settings_list">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <style>
-                      <class name="right_pane"/>
-                    </style>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkSeparator" id="separator_top">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkScrolledWindow">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -393,7 +372,7 @@ You can add them using Settings.</property>
                   <packing>
                     <property name="expand">True</property>
                     <property name="fill">True</property>
-                    <property name="position">2</property>
+                    <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
@@ -404,7 +383,22 @@ You can add them using Settings.</property>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="position">3</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkListBox" id="settings_list">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="valign">start</property>
+                    <style>
+                      <class name="right_pane"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <style>

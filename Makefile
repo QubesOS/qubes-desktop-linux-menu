@@ -21,6 +21,10 @@ install-icons:
 	cp icons/qappmenu-search.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-search.svg
 	cp icons/qappmenu-settings.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
 	cp icons/appmenu-settings-program-icon.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/appmenu-settings-program-icon.svg
+	cp icons/qappmenu-pause.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-pause.svg
+	cp icons/qappmenu-start.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-start.svg
+	cp icons/qappmenu-shutdown.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/qappmenu-shutdown.svg
+	cp icons/settings-*.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/
 
 install-autostart:
 	mkdir -p $(DESTDIR)/etc/xdg/autostart

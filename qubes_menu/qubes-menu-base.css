@@ -37,6 +37,13 @@ list :not(:selected) {
   border-width: 0;
 }
 
+.control_panel  {
+  background: @right-background;
+  color: @text-color;
+  border-width: 0;
+  padding-bottom: 10px;
+}
+
 #main_notebook header {
     background: @outer-background;
     border-width: 0;
