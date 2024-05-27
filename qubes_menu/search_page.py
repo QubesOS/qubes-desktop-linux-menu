@@ -21,7 +21,7 @@
 from typing import Dict, Optional, Set, Union
 
 from .desktop_file_manager import DesktopFileManager
-from .custom_widgets import SearchVMRow, AnyVMRow, ControlList
+from .custom_widgets import SearchVMRow, AnyVMRow, ControlList, KeynavController
 from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -150,6 +150,9 @@ class SearchPage(MenuPage):
         self.page_widget.attach(self.control_list, 1, 4, 1, 1)
         self.control_list.connect('row-activated', self._app_clicked)
         self.control_list.set_selection_mode(Gtk.SelectionMode.NONE)
+
+        self.keynav_manager = KeynavController(
+            widgets_in_order=[self.app_list, self.control_list])
 
     def _app_clicked(self, _widget, row):
         self.recent_search_manager.add_new_recent_search(

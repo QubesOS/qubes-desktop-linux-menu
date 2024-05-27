@@ -21,10 +21,10 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
-from typing import Optional
+from typing import Optional, List
 
 from . import constants
-from .utils import load_icon
+from .utils import load_icon, get_visible_child
 from .vm_manager import VMEntry
 
 import gi
@@ -448,3 +448,40 @@ class ControlList(Gtk.ListBox):
         for row in self.get_children():
             row.update_state(state)
 
+
+
+class KeynavController:
+    """
+    A class that helps in managing keynav in places where Gtk's defaults are
+    not enough, namely, when we have a bunch of ListBoxes stacked on top of
+     each other.
+    """
+    def __init__(self, widgets_in_order: List[Gtk.ListBox]):
+        self.widgets_in_order = widgets_in_order
+
+        for widget in self.widgets_in_order:
+            widget.connect('keynav-failed', self._keynav_failed)
+
+    def get_neighbor(self, widget: Gtk.ListBox, direction: Gtk.DirectionType):
+        """Get next widget in given direction"""
+        i = self.widgets_in_order.index(widget)
+        if direction == Gtk.DirectionType.UP:
+            return self.widgets_in_order[i - 1]
+        elif direction == Gtk.DirectionType.DOWN:
+            return self.widgets_in_order[(i + 1) % len(self.widgets_in_order)]
+        raise None
+
+    def _keynav_failed(self, widget: Gtk.ListBox,
+                       direction: Gtk.DirectionType):
+        """
+        Callback to be performed when keyboard nav fails. Attempts to
+        find next widget and move keyboard focus to it.
+        """
+        next_widget = self.get_neighbor(widget, direction)
+        if not next_widget:
+            return
+        next_focus_widget = get_visible_child(
+            next_widget, reverse=direction == Gtk.DirectionType.UP)
+        if next_focus_widget:
+            widget.select_row(None)
+            next_focus_widget.grab_focus()
