@@ -25,10 +25,10 @@ import logging
 from typing import Optional, List
 from functools import reduce
 
-from .custom_widgets import LimitedWidthLabel, SelfAwareMenu, HoverEventBox
+from .custom_widgets import LimitedWidthLabel, SelfAwareMenu, HoverEventBox, FavoritesMenu
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
-from .utils import load_icon, text_search, highlight_words
+from .utils import load_icon, text_search, highlight_words, remove_from_feature
 from . import constants
 
 import gi
@@ -100,68 +100,6 @@ class AppEntry(Gtk.ListBoxRow):
         self.get_toplevel().get_application().hide_menu()
 
 
-class FavoritesMenu(SelfAwareMenu):
-    """
-    Menu for showing add to favorites option.
-    """
-    def __init__(self, app_info: ApplicationInfo):
-        super().__init__()
-        self.app_info = app_info
-
-        self.add_menu_item = Gtk.CheckMenuItem(label='Add to favorites')
-        self.add_menu_item.connect('activate', self._add_to_favorites)
-        self.add(self.add_menu_item)
-        self.show_all()
-
-    def _has_favorite_sibling(self):
-        """
-        Helper function, check if any other related Application Rows are
-        for Favorites
-        """
-        for entry in self.app_info.entries:
-            if isinstance(entry, FavoritesAppEntry):
-                return True
-        return False
-
-    def _add_to_favorites(self, *_args, **_kwargs):
-        """
-        "Add to favorites" action: sets appropriate VM feature
-        """
-        target_vm = self.app_info.vm
-        if not target_vm:
-            target_vm = self.app_info.qapp.domains[
-                self.app_info.qapp.local_name]
-
-        current_feature = target_vm.features.get(constants.FAVORITES_FEATURE)
-        if current_feature:
-            feature_list = current_feature.split(' ')
-        else:
-            feature_list = []
-
-        if self.app_info.entry_name in feature_list:
-            return
-        feature_list.append(self.app_info.entry_name)
-        target_vm.features[constants.FAVORITES_FEATURE] \
-            = ' '.join(feature_list)
-
-    def set_menu_state(self):
-        """
-        Set appropriate menu item state:
-        For ephemeral VMs (class DispVM with a template
-        set) the menu is inactive. If the current App is already added to
-        favorites, the "add to favorites" option is checked and inactive.
-
-        :return:
-        """
-        if getattr(self.get_parent(), 'ephemeral_vm', False):
-            self.add_menu_item.set_active(False)
-            self.add_menu_item.set_sensitive(False)
-        else:
-            is_favorite = self._has_favorite_sibling()
-            self.add_menu_item.set_active(is_favorite)
-            self.add_menu_item.set_sensitive(not is_favorite)
-
-
 class BaseAppEntry(AppEntry):
     """
     A 'normal' Application row, used by main applications menu and system tools.
@@ -175,7 +113,7 @@ class BaseAppEntry(AppEntry):
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.event_box.add(self.box)
         self.get_style_context().add_class('app_entry')
-        self.menu = FavoritesMenu(self.app_info)
+        self.menu = FavoritesMenu(lambda: self.app_info)
 
         self.icon = Gtk.Image()
         self.label = LimitedWidthLabel()
@@ -300,19 +238,7 @@ class FavoritesAppEntry(AppEntryWithVM):
         feature"""
         vm = self.app_info.vm or self.app_info.qapp.domains[
             self.app_info.qapp.local_name]
-        current_feature = vm.features.get(
-            constants.FAVORITES_FEATURE, '').split(' ')
-
-        try:
-            current_feature.remove(self.app_info.entry_name)
-        except ValueError:
-            logger.info('Failed to remove %s from vm favorites for vm %s: '
-                        'favorites did not contain %s',
-                        self.app_info.entry_name, str(vm),
-                        self.app_info.entry_name)
-            self.get_parent().remove(self)
-            return
-        vm.features[constants.FAVORITES_FEATURE] = ' '.join(current_feature)
+        remove_from_feature(vm, constants.FAVORITES_FEATURE, self.app_info.entry_name)
 
 
 class SearchAppEntry(AppEntryWithVM):
@@ -321,7 +247,7 @@ class SearchAppEntry(AppEntryWithVM):
                  **properties):
 
         super().__init__(app_info, vm_manager, **properties)
-        self.menu = FavoritesMenu(self.app_info)
+        self.menu = FavoritesMenu(lambda: self.app_info)
 
         self.last_search_words: Optional[List[str]] = None
         self.last_search_result: int = 0

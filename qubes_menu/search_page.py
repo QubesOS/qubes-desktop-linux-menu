@@ -328,3 +328,9 @@ class SearchPage(MenuPage):
     def set_sorting_order(self, sort_running: bool = False):
         self.sort_running = sort_running
         self.vm_list.invalidate_sort()
+
+    def get_selected_vm(self):
+        """Get currently selected vm"""
+        if self.selected_vm_row:
+            return self.selected_vm_row.vm_entry
+        return None

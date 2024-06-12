@@ -32,12 +32,9 @@ from gi.repository import Gtk, Gdk, GLib, Gio
 import gbulb
 gbulb.install()
 
-PAGE_NUMS = {
-    "search_page": 0,
-    "app_page": 1,
-    "favorites_page": 2,
-    "settings_page": 3
-}
+PAGE_LIST = [
+    "search_page", "app_page", "favorites_page", "settings_page"
+]
 
 logger = logging.getLogger('qubes-appmenu')
 
@@ -161,8 +158,7 @@ class AppMenu(Gtk.Application):
         if "keep-visible" in options:
             self.keep_visible = True
         if "page" in options:
-            self.initial_page = [k for k, v in PAGE_NUMS.items()
-                                 if int(v) == int(options["page"])][0]
+            self.initial_page = PAGE_LIST[int(options["page"])]
         if "background" in options:
             self.start_in_background = True
 
@@ -228,8 +224,7 @@ class AppMenu(Gtk.Application):
                 self.tasks, return_when=asyncio.FIRST_EXCEPTION))
         else:
             if self.main_notebook:
-                self.main_notebook.set_current_page(
-                    PAGE_NUMS[self.initial_page])
+                self.main_notebook.set_current_page(PAGE_LIST.index(self.initial_page))
             if self.main_window:
                 self.main_window.set_keep_above(True)
                 if self.main_window.is_visible() and not self.keep_visible:
@@ -279,7 +274,7 @@ class AppMenu(Gtk.Application):
         for page in self.handlers.values():
             page.initialize_page()
         if self.main_notebook:
-            self.main_notebook.set_current_page(PAGE_NUMS[self.initial_page])
+            self.main_notebook.set_current_page(PAGE_LIST.index(self.initial_page))
 
     def perform_setup(self):
         """
@@ -371,7 +366,7 @@ class AppMenu(Gtk.Application):
         local_vm = self.qapp.domains[self.qapp.local_name]
 
         initial_page = local_vm.features.get(INITIAL_PAGE_FEATURE, "app_page")
-        if initial_page not in PAGE_NUMS:
+        if initial_page not in PAGE_LIST:
             initial_page = "app_page"
         self.initial_page = initial_page
 
@@ -418,6 +413,15 @@ class AppMenu(Gtk.Application):
         page_handler = self.handlers.get(page.get_name())
         if page_handler:
             page_handler.initialize_page()
+
+    def get_currently_selected_vm(self):
+        """
+        Check if there is a VM currently selected; if yes, return it, if no, return none.
+        """
+        current_page_handler = self.handlers[PAGE_LIST[self.main_notebook.get_current_page()]]
+        if hasattr(current_page_handler, "get_selected_vm"):
+            return current_page_handler.get_selected_vm()
+        return None
 
 
 def main():

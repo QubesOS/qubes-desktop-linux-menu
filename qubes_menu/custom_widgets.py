@@ -21,11 +21,13 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
-from typing import Optional, List
+from typing import Optional, List, Callable
 
+import qubesadmin
 from . import constants
-from .utils import load_icon, get_visible_child
+from .utils import load_icon, get_visible_child, add_to_feature, remove_from_feature
 from .vm_manager import VMEntry
+from .desktop_file_manager import ApplicationInfo
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -118,6 +120,59 @@ class SelfAwareMenu(Gtk.Menu):
         SelfAwareMenu.OPEN_MENUS -= 1
 
 
+class FavoritesMenu(SelfAwareMenu):
+    """
+    Menu for showing add to favorites option.
+    """
+    def __init__(self, app_info_getter: Callable[[], ApplicationInfo]):
+        super().__init__()
+        self.app_info_getter = app_info_getter
+
+        self.add_menu_item = Gtk.CheckMenuItem(label='Add to favorites')
+        self.add_menu_item.connect('activate', self._add_to_favorites)
+        self.add(self.add_menu_item)
+        self.show_all()
+
+    def _has_favorite_sibling(self):
+        """
+        Helper function, check if any other related Application Rows are
+        for Favorites
+        """
+        if self.app_info_getter():
+            for entry in self.app_info_getter().entries:
+                if type(entry).__name__ == 'FavoritesAppEntry':
+                    return True
+        return False
+
+    def _add_to_favorites(self, *_args, **_kwargs):
+        """
+        "Add to favorites" action: sets appropriate VM feature
+        """
+        target_vm = self.app_info_getter().vm
+        if not target_vm:
+            target_vm = self.app_info_getter().qapp.domains[
+                self.app_info_getter().qapp.local_name]
+
+        add_to_feature(target_vm, constants.FAVORITES_FEATURE, self.app_info_getter().entry_name)
+
+    def set_menu_state(self):
+        """
+        Set appropriate menu item state:
+        For ephemeral VMs (class DispVM with a template
+        set) the menu is inactive. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+
+        :return:
+        """
+        if getattr(self.get_parent(), 'ephemeral_vm', False) or not self.app_info_getter():
+            self.add_menu_item.set_active(False)
+            self.add_menu_item.set_sensitive(False)
+        else:
+            is_favorite = self._has_favorite_sibling()
+            self.add_menu_item.set_active(is_favorite)
+            self.add_menu_item.set_sensitive(not is_favorite)
+
+
 class NetworkIndicator(Gtk.Box):
     """
     Network Indicator Gtk.Box - changes appearance when set_network_state is
@@ -161,8 +216,9 @@ class SettingsEntry(Gtk.ListBoxRow):
     """
     Gtk.ListBoxRow especially for a (run VM) Settings entry.
     """
-    def __init__(self):
+    def __init__(self, desktop_file_manager):
         super().__init__()
+        self.desktop_file_manager = desktop_file_manager
         self.event_box = HoverEventBox(focus_widget=self)
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.event_box.add(self.hbox)
@@ -173,6 +229,10 @@ class SettingsEntry(Gtk.ListBoxRow):
         self.hbox.pack_start(self.settings_label, False, False, 5)
         self.get_style_context().add_class('app_entry')
         self.add(self.event_box)
+        self.event_box.connect('button-press-event', self.show_menu)
+
+        self.menu = FavoritesMenu(self.get_appinfo)
+
         self.show_all()
 
     def run_app(self, vm):
@@ -182,9 +242,23 @@ class SettingsEntry(Gtk.ListBoxRow):
             ['qubes-vm-settings', vm.name], stdin=subprocess.DEVNULL)
         self.get_toplevel().get_application().hide_menu()
 
+    def get_appinfo(self) -> ApplicationInfo:
+        vm_entry: VMEntry = self.get_toplevel().get_application().get_currently_selected_vm()
+        return self.desktop_file_manager.get_app_info_by_name(vm_entry.settings_desktop_file_name)
+
     def update_state(self, state):
         """Update state: should be always visible."""
         self.show_all()
+
+    def show_menu(self, _widget, event):
+        """
+        Show right click menu. For ephemeral VMs (class DispVM with a template
+        set) the menu is inactive. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+        """
+        self.menu.set_menu_state()
+        if event.button == 3:
+            self.menu.popup_at_pointer(None)  # None means current event
 
 
 class VMRow(HoverListBox):
@@ -358,9 +432,26 @@ class StartControlItem(ControlRow):
     shutdown if it's running, unpause if it's paused, and kill if it's
     transient.
     """
-    def __init__(self):
+    def __init__(self, desktop_file_manager):
         super().__init__()
+        self.desktop_file_manager = desktop_file_manager
         self.state = None
+        self.event_box.connect('button-press-event', self.show_menu)
+
+        self.menu = FavoritesMenu(self.get_appinfo)
+
+    def get_appinfo(self) -> ApplicationInfo:
+        vm_entry: VMEntry = self.get_toplevel().get_application().get_currently_selected_vm()
+        return self.desktop_file_manager.get_app_info_by_name(vm_entry.settings_desktop_file_name)
+
+    def show_menu(self, _widget, event):
+        """
+        Show right click menu. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+        """
+        self.menu.set_menu_state()
+        if event.button == 3:
+            self.menu.popup_at_pointer(None)  # None means current event
 
     def update_state(self, state):
         """
@@ -433,9 +524,9 @@ class ControlList(Gtk.ListBox):
 
         self.get_style_context().add_class('control_panel')
 
-        self.settings_item = SettingsEntry()
+        self.settings_item = SettingsEntry(self.app_page.desktop_file_manager)
 
-        self.start_item = StartControlItem()
+        self.start_item = StartControlItem(self.app_page.desktop_file_manager)
         self.pause_item = PauseControlItem()
         self.add(self.settings_item)
         self.add(self.start_item)
@@ -447,7 +538,6 @@ class ControlList(Gtk.ListBox):
         """
         for row in self.get_children():
             row.update_state(state)
-
 
 
 class KeynavController:

@@ -215,6 +215,15 @@ class DesktopFileManager:
         of favorites."""
         yield from self.app_entries.values()
 
+    def get_app_info_by_name(self, name: str):
+        """
+        Get an app_info by name of the .desktop file
+        """
+        for path, app_entry in self.app_entries.items():
+            if path.name == name:
+                return app_entry
+        return None
+
     def remove_file(self, path: Union[str, Path]):
         """Remove a file provided by path from local cache. Also removes
         all child menu entries."""

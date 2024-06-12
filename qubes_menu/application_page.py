@@ -24,8 +24,8 @@ import subprocess
 from typing import Optional
 
 from .desktop_file_manager import DesktopFileManager
-from .custom_widgets import LimitedWidthLabel, NetworkIndicator, \
-    SettingsEntry, VMRow, HoverEventBox, ControlList, KeynavController
+from .custom_widgets import NetworkIndicator, \
+    VMRow, ControlList, KeynavController
 from .app_widgets import AppEntry, BaseAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -150,7 +150,8 @@ class AppPage(MenuPage):
         :param desktop_file_manager: Desktop File Manager object
         """
         self.selected_vm_entry: Optional[VMRow] = None
-        self.sort_running = False # Sort running VMs to top
+        self.sort_running = False  # Sort running VMs to top
+        self.desktop_file_manager = desktop_file_manager
 
         self.page_widget: Gtk.Box = builder.get_object("app_page")
 
@@ -344,3 +345,9 @@ class AppPage(MenuPage):
         self.separator_bottom.set_visible(visibility)
         if not visibility:
             self.network_indicator.set_visible(False)
+
+    def get_selected_vm(self) -> Optional[VMEntry]:
+        """Get currently selected vm"""
+        if self.selected_vm_entry:
+            return self.selected_vm_entry.vm_entry
+        return None
