@@ -147,14 +147,16 @@ class VMEntry:
         """
         Name of relevant .desktop vm settings file.
         """
-        return 'org.qubes-os.qubes-vm-settings._' + self.vm_name.replace('-', '_d') + '.desktop'
+        return ('org.qubes-os.qubes-vm-settings._' +
+                self.vm_name.replace('-', '_d') + '.desktop')
 
     @property
     def start_vm_desktop_file_name(self) -> str:
         """
         Name of relevant .desktop start vm file.
         """
-        return 'org.qubes-os.vm._' + self.vm_name.replace('-', '_d') + '.qubes-start.desktop'
+        return ('org.qubes-os.vm._' + self.vm_name.replace('-', '_d') +
+                '.qubes-start.desktop')
 
 
 class VMManager:

@@ -157,7 +157,8 @@ def get_visible_child(widget: Gtk.Container, reverse=False):
 
 def add_to_feature(vm: qubesadmin.vm.QubesVM, feature_name: str, text: str):
     """
-    Add a given string to a feature containing a list of space-separated strings.
+    Add a given string to a feature containing a list of space-separated
+    strings.
     """
     current_feature = vm.features.get(feature_name)
     if current_feature:
@@ -171,10 +172,11 @@ def add_to_feature(vm: qubesadmin.vm.QubesVM, feature_name: str, text: str):
     vm.features[feature_name] = ' '.join(feature_list)
 
 
-def remove_from_feature(vm: qubesadmin.vm.QubesVM, feature_name: str, text: str):
+def remove_from_feature(vm: qubesadmin.vm.QubesVM,
+                        feature_name: str, text: str):
     """
-    Remove a given string to a feature containing a list of space-separated strings.
-    Can raise ValueError if ext was not found in the feature.
+    Remove a given string to a feature containing a list of space-separated
+     strings.Can raise ValueError if ext was not found in the feature.
     """
     current_feature = vm.features.get(feature_name, '').split(' ')
 

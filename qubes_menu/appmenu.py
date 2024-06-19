@@ -224,7 +224,8 @@ class AppMenu(Gtk.Application):
                 self.tasks, return_when=asyncio.FIRST_EXCEPTION))
         else:
             if self.main_notebook:
-                self.main_notebook.set_current_page(PAGE_LIST.index(self.initial_page))
+                self.main_notebook.set_current_page(
+                    PAGE_LIST.index(self.initial_page))
             if self.main_window:
                 self.main_window.set_keep_above(True)
                 if self.main_window.is_visible() and not self.keep_visible:
@@ -274,7 +275,8 @@ class AppMenu(Gtk.Application):
         for page in self.handlers.values():
             page.initialize_page()
         if self.main_notebook:
-            self.main_notebook.set_current_page(PAGE_LIST.index(self.initial_page))
+            self.main_notebook.set_current_page(
+                PAGE_LIST.index(self.initial_page))
 
     def perform_setup(self):
         """
@@ -416,9 +418,12 @@ class AppMenu(Gtk.Application):
 
     def get_currently_selected_vm(self):
         """
-        Check if there is a VM currently selected; if yes, return it, if no, return none.
+        Check if there is a VM currently selected; if yes, return it, if no,
+        return none.
         """
-        current_page_handler = self.handlers[PAGE_LIST[self.main_notebook.get_current_page()]]
+        assert self.main_notebook
+        current_page_handler = self.handlers[
+            PAGE_LIST[self.main_notebook.get_current_page()]]
         if hasattr(current_page_handler, "get_selected_vm"):
             return current_page_handler.get_selected_vm()
         return None

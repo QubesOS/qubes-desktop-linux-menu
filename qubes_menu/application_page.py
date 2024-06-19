@@ -20,7 +20,6 @@
 """
 Application page and related widgets and logic
 """
-import subprocess
 from typing import Optional
 
 from .desktop_file_manager import DesktopFileManager
@@ -29,7 +28,7 @@ from .custom_widgets import NetworkIndicator, \
 from .app_widgets import AppEntry, BaseAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
-from .utils import get_visible_child, load_icon
+from .utils import get_visible_child
 
 import gi
 gi.require_version('Gtk', '3.0')

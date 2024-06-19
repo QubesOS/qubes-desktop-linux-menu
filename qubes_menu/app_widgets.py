@@ -25,7 +25,8 @@ import logging
 from typing import Optional, List
 from functools import reduce
 
-from .custom_widgets import LimitedWidthLabel, SelfAwareMenu, HoverEventBox, FavoritesMenu
+from .custom_widgets import (LimitedWidthLabel, SelfAwareMenu, HoverEventBox,
+                             FavoritesMenu)
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
 from .utils import load_icon, text_search, highlight_words, remove_from_feature
@@ -236,9 +237,12 @@ class FavoritesAppEntry(AppEntryWithVM):
     def _remove_from_favorites(self, *_args, **_kwargs):
         """Remove from favorites, that is, from an appropriate VM
         feature"""
+        if not self.app_info.entry_name:
+            return  # there is nothing to remove
         vm = self.app_info.vm or self.app_info.qapp.domains[
             self.app_info.qapp.local_name]
-        remove_from_feature(vm, constants.FAVORITES_FEATURE, self.app_info.entry_name)
+        remove_from_feature(vm, constants.FAVORITES_FEATURE,
+                            self.app_info.entry_name)
 
 
 class SearchAppEntry(AppEntryWithVM):

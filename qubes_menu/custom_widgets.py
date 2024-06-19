@@ -23,9 +23,8 @@ Various custom Gtk widgets used in Qubes App Menu.
 import subprocess
 from typing import Optional, List, Callable
 
-import qubesadmin
 from . import constants
-from .utils import load_icon, get_visible_child, add_to_feature, remove_from_feature
+from .utils import load_icon, get_visible_child, add_to_feature
 from .vm_manager import VMEntry
 from .desktop_file_manager import ApplicationInfo
 
@@ -153,7 +152,8 @@ class FavoritesMenu(SelfAwareMenu):
             target_vm = self.app_info_getter().qapp.domains[
                 self.app_info_getter().qapp.local_name]
 
-        add_to_feature(target_vm, constants.FAVORITES_FEATURE, self.app_info_getter().entry_name)
+        add_to_feature(target_vm, constants.FAVORITES_FEATURE,
+                       self.app_info_getter().entry_name)  # type: ignore
 
     def set_menu_state(self):
         """
@@ -164,7 +164,8 @@ class FavoritesMenu(SelfAwareMenu):
 
         :return:
         """
-        if getattr(self.get_parent(), 'ephemeral_vm', False) or not self.app_info_getter():
+        if (getattr(self.get_parent(), 'ephemeral_vm', False) or
+                not self.app_info_getter()):
             self.add_menu_item.set_active(False)
             self.add_menu_item.set_sensitive(False)
         else:
@@ -243,10 +244,13 @@ class SettingsEntry(Gtk.ListBoxRow):
         self.get_toplevel().get_application().hide_menu()
 
     def get_appinfo(self) -> ApplicationInfo:
-        vm_entry: VMEntry = self.get_toplevel().get_application().get_currently_selected_vm()
-        return self.desktop_file_manager.get_app_info_by_name(vm_entry.settings_desktop_file_name)
+        """Get relevant app_info for currently selected vm"""
+        vm_entry: VMEntry = (self.get_toplevel().get_application().
+                             get_currently_selected_vm())
+        return self.desktop_file_manager.get_app_info_by_name(
+            vm_entry.settings_desktop_file_name)
 
-    def update_state(self, state):
+    def update_state(self, state):  # pylint: disable=unused-argument
         """Update state: should be always visible."""
         self.show_all()
 
@@ -441,8 +445,11 @@ class StartControlItem(ControlRow):
         self.menu = FavoritesMenu(self.get_appinfo)
 
     def get_appinfo(self) -> ApplicationInfo:
-        vm_entry: VMEntry = self.get_toplevel().get_application().get_currently_selected_vm()
-        return self.desktop_file_manager.get_app_info_by_name(vm_entry.settings_desktop_file_name)
+        """Get relevant app_info for currently selected vm"""
+        vm_entry: VMEntry = (self.get_toplevel().get_application().
+                             get_currently_selected_vm())
+        return self.desktop_file_manager.get_app_info_by_name(
+            vm_entry.settings_desktop_file_name)
 
     def show_menu(self, _widget, event):
         """
@@ -557,9 +564,9 @@ class KeynavController:
         i = self.widgets_in_order.index(widget)
         if direction == Gtk.DirectionType.UP:
             return self.widgets_in_order[i - 1]
-        elif direction == Gtk.DirectionType.DOWN:
+        if direction == Gtk.DirectionType.DOWN:
             return self.widgets_in_order[(i + 1) % len(self.widgets_in_order)]
-        raise None
+        return None
 
     def _keynav_failed(self, widget: Gtk.ListBox,
                        direction: Gtk.DirectionType):
