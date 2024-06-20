@@ -41,10 +41,11 @@ class VMEntry:
         if self.vm.klass == 'DispVM' and self.vm.auto_cleanup:
             self.parent_vm = self.vm.template
             self.sort_name = \
-                f'{str(self.parent_vm.name).lower()}:{self.vm_name.lower()}'
+                f'{str(self.parent_vm.name).lower()} :{self.vm_name.lower()}'
         else:
             self.parent_vm = None
-            self.sort_name = self.vm_name.lower()
+            # the space here is to assure correct sorting for dispvm children
+            self.sort_name = self.vm_name.lower() + " "
 
         self._servicevm = bool(self.vm.features.get("servicevm", False))
         self._is_dispvm_template = getattr(
@@ -140,6 +141,22 @@ class VMEntry:
         if self.is_dispvm_template and not self.show_dispvm_template_in_apps:
             return False
         return True
+
+    @property
+    def settings_desktop_file_name(self) -> str:
+        """
+        Name of relevant .desktop vm settings file.
+        """
+        return ('org.qubes-os.qubes-vm-settings._' +
+                self.vm_name.replace('-', '_d') + '.desktop')
+
+    @property
+    def start_vm_desktop_file_name(self) -> str:
+        """
+        Name of relevant .desktop start vm file.
+        """
+        return ('org.qubes-os.vm._' + self.vm_name.replace('-', '_d') +
+                '.qubes-start.desktop')
 
 
 class VMManager:

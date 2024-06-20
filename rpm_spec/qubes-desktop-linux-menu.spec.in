@@ -130,7 +130,18 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 /usr/share/icons/hicolor/scalable/apps/qappmenu-qube.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-search.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-settings.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-pause.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-shutdown.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-start.svg
 /usr/share/icons/hicolor/scalable/apps/appmenu-settings-program-icon.svg
+/usr/share/icons/hicolor/scalable/apps/settings-black.svg
+/usr/share/icons/hicolor/scalable/apps/settings-blue.svg
+/usr/share/icons/hicolor/scalable/apps/settings-green.svg
+/usr/share/icons/hicolor/scalable/apps/settings-orange.svg
+/usr/share/icons/hicolor/scalable/apps/settings-red.svg
+/usr/share/icons/hicolor/scalable/apps/settings-purple.svg
+/usr/share/icons/hicolor/scalable/apps/settings-gray.svg
+/usr/share/icons/hicolor/scalable/apps/settings-yellow.svg
 
 /etc/xdg/autostart/qubes-app-menu.desktop
 /usr/share/applications/open-qubes-app-menu.desktop

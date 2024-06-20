@@ -21,10 +21,12 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
+from typing import Optional, List, Callable
 
 from . import constants
-from .utils import load_icon
+from .utils import load_icon, get_visible_child, add_to_feature
 from .vm_manager import VMEntry
+from .desktop_file_manager import ApplicationInfo
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -117,6 +119,61 @@ class SelfAwareMenu(Gtk.Menu):
         SelfAwareMenu.OPEN_MENUS -= 1
 
 
+class FavoritesMenu(SelfAwareMenu):
+    """
+    Menu for showing add to favorites option.
+    """
+    def __init__(self, app_info_getter: Callable[[], ApplicationInfo]):
+        super().__init__()
+        self.app_info_getter = app_info_getter
+
+        self.add_menu_item = Gtk.CheckMenuItem(label='Add to favorites')
+        self.add_menu_item.connect('activate', self._add_to_favorites)
+        self.add(self.add_menu_item)
+        self.show_all()
+
+    def _has_favorite_sibling(self):
+        """
+        Helper function, check if any other related Application Rows are
+        for Favorites
+        """
+        if self.app_info_getter():
+            for entry in self.app_info_getter().entries:
+                if type(entry).__name__ == 'FavoritesAppEntry':
+                    return True
+        return False
+
+    def _add_to_favorites(self, *_args, **_kwargs):
+        """
+        "Add to favorites" action: sets appropriate VM feature
+        """
+        target_vm = self.app_info_getter().vm
+        if not target_vm:
+            target_vm = self.app_info_getter().qapp.domains[
+                self.app_info_getter().qapp.local_name]
+
+        add_to_feature(target_vm, constants.FAVORITES_FEATURE,
+                       self.app_info_getter().entry_name)  # type: ignore
+
+    def set_menu_state(self):
+        """
+        Set appropriate menu item state:
+        For ephemeral VMs (class DispVM with a template
+        set) the menu is inactive. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+
+        :return:
+        """
+        if (getattr(self.get_parent(), 'ephemeral_vm', False) or
+                not self.app_info_getter()):
+            self.add_menu_item.set_active(False)
+            self.add_menu_item.set_sensitive(False)
+        else:
+            is_favorite = self._has_favorite_sibling()
+            self.add_menu_item.set_active(is_favorite)
+            self.add_menu_item.set_sensitive(not is_favorite)
+
+
 class NetworkIndicator(Gtk.Box):
     """
     Network Indicator Gtk.Box - changes appearance when set_network_state is
@@ -160,18 +217,23 @@ class SettingsEntry(Gtk.ListBoxRow):
     """
     Gtk.ListBoxRow especially for a (run VM) Settings entry.
     """
-    def __init__(self):
+    def __init__(self, desktop_file_manager):
         super().__init__()
+        self.desktop_file_manager = desktop_file_manager
         self.event_box = HoverEventBox(focus_widget=self)
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.event_box.add(self.hbox)
         self.settings_icon = Gtk.Image.new_from_pixbuf(
-            load_icon('qappmenu-settings'))
+            load_icon('settings-black'))
         self.hbox.pack_start(self.settings_icon, False, False, 5)
         self.settings_label = Gtk.Label(label="Settings", xalign=0)
         self.hbox.pack_start(self.settings_label, False, False, 5)
         self.get_style_context().add_class('app_entry')
         self.add(self.event_box)
+        self.event_box.connect('button-press-event', self.show_menu)
+
+        self.menu = FavoritesMenu(self.get_appinfo)
+
         self.show_all()
 
     def run_app(self, vm):
@@ -181,29 +243,55 @@ class SettingsEntry(Gtk.ListBoxRow):
             ['qubes-vm-settings', vm.name], stdin=subprocess.DEVNULL)
         self.get_toplevel().get_application().hide_menu()
 
+    def get_appinfo(self) -> ApplicationInfo:
+        """Get relevant app_info for currently selected vm"""
+        vm_entry: VMEntry = (self.get_toplevel().get_application().
+                             get_currently_selected_vm())
+        return self.desktop_file_manager.get_app_info_by_name(
+            vm_entry.settings_desktop_file_name)
+
+    def update_state(self, state):  # pylint: disable=unused-argument
+        """Update state: should be always visible."""
+        self.show_all()
+
+    def show_menu(self, _widget, event):
+        """
+        Show right click menu. For ephemeral VMs (class DispVM with a template
+        set) the menu is inactive. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+        """
+        self.menu.set_menu_state()
+        if event.button == 3:
+            self.menu.popup_at_pointer(None)  # None means current event
+
+
 class VMRow(HoverListBox):
     """
     Helper widget representing a VM row.
     """
-    def __init__(self, vm_entry: VMEntry):
+    def __init__(self, vm_entry: VMEntry,
+                 show_dispvm_inheritance: Optional[bool] = True):
         """
         :param vm_entry: VMEntry object, stored and managed by VMManager
+        :param show_dispvm_inheritance: bool, should dispvm children be shown
+        with an arrow signifying inheritance
         """
         super().__init__()
         self.vm_entry = vm_entry
         self.vm_name = vm_entry.vm_name
+        self.show_dispvm_inheritance = show_dispvm_inheritance
         self.get_style_context().add_class('vm_entry')
 
         self.icon_img = Gtk.Image()
-
+        self.dispvm_icon = Gtk.Image()
         # add the icon for dispvm parent existing
         if self.vm_entry.parent_vm:
-            self.dispvm_icon = Gtk.Image()
             dispvm_icon_img = load_icon('qappmenu-dispvm-child', None, 15)
             self.dispvm_icon.set_from_pixbuf(dispvm_icon_img)
             self.dispvm_icon.get_style_context().add_class('dispvm_icon')
             self.dispvm_icon.set_valign(Gtk.Align.START)
             self.main_box.pack_start(self.dispvm_icon, False, False, 2)
+            self.dispvm_icon.set_no_show_all(True)
 
         self.main_box.pack_start(self.icon_img, False, False, 2)
         self.label = Gtk.Label(label=self.vm_entry.vm_name)
@@ -230,6 +318,8 @@ class VMRow(HoverListBox):
                 style_context.add_class('running_vm')
             else:
                 style_context.remove_class('running_vm')
+
+        self.dispvm_icon.set_visible(self.show_dispvm_inheritance)
 
     def update_contents(self,
                         update_power_state=False,
@@ -302,3 +392,193 @@ class AnyVMRow(HoverListBox):
         self.label.set_markup('<b>Any qube</b>')
         self.main_box.pack_start(self.label, False, False, 2)
         self.show_all()
+
+
+class ControlRow(Gtk.ListBoxRow):
+    """
+    Gtk.ListBoxRow representing one of the VM control options: start/shutdown/
+    pause etc.
+    """
+    def __init__(self):
+        super().__init__()
+        self.row_label = LimitedWidthLabel()
+        self.get_style_context().add_class('app_entry')
+        self.event_box = HoverEventBox(focus_widget=self)
+        self.add(self.event_box)
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.event_box.add(box)
+
+        self.icon = Gtk.Image()
+        box.pack_start(self.icon, False, False, 10)
+        box.pack_start(self.row_label, False, False, 5)
+
+        self.show_all()
+        self.command = None
+
+    def update_state(self, state):
+        """
+        Update own state (visibility/text/sensitivity) based on provided VM
+        state.
+        """
+
+    def run_app(self, vm):
+        """
+        Run related app/script.
+        """
+        if self.command and self.is_sensitive():
+            # pylint: disable=consider-using-with
+            subprocess.Popen([self.command, str(vm)], stdin=subprocess.DEVNULL)
+
+
+class StartControlItem(ControlRow):
+    """
+    Control Row item representing changing VM state: start if it's not running,
+    shutdown if it's running, unpause if it's paused, and kill if it's
+    transient.
+    """
+    def __init__(self, desktop_file_manager):
+        super().__init__()
+        self.desktop_file_manager = desktop_file_manager
+        self.state = None
+        self.event_box.connect('button-press-event', self.show_menu)
+
+        self.menu = FavoritesMenu(self.get_appinfo)
+
+    def get_appinfo(self) -> ApplicationInfo:
+        """Get relevant app_info for currently selected vm"""
+        vm_entry: VMEntry = (self.get_toplevel().get_application().
+                             get_currently_selected_vm())
+        return self.desktop_file_manager.get_app_info_by_name(
+            vm_entry.settings_desktop_file_name)
+
+    def show_menu(self, _widget, event):
+        """
+        Show right click menu. If the current App is already added to
+        favorites, the "add to favorites" option is checked and inactive.
+        """
+        self.menu.set_menu_state()
+        if event.button == 3:
+            self.menu.popup_at_pointer(None)  # None means current event
+
+    def update_state(self, state):
+        """
+        Update own state (visibility/text/sensitivity) based on provided VM
+        state.
+        """
+        self.state = state
+        if state == 'Running':
+            self.row_label.set_label('Shutdown qube')
+            self.command = 'qvm-shutdown'
+            self.icon.set_from_pixbuf(load_icon("qappmenu-shutdown", size=None,
+                                                pixel_size=15))
+            return
+        if state == 'Transient':
+            self.row_label.set_label('Kill qube')
+            self.command = 'qvm-kill'
+            self.icon.set_from_pixbuf(load_icon("qappmenu-shutdown", size=None,
+                                                pixel_size=15))
+            return
+        if state == 'Halted':
+            self.row_label.set_label('Start qube')
+            self.command = 'qvm-start'
+            self.icon.set_from_pixbuf(load_icon("qappmenu-start", size=None,
+                                                pixel_size=15))
+
+            return
+        if state == 'Paused':
+            self.row_label.set_label('Unpause qube')
+            self.command = 'qvm-unpause'
+            self.icon.set_from_pixbuf(load_icon("qappmenu-start", size=None,
+                                                pixel_size=15))
+            return
+
+
+class PauseControlItem(ControlRow):
+    """
+    Control Row item representing pausing VM: visible only when it's running.
+    """
+    def __init__(self):
+        super().__init__()
+        self.icon.set_from_pixbuf(load_icon("qappmenu-pause", size=None,
+                                            pixel_size=15))
+        self.state = None
+
+    def update_state(self, state):
+        """
+        Update own state (visibility/text/sensitivity) based on provided VM
+        state.
+        """
+        self.state = state
+        if state == 'Running':
+            self.row_label.set_label('Pause qube')
+            self.set_sensitive(True)
+            self.command = 'qvm-pause'
+            self.icon.show()
+            return
+        self.row_label.set_label(' ')
+        self.set_sensitive(False)
+        self.command = None
+        self.icon.hide()
+
+
+class ControlList(Gtk.ListBox):
+    """
+    ListBox containing VM state control items.
+    """
+    def __init__(self, app_page):
+        super().__init__()
+        self.app_page = app_page
+
+        self.get_style_context().add_class('control_panel')
+
+        self.settings_item = SettingsEntry(self.app_page.desktop_file_manager)
+
+        self.start_item = StartControlItem(self.app_page.desktop_file_manager)
+        self.pause_item = PauseControlItem()
+        self.add(self.settings_item)
+        self.add(self.start_item)
+        self.add(self.pause_item)
+
+    def update_visibility(self, state):
+        """
+        Update children's state based on provided VM state.
+        """
+        for row in self.get_children():
+            row.update_state(state)
+
+
+class KeynavController:
+    """
+    A class that helps in managing keynav in places where Gtk's defaults are
+    not enough, namely, when we have a bunch of ListBoxes stacked on top of
+     each other.
+    """
+    def __init__(self, widgets_in_order: List[Gtk.ListBox]):
+        self.widgets_in_order = widgets_in_order
+
+        for widget in self.widgets_in_order:
+            widget.connect('keynav-failed', self._keynav_failed)
+
+    def get_neighbor(self, widget: Gtk.ListBox, direction: Gtk.DirectionType):
+        """Get next widget in given direction"""
+        i = self.widgets_in_order.index(widget)
+        if direction == Gtk.DirectionType.UP:
+            return self.widgets_in_order[i - 1]
+        if direction == Gtk.DirectionType.DOWN:
+            return self.widgets_in_order[(i + 1) % len(self.widgets_in_order)]
+        return None
+
+    def _keynav_failed(self, widget: Gtk.ListBox,
+                       direction: Gtk.DirectionType):
+        """
+        Callback to be performed when keyboard nav fails. Attempts to
+        find next widget and move keyboard focus to it.
+        """
+        next_widget = self.get_neighbor(widget, direction)
+        if not next_widget:
+            return
+        next_focus_widget = get_visible_child(
+            next_widget, reverse=direction == Gtk.DirectionType.UP)
+        if next_focus_widget:
+            widget.select_row(None)
+            next_focus_widget.grab_focus()
