@@ -143,19 +143,26 @@ class VMEntry:
         return True
 
     @property
+    def _escaped_name(self) -> str:
+        """Name escaped according to rules from desktop-linux-common
+        package"""
+        return (self.vm_name.replace('_', '_u').
+                replace('-', '_d').replace('.', '_p'))
+
+    @property
     def settings_desktop_file_name(self) -> str:
         """
         Name of relevant .desktop vm settings file.
         """
         return ('org.qubes-os.qubes-vm-settings._' +
-                self.vm_name.replace('-', '_d') + '.desktop')
+                self._escaped_name + '.desktop')
 
     @property
     def start_vm_desktop_file_name(self) -> str:
         """
         Name of relevant .desktop start vm file.
         """
-        return ('org.qubes-os.vm._' + self.vm_name.replace('-', '_d') +
+        return ('org.qubes-os.vm._' + self._escaped_name +
                 '.qubes-start.desktop')
 
 

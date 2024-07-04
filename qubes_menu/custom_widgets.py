@@ -101,6 +101,7 @@ class HoverListBox(Gtk.ListBoxRow):
 class SelfAwareMenu(Gtk.Menu):
     """
     Gtk.Menu, but the class has a counter of number of currently opened menus.
+    There can be only one menu open at a time.
     """
     OPEN_MENUS = 0
 
@@ -108,7 +109,7 @@ class SelfAwareMenu(Gtk.Menu):
         super().__init__(**kwargs)
         self.get_style_context().add_class('right_menu')
         self.connect('realize', self._add_to_open)
-        self.connect('deactivate', self._remove_from_open)
+        self.connect('unrealize', self._remove_from_open)
 
     @staticmethod
     def _add_to_open(*_args):
