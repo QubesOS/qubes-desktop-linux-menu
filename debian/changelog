@@ -1,3 +1,17 @@
+qubes-desktop-linux-menu (1.2.1-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Fix sorting dispvms
+  * Move Settings to bottom of applist and add control panel to Search
+  * Improve keyboard navigation
+  * Make it possible to add VM Setting and Start to favorites
+  * Show settings and start vm in search
+  * pylint pacification
+  * Improve logic of (not)hiding menu and fix VM name escaping
+  * add pip to dependencies
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Fri, 05 Jul 2024 17:38:04 +0200
+
 qubes-desktop-linux-menu (1.2.0-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
