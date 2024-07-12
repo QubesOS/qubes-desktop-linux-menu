@@ -6,4 +6,4 @@ Terminal=false
 Name=Qubes Menu Settings
 GenericName=Qubes Menu Settings
 StartupNotify=false
-Categories=Settings;X-XFCE-SettingsDialog
+Categories=Settings;X-XFCE-SettingsDialog;Qubes Tools
