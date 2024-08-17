@@ -354,8 +354,8 @@ class AppMenu(Gtk.Application):
         label = Gtk.Label()
         style_context: Gtk.StyleContext = label.get_style_context()
         style_context.add_class('search_highlight')
-        bg_color = style_context.get_background_color(Gtk.StateType.NORMAL)
-        fg_color = style_context.get_color(Gtk.StateType.NORMAL)
+        bg_color = style_context.get_background_color(Gtk.StateFlags.NORMAL)
+        fg_color = style_context.get_color(Gtk.StateFlags.NORMAL)
 
         # This converts a Gdk.RGBA color to a hex representation liked by span
         # tags in Pango
