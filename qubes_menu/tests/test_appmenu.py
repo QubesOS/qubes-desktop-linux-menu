@@ -28,6 +28,7 @@ def test_app_menu_conffeatures():
                                        features={'menu-favorites': ''})
     qapp._qubes['dom0'].features['menu-initial-page'] = 'favorites_page'
     qapp._qubes['dom0'].features['menu-sort-running'] = '1'
+    qapp._qubes['dom0'].features['menu-position'] = ''
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
@@ -38,6 +39,7 @@ def test_app_menu_conffeatures():
     # check that initial page is correct
     assert app_menu.initial_page == "favorites_page"
     assert app_menu.sort_running
+    assert app_menu.appmenu_position == "mouse"
 
 
 def test_app_menu_conffeatures_default():
@@ -48,7 +50,8 @@ def test_app_menu_conffeatures_default():
         name="test-vm2", qapp=qapp,
         features={'menu-favorites': '',
                   'menu-initial-page': 'fake',
-                  'menu-sort-running': 'fake'})
+                  'menu-sort-running': 'fake',
+                  'menu-position': 'fake'})
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
@@ -59,6 +62,7 @@ def test_app_menu_conffeatures_default():
     # check that default configuration is correct
     assert app_menu.initial_page == "app_page"
     assert not app_menu.sort_running
+    assert app_menu.appmenu_position == "mouse"
 
 
 def test_appmenu_options():
@@ -68,6 +72,7 @@ def test_appmenu_options():
                                        features={'menu-favorites': ''})
     qapp._qubes['dom0'].features['menu-initial-page'] = 'app_page'
     qapp._qubes['dom0'].features['menu-sort-running'] = '1'
+    qapp._qubes['dom0'].features['menu-position'] = 'top-left'
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
@@ -86,3 +91,44 @@ def test_appmenu_options():
 
     assert app_menu.initial_page == "favorites_page"
     assert app_menu.keep_visible
+    assert app_menu.appmenu_position == "top-left"
+
+def test_appmenu_positioning():
+    qapp = MockQubesComplete()
+
+    qapp._qubes['test-vm2'] = MockQube(name="test-vm2", qapp=qapp,
+                                       features={'menu-favorites': ''})
+    qapp._qubes['dom0'].features['menu-initial-page'] = 'app_page'
+    qapp._qubes['dom0'].features['menu-sort-running'] = '1'
+    qapp._qubes['dom0'].features['menu-position'] = ''
+    qapp.update_vm_calls()
+
+    dispatcher = MockDispatcher(qapp)
+    app_menu = AppMenu(qapp, dispatcher)
+
+    app_menu.perform_setup()
+
+    # Note: Relying on gravity is to assert changes is useless here.
+    assert app_menu.main_window
+    app_menu.appmenu_position = "mouse"
+    app_menu.reposition()
+    app_menu.appmenu_position = "top-left"
+    app_menu.reposition()
+    assert app_menu.main_window.get_position() == (0, 0)
+    app_menu.appmenu_position = "top-right"
+    app_menu.reposition()
+    assert app_menu.main_window.get_position() == ( \
+            app_menu.main_window.get_screen().get_width() - \
+            app_menu.main_window.get_size().width, 0)
+    app_menu.appmenu_position = "bottom-left"
+    app_menu.reposition()
+    assert app_menu.main_window.get_position() == (0, \
+            app_menu.main_window.get_screen().get_height() - \
+            app_menu.main_window.get_size().height)
+    app_menu.appmenu_position = "bottom-right"
+    app_menu.reposition()
+    assert app_menu.main_window.get_position() == ( \
+            app_menu.main_window.get_screen().get_width() - \
+            app_menu.main_window.get_size().width, \
+            app_menu.main_window.get_screen().get_height() - \
+            app_menu.main_window.get_size().height)

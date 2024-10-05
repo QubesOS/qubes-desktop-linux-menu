@@ -32,7 +32,8 @@ from qubes_config.widgets.gtk_widgets import ImageListModeler
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
-from qubes_menu.constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE
+from qubes_menu.constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE, \
+    POSITION_FEATURE
 
 
 MENU_PAGES = {
@@ -46,6 +47,20 @@ MENU_PAGES_DICT = {
     "Applications": {"icon": "qappmenu-qube", "object": "app_page"},
     "Favorites": {"icon": "qappmenu-favorites", "object": "favorites_page"}}
 
+MENU_POSITIONS = {
+    "top-left": "Top Left",
+    "top-right": "Top Right",
+    "bottom-left": "Bottom Left",
+    "bottom-right": "Bottom Right",
+    "mouse": "Mouse"
+}
+
+MENU_POSITIONS_DICT = {
+    "Top Left": {"icon": "qappmenu-top-left", "object": "top-left"},
+    "Top Right": {"icon": "qappmenu-top-right", "object": "top-right"},
+    "Bottom Left": {"icon": "qappmenu-bottom-left", "object": "bottom-left"},
+    "Bottom Right": {"icon": "qappmenu-bottom-right", "object": "bottom-right"},
+    "Mouse": {"icon": "input-mouse-symbolic", "object": "mouse"}}
 
 class AppMenuSettings(Gtk.Application):
     """
@@ -94,6 +109,9 @@ class AppMenuSettings(Gtk.Application):
         self.starting_page_combo: Gtk.ComboBox = \
             self.builder.get_object("starting_page_combo")
 
+        self.menu_position_combo: Gtk.ComboBox = \
+            self.builder.get_object("menu_position_combo")
+
         self.sort_running_check: Gtk.CheckButton = \
             self.builder.get_object("sort_running_to_top_check")
 
@@ -115,6 +133,9 @@ class AppMenuSettings(Gtk.Application):
         self.initial_page_model = ImageListModeler(
             self.starting_page_combo, MENU_PAGES_DICT)
 
+        self.menu_position_model = ImageListModeler(
+            self.menu_position_combo, MENU_POSITIONS_DICT)
+
         self.load_state()
 
     def load_state(self):
@@ -127,6 +148,13 @@ class AppMenuSettings(Gtk.Application):
 
         self.initial_page_model.select_name(MENU_PAGES[initial_page])
         self.initial_page_model.update_initial()
+
+        menu_position = self.vm.features.get(POSITION_FEATURE, "mouse")
+        if menu_position not in MENU_POSITIONS:
+            menu_position = "mouse"
+
+        self.menu_position_model.select_name(MENU_POSITIONS[menu_position])
+        self.menu_position_model.update_initial()
 
         # this can sometimes be None, thus, the "or False)
         sort_running = \
@@ -153,6 +181,13 @@ class AppMenuSettings(Gtk.Application):
         if self.initial_page_model.get_selected() != old_initial_page:
             self.vm.features[INITIAL_PAGE_FEATURE] = \
                 self.initial_page_model.get_selected()
+
+        old_menu_position = self.vm.features.get(POSITION_FEATURE,
+                                                "mouse")
+
+        if self.menu_position_model.get_selected() != old_menu_position:
+            self.vm.features[POSITION_FEATURE] = \
+                self.menu_position_model.get_selected()
 
     def _save_exit(self, *_args):
         self._save()
