@@ -23,7 +23,8 @@ from .favorites_page import FavoritesPage
 from .custom_widgets import SelfAwareMenu
 from .vm_manager import VMManager
 from .page_handler import MenuPage
-from .constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE
+from .constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE, \
+        POSITION_FEATURE
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -34,6 +35,10 @@ gbulb.install()
 
 PAGE_LIST = [
     "search_page", "app_page", "favorites_page", "settings_page"
+]
+
+POSITION_LIST = [
+    "mouse", "top-left", "top-right", "bottom-left", "bottom-right"
 ]
 
 logger = logging.getLogger('qubes-appmenu')
@@ -108,6 +113,7 @@ class AppMenu(Gtk.Application):
         self.highlight_tag: Optional[str] = None
 
         self.tasks = []
+        self.appmenu_position: str = 'mouse'
 
     def _add_cli_options(self):
         self.add_main_option(
@@ -190,6 +196,29 @@ class AppMenu(Gtk.Application):
         else:
             subprocess.Popen('xfce4-session-logout', stdin=subprocess.DEVNULL)
 
+    def reposition(self):
+        """
+        Helper function to reposition Appmenu based on 'menu_position' feature
+        """
+        assert self.main_window
+        match self.appmenu_position:
+            case 'top-left':
+                self.main_window.move(0, 0)
+            case 'top-right':
+                self.main_window.move(
+                    self.main_window.get_screen().get_width() - \
+                    self.main_window.get_size().width, 0)
+            case 'bottom-left':
+                self.main_window.move(0,
+                    self.main_window.get_screen().get_height() - \
+                    self.main_window.get_size().height)
+            case 'bottom-right':
+                self.main_window.move(
+                    self.main_window.get_screen().get_width() - \
+                    self.main_window.get_size().width,
+                    self.main_window.get_screen().get_height() - \
+                    self.main_window.get_size().height)
+
     def do_activate(self, *args, **kwargs):
         """
         Method called whenever this program is run; it executes actual setup
@@ -202,6 +231,7 @@ class AppMenu(Gtk.Application):
             assert self.main_window
             assert self.main_notebook
             if not self.start_in_background:
+                self.reposition()
                 self.main_window.show_all()
             self.initialize_state()
             # set size if too big
@@ -231,6 +261,7 @@ class AppMenu(Gtk.Application):
                 if self.main_window.is_visible() and not self.keep_visible:
                     self.main_window.hide()
                 else:
+                    self.reposition()
                     self.main_window.present()
 
     def hide_menu(self):
@@ -335,7 +366,8 @@ class AppMenu(Gtk.Application):
         self.load_settings()
 
         # monitor for settings changes
-        for feature in [INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE]:
+        for feature in [INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE, \
+                POSITION_FEATURE]:
             self.dispatcher.add_handler(
                 'domain-feature-set:' + feature,
                 self._update_settings)
@@ -379,6 +411,11 @@ class AppMenu(Gtk.Application):
 
         self.sort_running = \
             bool(local_vm.features.get(SORT_RUNNING_FEATURE, False))
+
+        position = local_vm.features.get(POSITION_FEATURE, "mouse")
+        if position not in POSITION_LIST:
+            position = "mouse"
+        self.appmenu_position = position
 
         for handler in self.handlers.values():
             handler.set_sorting_order(self.sort_running)
