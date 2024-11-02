@@ -248,13 +248,18 @@ class AppMenu(Gtk.Application):
         """
         Keypress handler, to allow closing the menu with an ESC key and to fix
         some issues with space (as we have search by default, we should not
-        react to space with launching an app).
+        react to space with launching an app, but instead put the space
+        into the search bar).
         """
         if event.keyval == Gdk.KEY_Escape:
             self.hide_menu()
         if event.keyval == Gdk.KEY_space:
-            if not isinstance(self.get_active_window().get_focus(),
-                              Gtk.SearchEntry):
+            current_widget = self.get_active_window().get_focus()
+            if isinstance(current_widget,
+                          Gtk.SearchEntry):
+                p = current_widget.get_position()
+                current_widget.insert_text(" ", p)
+                current_widget.set_position(p + 1)
                 return True
         return False
 
