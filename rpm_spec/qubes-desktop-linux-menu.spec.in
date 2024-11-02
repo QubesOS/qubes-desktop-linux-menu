@@ -133,6 +133,10 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 /usr/share/icons/hicolor/scalable/apps/qappmenu-pause.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-shutdown.svg
 /usr/share/icons/hicolor/scalable/apps/qappmenu-start.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-top-left.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-top-right.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-bottom-left.svg
+/usr/share/icons/hicolor/scalable/apps/qappmenu-bottom-right.svg
 /usr/share/icons/hicolor/scalable/apps/appmenu-settings-program-icon.svg
 /usr/share/icons/hicolor/scalable/apps/settings-black.svg
 /usr/share/icons/hicolor/scalable/apps/settings-blue.svg
