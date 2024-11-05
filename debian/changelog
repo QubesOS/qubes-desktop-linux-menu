@@ -1,3 +1,16 @@
+qubes-desktop-linux-menu (1.2.2-1) unstable; urgency=medium
+
+  [ Ali Mirjamali ]
+  * Fix highlighted text for search
+
+  [ Marta Marczykowska-Górecka ]
+  * Stop eating spaces when a non-search widget is selected
+
+  [ Ali Mirjamali ]
+  * Allow Appmenu custom positioning
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Tue, 05 Nov 2024 01:48:57 +0100
+
 qubes-desktop-linux-menu (1.2.1-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
