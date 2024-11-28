@@ -283,6 +283,8 @@ class DesktopFileManager:
         based on current environment."""
         if entry.getHidden():
             return False
+        if entry.getNoDisplay():
+            return False
         if entry.getOnlyShowIn():
             if not set(entry.getOnlyShowIn()).intersection(
                     self.current_environments):
