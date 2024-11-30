@@ -49,6 +49,7 @@ BuildRequires:  gettext
 Requires:  python%{python3_pkgversion}-setuptools
 Requires:  python%{python3_pkgversion}-gbulb
 Requires:  gtk3
+Requires:  gtk-layer-shell
 Requires:  python%{python3_pkgversion}-qubesadmin >= 4.1.8
 Requires:  qubes-artwork >= 4.1.5
 Requires:  qubes-desktop-linux-manager
