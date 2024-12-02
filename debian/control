@@ -30,6 +30,7 @@ Package: python3-qubes-menu
 Architecture: any
 Depends:
  python3-qubesadmin,
+ python3-xdg,
  ${python3:Depends},
  ${misc:Depends}
 Description: Qubes UI Applications
