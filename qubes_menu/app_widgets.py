@@ -22,6 +22,7 @@ A collection of custom Gtk widgets used elsewhere in the App Menu
 """
 import subprocess
 import logging
+import urllib.parse
 from typing import Optional, List
 from functools import reduce
 
@@ -75,7 +76,8 @@ class AppEntry(Gtk.ListBoxRow):
         self.connect("drag-data-get", self._on_drag_data_get)
 
     def _on_drag_data_get(self, _widget, _drag_context, data, _info, _time):
-        data.set_uris(['file://' + str(self.app_info.file_path)])
+        data.set_uris(['file://' +
+                       urllib.parse.quote(str(self.app_info.file_path))])
 
     def show_menu(self, _widget, event):
         """
