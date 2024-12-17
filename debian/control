@@ -13,7 +13,8 @@ Build-Depends:
  qubes-desktop-linux-manager,
  python3-gi,
  gobject-introspection,
- gir1.2-gtk-3.0
+ gir1.2-gtk-3.0,
+ gir1.2-gtklayershell-0.1,
 Standards-Version: 3.9.5
 Homepage: https://www.qubes-os.org/
 X-Python3-Version: >= 3.5
