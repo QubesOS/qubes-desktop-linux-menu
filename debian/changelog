@@ -1,3 +1,21 @@
+qubes-desktop-linux-menu (1.2.3-1) unstable; urgency=medium
+
+  [ Ali Mirjamali ]
+  * Honor `NoDisplay=true`
+
+  [ Demi Marie Obenour ]
+  * Escape application names for GMarkup
+
+  [ Marek Marczykowski-Górecki ]
+  * rpm: add explicit depenency on pyxdg
+  * debian: add explicit dependency on python3-xdg
+  * ci: depend on python3-pyxdg explicitly
+
+  [ Demi Marie Obenour ]
+  * Wayland support via wlr-layer-shell
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Mon, 17 Mar 2025 04:28:34 +0100
+
 qubes-desktop-linux-menu (1.2.2-1) unstable; urgency=medium
 
   [ Ali Mirjamali ]
