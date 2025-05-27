@@ -31,8 +31,14 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
 from gi.repository import Gtk, Gdk, GLib, Gio, GtkLayerShell
 
-import gbulb
-gbulb.install()
+try:
+    from gi.events import GLibEventLoopPolicy
+    asyncio.set_event_loop_policy(GLibEventLoopPolicy())
+    HAS_GBULB = False
+except ImportError:
+    import gbulb
+    gbulb.install()
+    HAS_GBULB = True
 
 PAGE_LIST = [
     "search_page", "app_page", "favorites_page", "settings_page"
@@ -548,7 +554,11 @@ def main():
     qapp = qubesadmin.Qubes()
     dispatcher = qubesadmin.events.EventsDispatcher(qapp)
     app = AppMenu(qapp, dispatcher)
-    app.run(sys.argv)
+    if HAS_GBULB:
+        loop: gbulb.GLibEventLoop = asyncio.get_event_loop()
+        loop.run_forever(application=app, argv=sys.argv)
+    else:
+        app.run(sys.argv)
 
 
 if __name__ == '__main__':
