@@ -309,13 +309,9 @@ class AppMenu(Gtk.Application):
             # navigation works
             self.handlers[self.initial_page].page_widget.grab_focus()
 
-            loop = asyncio.get_event_loop()
             self.tasks = [
                 asyncio.ensure_future(self.dispatcher.listen_for_events()),
             ]
-
-            loop.run_until_complete(asyncio.wait(
-                self.tasks, return_when=asyncio.FIRST_EXCEPTION))
         else:
             if self.main_notebook:
                 self.main_notebook.set_current_page(
