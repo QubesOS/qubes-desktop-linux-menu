@@ -1,3 +1,10 @@
+qubes-desktop-linux-menu (1.2.4-1) unstable; urgency=medium
+
+  * Use glib's native asyncio integration when available
+  * Remove extra loop.run_until_complete from do_activate
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Mon, 02 Jun 2025 02:09:32 +0200
+
 qubes-desktop-linux-menu (1.2.3-1) unstable; urgency=medium
 
   [ Ali Mirjamali ]
