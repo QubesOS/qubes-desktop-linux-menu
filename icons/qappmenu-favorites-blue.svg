@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="12px" height="12px" viewBox="0 0 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>littleblue</title>
-    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="Favorite-Item-—-Qube-Running" transform="translate(-32.000000, -15.000000)" fill="#4488DF">
-            <g id="littleblue" transform="translate(32.000000, 15.000000)">
-                <polygon id="Polygon" points="6 0 11.1961524 3 11.1961524 9 6 12 0.803847577 9 0.803847577 3"></polygon>
+<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12">
+    <g id="Symbols" fill="none" fill-rule="evenodd" stroke="none" stroke-width="1">
+        <g id="Favorite-Item-—-Qube-Running" fill="#4488DF" transform="translate(-32 -15)">
+            <g id="littleblue" transform="translate(32 15)">
+                <path id="Polygon" d="m6 0 5.196 3v6L6 12 .804 9V3z"/>
             </g>
         </g>
     </g>

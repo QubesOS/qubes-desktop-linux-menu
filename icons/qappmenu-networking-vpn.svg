@@ -1,22 +1,20 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="29px" height="12px" viewBox="0 0 29 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>VPN</title>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="29" height="12" viewBox="0 0 29 12">
     <defs>
-        <text id="text-1" font-family="Verdana-Bold, Verdana" font-size="10" font-weight="bold" letter-spacing="0.909090909" fill="#A4A4A4">
+        <filter id="filter-2" width="122.2%" height="150%" x="-11.1%" y="-25%" filterUnits="objectBoundingBox">
+            <feOffset in="SourceAlpha" result="shadowOffsetOuter1"/>
+            <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="1"/>
+            <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0"/>
+        </filter>
+        <text id="text-1" fill="#A4A4A4" font-family="Verdana-Bold, Verdana" font-size="10" font-weight="bold" letter-spacing=".909">
             <tspan x="146" y="23">VPN</tspan>
         </text>
-        <filter x="-11.1%" y="-25.0%" width="122.2%" height="150.0%" filterUnits="objectBoundingBox" id="filter-2">
-            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
-            <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
-            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.5 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
-        </filter>
     </defs>
-    <g id="PROTOTYPE-—-Jackie" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" fill-opacity="1">
-        <g id="menuuus---colorful" transform="translate(-885.000000, -1448.000000)" fill="#A4A4A4">
-            <g id="••-securecomms-Dropdown" transform="translate(741.000000, 1034.000000)">
-                <g id="VPN" transform="translate(0.000000, 401.000000)">
-                    <use filter="url(#filter-2)" xlink:href="#text-1"></use>
-                    <use xlink:href="#text-1"></use>
+    <g id="PROTOTYPE-—-Jackie" fill="none" fill-opacity="1" fill-rule="evenodd" stroke="none" stroke-width="1">
+        <g id="menuuus---colorful" fill="#A4A4A4" transform="translate(-885 -1448)">
+            <g id="••-securecomms-Dropdown" transform="translate(741 1034)">
+                <g id="VPN" transform="translate(0 401)">
+                    <use xlink:href="#text-1" filter="url(#filter-2)"/>
+                    <use xlink:href="#text-1"/>
                 </g>
             </g>
         </g>
