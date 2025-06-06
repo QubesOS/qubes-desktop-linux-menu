@@ -1,3 +1,26 @@
+qubes-desktop-linux-menu (4.2.0-1) unstable; urgency=medium
+
+  [ Ali Mirjamali ]
+  * Fix highlighted text for search
+
+  [ Marta Marczykowska-Górecka ]
+  * Stop eating spaces when a non-search widget is selected
+
+  [ Demi Marie Obenour ]
+  * Escape application names for GMarkup
+
+  [ Ali Mirjamali ]
+  * Honor `NoDisplay=true`
+
+  [ Marek Marczykowski-Górecki ]
+  * rpm: add explicit depenency on pyxdg
+  * debian: add explicit dependency on python3-xdg
+  * ci: depend on python3-pyxdg explicitly
+  * Use glib's native asyncio integration when available
+  * Remove extra loop.run_until_complete from do_activate
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Fri, 06 Jun 2025 19:48:35 +0200
+
 qubes-desktop-linux-menu (1.2.1-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
