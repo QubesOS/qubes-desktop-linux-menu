@@ -135,7 +135,7 @@ def highlight_words(labels: List[Gtk.Label], search_words: List[str],
 
         markup_list = []
         last_start = 0
-        for start, end in reversed(result_intervals):
+        for start, end in result_intervals:
             markup_list.append(GLib.markup_escape_text(text[last_start:start]))
             markup_list.append(hl_tag)
             markup_list.append(GLib.markup_escape_text(text[start:end]))
