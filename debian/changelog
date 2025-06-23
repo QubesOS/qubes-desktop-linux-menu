@@ -1,3 +1,10 @@
+qubes-desktop-linux-menu (1.2.5-1) unstable; urgency=medium
+
+  [ Marta Marczykowska-Górecka ]
+  * Fix bug with search with dashes
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Mon, 23 Jun 2025 03:16:29 +0200
+
 qubes-desktop-linux-menu (1.2.4-1) unstable; urgency=medium
 
   * Use glib's native asyncio integration when available
