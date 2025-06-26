@@ -21,6 +21,7 @@
 Helper class that manages all events related to VMs.
 """
 import qubesadmin.events
+import qubesadmin.exc
 from qubesadmin.vm import QubesVM
 from typing import Optional, Dict, List, Callable
 
@@ -49,6 +50,12 @@ class VMEntry:
             # the space here is to assure correct sorting for dispvm children
             self.sort_name = self.vm_name.lower() + " "
 
+        try:
+            self._internal = bool(
+                self.vm.features.check_with_template("internal", False)
+            )
+        except qubesadmin.exc.QubesDaemonAccessError:
+            self._internal = False
         self._servicevm = bool(self.vm.features.get("servicevm", False))
         self._is_dispvm_template = getattr(
             self.vm, "template_for_dispvms", False
@@ -134,6 +141,16 @@ class VMEntry:
         self.update_entries(update_type=True)
 
     @property
+    def internal(self):
+        """Is the VM internal"""
+        return self._internal
+
+    @internal.setter
+    def internal(self, new_value):
+        self._internal = new_value
+        self.update_entries(update_type=True)
+
+    @property
     def service_vm(self):
         """Does the VM provide network"""
         return self._servicevm
@@ -146,6 +163,8 @@ class VMEntry:
     @property
     def show_in_apps(self):
         """Should this qube be shown in the Apps section of the menu?"""
+        if self.internal:
+            return False
         if self.service_vm:
             return False
         if self.vm_klass == "TemplateVM":
@@ -212,8 +231,11 @@ class VMManager:
             vm: QubesVM = self.qapp.domains[vm_name]
         except KeyError:
             return None
-        if vm.features.get("internal", False):
-            return None
+        try:
+            if vm.features.check_with_template("internal", False):
+                return None
+        except qubesadmin.exc.QubesDaemonAccessError:
+            pass
 
         return self._add_vm(vm)
 
@@ -289,6 +311,14 @@ class VMManager:
         value = bool(value)
 
         try:
+            if feature == "internal":
+                vm_entry.internal = value
+                for derived in self.qapp.domains:
+                    if not getattr(derived, "template", None) == vm:
+                        continue
+                    derived_vm_entry = self.load_vm_from_name(derived)
+                    if derived_vm_entry:
+                        derived_vm_entry.internal = value
             if feature == "servicevm":
                 vm_entry.service_vm = value
             if feature == "appmenus-dispvm":
@@ -353,4 +383,10 @@ class VMManager:
         )
         self.dispatcher.add_handler(
             "domain-feature-delete:appmenus-dispvm", self._update_domain_feature
+        )
+        self.dispatcher.add_handler(
+            "domain-feature-set:internal", self._update_domain_feature
+        )
+        self.dispatcher.add_handler(
+            "domain-feature-delete:internal", self._update_domain_feature
         )

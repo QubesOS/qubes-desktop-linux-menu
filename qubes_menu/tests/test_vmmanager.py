@@ -28,16 +28,20 @@ from qubesadmin.tests.mock_app import Property
 def test_vm_manager(test_qapp):
     dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
+    vm_name = "test-vm"
+    template_name = "fedora-36"
 
-    entry_test = vm_manager.load_vm_from_name("test-vm")
+    entry_test = vm_manager.load_vm_from_name(vm_name)
     assert entry_test
-    assert entry_test.vm_name == "test-vm"
+    assert entry_test.vm_name == vm_name
     assert entry_test.vm_icon_name == "appvm-green"
-    entry_template = vm_manager.load_vm_from_name("fedora-36")
+    entry_template = vm_manager.load_vm_from_name(template_name)
     assert entry_template
     assert not entry_template.has_network
+    assert not entry_template.internal
     assert not entry_test.is_dispvm_template
     assert not entry_test.service_vm
+    assert not entry_test.internal
 
     test_qapp._qubes["fedora-36"].properties["netvm"] = Property(
         "sys-firewall", "vm", False
@@ -53,16 +57,15 @@ def test_vm_manager(test_qapp):
     )
     assert entry_template.has_network
 
-    test_qapp._qubes["test-vm"].properties["label"] = Property(
+    test_qapp._qubes[vm_name].properties["label"] = Property(
         "red", "label", False
     )
-    test_qapp._qubes["test-vm"].properties["icon"] = Property(
+    test_qapp._qubes[vm_name].properties["icon"] = Property(
         "appvm-red", "str", False
     )
-    test_qapp._qubes["test-vm"].update_calls()
-
+    test_qapp._qubes[vm_name].update_calls()
     vm_manager._update_domain_property(
-        "test-vm",
+        vm_name,
         "property-set:label",
         name="label",
         newvalue="red",
@@ -70,26 +73,45 @@ def test_vm_manager(test_qapp):
     )
     assert entry_test.vm_icon_name == "appvm-red"
 
-    test_qapp._qubes["test-vm"].properties["template_for_dispvms"] = Property(
+    test_qapp._qubes[vm_name].properties["template_for_dispvms"] = Property(
         "True", "bool", False
     )
-    test_qapp._qubes["test-vm"].update_calls()
-
+    test_qapp._qubes[vm_name].update_calls()
     vm_manager._update_domain_property(
-        "test-vm",
+        vm_name,
         "property-set:template_for_dispvms",
         name="template_for_dispvms",
         newvalue=True,
     )
     assert entry_test.is_dispvm_template
 
-    test_qapp._qubes["test-vm"].features["servicevm"] = 1
-    test_qapp._qubes["test-vm"].update_calls()
-
+    test_qapp._qubes[vm_name].features["servicevm"] = 1
+    test_qapp._qubes[vm_name].update_calls()
     vm_manager._update_domain_feature(
-        "test-vm", "feature-set:servicevm", feature="servicevm", value=1
+        vm_name, "feature-set:servicevm", feature="servicevm", value=1
     )
     assert entry_test.service_vm
+
+    test_qapp._qubes[vm_name].features["internal"] = 1
+    test_qapp._qubes[vm_name].update_calls()
+    vm_manager._update_domain_feature(
+        vm_name, "feature-set:internal", feature="internal", value=1
+    )
+    assert entry_test.internal
+
+    del test_qapp._qubes[vm_name].features["internal"]
+    test_qapp._qubes[vm_name].update_calls()
+    vm_manager._update_domain_feature(
+        vm_name, "feature-delete:internal", feature="internal"
+    )
+    assert not entry_test.internal
+
+    test_qapp._qubes[template_name].features["internal"] = 1
+    test_qapp._qubes[vm_name].update_calls()
+    vm_manager._update_domain_feature(
+        vm_name, "feature-set:internal", feature="internal", value=1
+    )
+    assert entry_test.internal
 
 
 def test_filter(test_qapp):
