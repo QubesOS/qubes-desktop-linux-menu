@@ -161,7 +161,7 @@ def test_file_dvmtemplate(tmp_path, test_qapp):
     assert app_info.app_name == 'Firefox'
     assert str(app_info.vm) == str(TestVM('default-dvm'))
     assert app_info.app_icon == '/test/firefox.png'
-    assert app_info.vm_icon == 'dispvm-green'
+    assert app_info.vm_icon == 'templatevm-green'
     assert app_info.disposable
     assert app_info.is_qubes_specific()
     assert app_info.get_command_for_vm('default-dvm') == [
