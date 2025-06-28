@@ -1,3 +1,15 @@
+qubes-desktop-linux-menu (1.2.6-1) unstable; urgency=medium
+
+  [ Marek Marczykowski-Górecki ]
+  * tests: disposable template entry gets templatevm-* icon, not dispvm-
+    *
+
+  [ Ben Grande ]
+  * Black formatter
+  * Add handler for internal feature
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Sat, 28 Jun 2025 02:03:57 +0200
+
 qubes-desktop-linux-menu (1.2.5-1) unstable; urgency=medium
 
   [ Marta Marczykowska-Górecka ]
