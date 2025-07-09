@@ -344,13 +344,12 @@ class AppMenu(Gtk.Application):
         if event.keyval == Gdk.KEY_Escape:
             self.hide_menu()
         if event.keyval == Gdk.KEY_space:
-            current_widget = self.get_active_window().get_focus()
-            if isinstance(current_widget,
-                          Gtk.SearchEntry):
-                p = current_widget.get_position()
-                current_widget.insert_text(" ", p)
-                current_widget.set_position(p + 1)
-                return True
+            search_page = self.handlers.get('search_page')
+            if isinstance(search_page, SearchPage):
+                p = search_page.search_entry.get_position()
+                search_page.search_entry.insert_text(" ", p)
+                search_page.search_entry.set_position(p + 1)
+            return True
         return False
 
     def _focus_out(self, _widget, _event: Gdk.EventFocus):
