@@ -21,6 +21,7 @@
 Qubes App Menu favorites page and related widgets.
 """
 import logging
+from functools import partial
 
 import qubesadmin.events
 from .desktop_file_manager import DesktopFileManager
@@ -49,13 +50,35 @@ class FavoritesPage(MenuPage):
         self.dispatcher = dispatcher
         self.vm_manager = vm_manager
 
+        self.sort_names: bool | None = None # sort by app name, AZ (True) or ZA (False)
+        self.sort_qubes: bool | None = None # sort by qube name, AZ (True) or ZA (False)
+
         self.page_widget: Gtk.Box = builder.get_object("favorites_page")
+
+        self.sort_qube_az_button: Gtk.ToggleButton = builder.get_object(
+            "favorites_qube_az_toggle")
+        self.sort_qube_za_button: Gtk.ToggleButton = builder.get_object(
+            "favorites_qube_za_toggle")
+        self.sort_appname_az_button: Gtk.ToggleButton = builder.get_object(
+            "favorites_appname_az_toggle")
+        self.sort_appname_za_button: Gtk.ToggleButton = builder.get_object(
+            "favorites_appname_za_toggle")
+        self.sort_buttons = [self.sort_appname_za_button,
+                             self.sort_appname_az_button, self.sort_qube_az_button,
+                             self.sort_qube_za_button]
+        self.sort_qube_az_button.connect('toggled', partial(self._button_toggled,
+                                                            "sort_qubes", True))
+        self.sort_qube_za_button.connect('toggled', partial(self._button_toggled,
+                                                            "sort_qubes", False))
+        self.sort_appname_az_button.connect('toggled', partial(self._button_toggled,
+                                                            "sort_names", True))
+        self.sort_appname_za_button.connect('toggled', partial(self._button_toggled,
+                                                            "sort_names", False))
 
         self.app_list: Gtk.ListBox = builder.get_object('fav_app_list')
         self.app_list.connect('row-activated', self._app_clicked)
 
-        self.app_list.set_sort_func(
-            lambda x, y: x.app_info.sort_name > y.app_info.sort_name)
+        self.app_list.set_sort_func(self._favorites_sort)
         self.desktop_file_manager.register_callback(self._app_info_callback)
         self.app_list.show_all()
         self.app_list.invalidate_sort()
@@ -69,6 +92,8 @@ class FavoritesPage(MenuPage):
             self._feature_set)
         self.dispatcher.add_handler('domain-add', self._domain_added)
         self.dispatcher.add_handler('domain-delete', self._domain_deleted)
+
+        self.sort_appname_az_button.toggled()
 
     def _load_vms_favorites(self, vm):
         """
@@ -150,3 +175,31 @@ class FavoritesPage(MenuPage):
 
     def initialize_page(self):
         """Favorites page does not require additional post-init setup"""
+
+    def _button_toggled(self, var_name, state, widget, *_args):
+        if not widget.get_active():
+            return
+        self.sort_names = None
+        self.sort_qubes = None
+        setattr(self, var_name, state)
+        for button in self.sort_buttons:
+            if button == widget:
+                continue
+            button.set_active(False)
+        self.app_list.invalidate_sort()
+
+    def _favorites_sort(self, x : FavoritesAppEntry, y: FavoritesAppEntry):
+        sort_name_x = x.app_info.app_name
+        sort_name_y = y.app_info.app_name
+
+        if self.sort_qubes is not None:
+            sort_name_x = (x.app_info.vm.name if x.app_info.vm else '') + ' | ' + sort_name_x
+            sort_name_y = ((y.app_info.vm.name if y.app_info.vm else '') + ' | ' +
+                           sort_name_y)
+            if self.sort_qubes:
+                return sort_name_x > sort_name_y
+            return sort_name_x < sort_name_y
+
+        if self.sort_names:
+            return sort_name_x > sort_name_y
+        return sort_name_x < sort_name_y
