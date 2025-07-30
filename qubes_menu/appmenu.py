@@ -23,7 +23,12 @@ from .favorites_page import FavoritesPage
 from .custom_widgets import SelfAwareMenu
 from .vm_manager import VMManager
 from .page_handler import MenuPage
-from .constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE, POSITION_FEATURE
+from .constants import (
+    INITIAL_PAGE_FEATURE,
+    SORT_RUNNING_FEATURE,
+    POSITION_FEATURE,
+    DISABLE_RECENT_FEATURE,
+)
 
 import gi
 
@@ -110,6 +115,7 @@ class AppMenu(Gtk.Application):
         self.keep_visible = False
         self.initial_page = "app_page"
         self.sort_running = False
+        self.disable_recent = False
         self.start_in_background = False
         self.kde = "KDE" in os.getenv("XDG_CURRENT_DESKTOP", "").split(":")
 
@@ -456,7 +462,12 @@ class AppMenu(Gtk.Application):
         self.load_settings()
 
         # monitor for settings changes
-        for feature in [INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE, POSITION_FEATURE]:
+        for feature in [
+            INITIAL_PAGE_FEATURE,
+            SORT_RUNNING_FEATURE,
+            POSITION_FEATURE,
+            DISABLE_RECENT_FEATURE,
+        ]:
             self.dispatcher.add_handler(
                 "domain-feature-set:" + feature, self._update_settings
             )
@@ -505,6 +516,7 @@ class AppMenu(Gtk.Application):
             initial_page = "app_page"
         self.initial_page = initial_page
 
+        self.disable_recent = bool(local_vm.features.get(DISABLE_RECENT_FEATURE, False))
         self.sort_running = bool(local_vm.features.get(SORT_RUNNING_FEATURE, False))
 
         position = local_vm.features.get(POSITION_FEATURE, "mouse")
@@ -517,6 +529,8 @@ class AppMenu(Gtk.Application):
 
         for handler in self.handlers.values():
             handler.set_sorting_order(self.sort_running)
+            if isinstance(handler, SearchPage):
+                handler.enable_recent(not self.disable_recent)
 
     def _update_settings(self, vm, _event, **_kwargs):
         if not str(vm) == self.qapp.local_name:

@@ -36,6 +36,7 @@ STATE_DICTIONARY = {
 INITIAL_PAGE_FEATURE = "menu-initial-page"
 SORT_RUNNING_FEATURE = "menu-sort-running"
 POSITION_FEATURE = "menu-position"
+DISABLE_RECENT_FEATURE = "menu-disable-recent"
 
 FAVORITES_FEATURE = "menu-favorites"
 DISPOSABLE_PREFIX = "@disp:"

@@ -58,14 +58,40 @@ class RecentSearchManager:
 
     SEARCH_VALUES_TO_KEEP = 10
 
-    def __init__(self, recent_list: Gtk.ListBox, search_box: Gtk.SearchEntry):
+    def __init__(
+        self, recent_list: Gtk.ListBox, search_box: Gtk.SearchEntry, enabled: bool
+    ):
+        self.recent_enabled = bool
         self.recent_list_box = recent_list
         self.search_box = search_box
         self.recent_searches: Dict[str, RecentSearchRow] = {}
         self.recent_list_box.connect("row-activated", self._row_clicked)
 
+    def set_recent_enabled(self, state):
+        self.recent_enabled = state
+        self.recent_searches.clear()
+        for child in self.recent_list_box.get_children():
+            self.recent_list_box.remove(child)
+
+        label = Gtk.Label()
+        label.get_style_context().add_class("placeholder")
+        label.set_visible(True)
+        label.set_halign(Gtk.Align.START)
+        label.set_valign(Gtk.Align.START)
+
+        if state:
+            label.set_text("No recent searches")
+        else:
+            label.set_text(
+                "Recent searches saving disabled.\nUse Menu " "Settings to enable."
+            )
+
+        self.recent_list_box.set_placeholder(label)
+
     def add_new_recent_search(self, text: str):
         """Add new recent search entry"""
+        if not self.recent_enabled:
+            return
         if not text:
             return
 
@@ -99,7 +125,9 @@ class RecentAppsManager:
         recent_list: Gtk.ListBox,
         desktop_file_manager: DesktopFileManager,
         vm_manager: VMManager,
+        enabled: bool,
     ):
+        self.recent_enabled = enabled
         self.recent_list_box = recent_list
         self.desktop_file_manager = desktop_file_manager
         self.vm_manager = vm_manager
@@ -109,7 +137,31 @@ class RecentAppsManager:
             "app-started", self.add_new_recent_app
         )
 
+    def set_recent_enabled(self, state):
+        self.recent_enabled = state
+        self.recent_apps.clear()
+        for child in self.recent_list_box.get_children():
+            self.recent_list_box.remove(child)
+
+        label = Gtk.Label()
+        label.get_style_context().add_class("placeholder")
+        label.set_visible(True)
+        label.set_halign(Gtk.Align.START)
+        label.set_valign(Gtk.Align.START)
+
+        if state:
+            label.set_text("No recent applications")
+        else:
+            label.set_text(
+                "Recent application saving disabled.\nUse Menu " "Settings to enable."
+            )
+
+        self.recent_list_box.set_placeholder(label)
+
     def add_new_recent_app(self, _widget, app_path: str):
+        if not self.recent_enabled:
+            return
+
         # only add if not exists, if exists: bump to top and return
         for app_entry in self.recent_apps:
             if app_entry.app_info.file_path.name == app_path:
@@ -159,6 +211,7 @@ class SearchPage(MenuPage):
         self.page_widget: Gtk.Grid = builder.get_object("search_page")
 
         self.sort_running = False  # sort running vms to top
+        self.recent_enabled = True
 
         self.vm_list: Gtk.ListBox = builder.get_object("search_vm_list")
         self.app_list: Gtk.ListBox = builder.get_object("search_app_list")
@@ -197,10 +250,13 @@ class SearchPage(MenuPage):
         self.recent_box: Gtk.Box = builder.get_object("search_no_box")
 
         self.recent_search_manager = RecentSearchManager(
-            self.recent_list, self.search_entry
+            self.recent_list, self.search_entry, self.recent_enabled
         )
         self.recent_apps_manager = RecentAppsManager(
-            self.recent_app_list, self.desktop_file_manager, self.vm_manager
+            self.recent_app_list,
+            self.desktop_file_manager,
+            self.vm_manager,
+            self.recent_enabled,
         )
 
         self.vm_list.connect("row-selected", self._selection_changed)
@@ -365,6 +421,32 @@ class SearchPage(MenuPage):
         self._filter_lists()
 
         self.search_entry.grab_focus_without_selecting()
+
+    def enable_recent(self, state: bool):
+        self.recent_enabled = state
+        self.recent_search_manager.set_recent_enabled(state)
+        self.recent_apps_manager.set_recent_enabled(state)
+
+        app_label = Gtk.Label()
+        app_label.get_style_context().add_class("placeholder")
+        search_label = Gtk.Label()
+        search_label.get_style_context().add_class("placeholder")
+        app_label.set_visible(True)
+        search_label.set_visible(True)
+
+        if state:
+            app_label.set_text("No recent applications")
+            search_label.set_text("No recent searches")
+        else:
+            app_label.set_text(
+                "Recent application saving disabled.\nUse Menu " "Settings to enable."
+            )
+            search_label.set_text(
+                "Recent searches saving disabled.\nUse Menu " "Settings to enable."
+            )
+
+        self.recent_app_list.set_placeholder(app_label)
+        self.recent_list.set_placeholder(search_label)
 
     def reset_page(self):
         """Reset page after hiding the menu."""
