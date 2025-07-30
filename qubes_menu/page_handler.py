@@ -21,12 +21,14 @@
 import abc
 
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
 class MenuPage(abc.ABC):
     """Abstract Menu Page."""
+
     page_widget: Gtk.Widget
 
     @abc.abstractmethod
