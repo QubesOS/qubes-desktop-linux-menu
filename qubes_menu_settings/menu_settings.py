@@ -33,7 +33,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
 from qubes_menu.constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE, \
-    POSITION_FEATURE
+    POSITION_FEATURE, DISABLE_RECENT_FEATURE
 
 
 MENU_PAGES = {
@@ -115,6 +115,8 @@ class AppMenuSettings(Gtk.Application):
         self.sort_running_check: Gtk.CheckButton = \
             self.builder.get_object("sort_running_to_top_check")
 
+        self.show_recent_check: Gtk.CheckButton = self.builder.get_object(
+            "show_recent_apps_check")
         screen = Gdk.Screen.get_default()
         provider = Gtk.CssProvider()
 
@@ -156,10 +158,13 @@ class AppMenuSettings(Gtk.Application):
         self.menu_position_model.select_name(MENU_POSITIONS[menu_position])
         self.menu_position_model.update_initial()
 
-        # this can sometimes be None, thus, the "or False)
         sort_running = \
             bool(self.vm.features.get(SORT_RUNNING_FEATURE, False))
         self.sort_running_check.set_active(sort_running)
+
+        disable_recent = \
+            bool(self.vm.features.get(DISABLE_RECENT_FEATURE, False))
+        self.show_recent_check.set_active(not disable_recent)
 
     def _quit(self, *_args):
         self.quit()
@@ -174,6 +179,15 @@ class AppMenuSettings(Gtk.Application):
         else:
             if old_sort_running:
                 del self.vm.features[SORT_RUNNING_FEATURE]
+
+        old_disable_recent = self.vm.features.get(DISABLE_RECENT_FEATURE, None)
+
+        if self.show_recent_check.get_active():
+            if old_disable_recent:
+                del self.vm.features[DISABLE_RECENT_FEATURE]
+        else:
+            if not old_sort_running:
+                self.vm.features[DISABLE_RECENT_FEATURE] = "1"
 
         old_initial_page = self.vm.features.get(INITIAL_PAGE_FEATURE,
                                                 "app_page")
