@@ -20,9 +20,10 @@
 """Search page for App Menu"""
 from typing import Dict, Optional, Set, Union
 
+import qubesadmin.vm
 from .desktop_file_manager import DesktopFileManager
 from .custom_widgets import SearchVMRow, AnyVMRow, ControlList, KeynavController
-from .app_widgets import SearchAppEntry
+from .app_widgets import SearchAppEntry, AppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
 from .utils import load_icon, parse_search
@@ -72,7 +73,7 @@ class RecentSearchManager:
             self.recent_list_box.insert(old_row, 0)
             return
 
-        if len(self.recent_searches) == self.SEARCH_VALUES_TO_KEEP:
+        if len(self.recent_searches) == self.SEARCH_VALUES_TO_KEEP + 1:
             last_row: RecentSearchRow = self.recent_list_box.get_children()[-1]
             del self.recent_searches[last_row.search_text]
             self.recent_list_box.remove(last_row)
@@ -84,6 +85,46 @@ class RecentSearchManager:
     def _row_clicked(self, _widget, row: RecentSearchRow):
         self.search_box.set_text(row.search_text)
 
+
+class RecentAppsManager:
+    """Class for managing recently run apps"""
+    APPS_TO_KEEP = 10
+    def __init__(self, recent_list: Gtk.ListBox,
+                 desktop_file_manager: DesktopFileManager, vm_manager: VMManager):
+        self.recent_list_box = recent_list
+        self.desktop_file_manager = desktop_file_manager
+        self.vm_manager = vm_manager
+        self.recent_apps: list[SearchAppEntry] = []
+        self.recent_list_box.connect('row-activated', self._row_clicked)
+        self.recent_list_box.get_toplevel().get_application().connect(
+            'app-started',  self.add_new_recent_app)
+
+    def add_new_recent_app(self, _widget, app_path: str):
+        # only add if not exists, if exists: bump to top and return
+        for app_entry in self.recent_apps:
+            if app_entry.app_info.file_path.name == app_path:
+                self.recent_list_box.remove(app_entry)
+                self.recent_list_box.insert(app_entry, 0)
+                return
+
+        app_info = self.desktop_file_manager.get_app_info_by_name(app_path)
+        if not app_info:
+            return
+        new_entry = SearchAppEntry(app_info, self.vm_manager)
+        self.recent_apps.append(new_entry)
+        self.recent_list_box.insert(new_entry, 0)
+
+        if len(self.recent_apps) == self.APPS_TO_KEEP + 1:
+            last_row: SearchAppEntry = self.recent_list_box.get_children()[-1]
+            del self.recent_apps[last_row]
+            self.recent_list_box.remove(last_row)
+
+    @staticmethod
+    def _row_clicked(_widget, row: SearchAppEntry):
+        if hasattr(row, 'app_info'):
+            row.run_app(row.app_info.vm)
+        else:
+            return
 
 class SearchPage(MenuPage):
     """
@@ -130,18 +171,21 @@ class SearchPage(MenuPage):
         self.vm_list.invalidate_sort()
 
         self.recent_list: Gtk.ListBox = builder.get_object('search_recent_list')
+        self.recent_app_list: Gtk.ListBox = builder.get_object(
+            'search_recent_apps_list')
 
         self.app_view: Gtk.ScrolledWindow = \
             builder.get_object("search_app_view")
         self.app_placeholder: Gtk.Label = \
             builder.get_object('search_app_placeholder')
         self.vm_view: Gtk.ScrolledWindow = builder.get_object("search_vm_view")
-        self.recent_view: Gtk.ScrolledWindow = \
-            builder.get_object("search_recent_view")
-        self.recent_title: Gtk.Label = builder.get_object('search_recent_title')
+        self.recent_box: Gtk.Box =  builder.get_object("search_no_box")
 
         self.recent_search_manager = RecentSearchManager(
             self.recent_list, self.search_entry)
+        self.recent_apps_manager = RecentAppsManager(self.recent_app_list,
+                                                     self.desktop_file_manager, self.vm_manager
+            )
 
         self.vm_list.connect('row-selected', self._selection_changed)
         self.search_entry.connect('activate', self._move_to_first)
@@ -184,8 +228,7 @@ class SearchPage(MenuPage):
     def _do_search(self, *_args):
         has_search = bool(self.search_entry.get_text())
         self.app_view.set_visible(has_search)
-        self.recent_view.set_visible(not has_search)
-        self.recent_title.set_visible(not has_search)
+        self.recent_box.set_visible(not has_search)
 
         self._filter_lists()
 
@@ -302,7 +345,7 @@ class SearchPage(MenuPage):
         self.vm_list.select_row(None)
         self.app_view.set_visible(False)
         self.vm_view.set_visible(False)
-        self.recent_view.set_visible(True)
+        self.recent_box.set_visible(True)
 
         self._filter_lists()
 

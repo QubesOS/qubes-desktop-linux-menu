@@ -100,6 +100,8 @@ class AppEntry(Gtk.ListBoxRow):
         # pylint: disable=consider-using-with
         command = self.app_info.get_command_for_vm(vm)
         subprocess.Popen(command, stdin=subprocess.DEVNULL)
+        self.get_toplevel().get_application().emit('app-started',
+                                                   self.app_info.file_path.name)
         self.get_toplevel().get_application().hide_menu()
 
 

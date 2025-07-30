@@ -29,7 +29,7 @@ from .constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE, \
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('GtkLayerShell', '0.1')
-from gi.repository import Gtk, Gdk, GLib, Gio, GtkLayerShell
+from gi.repository import Gtk, Gdk, GLib, Gio, GtkLayerShell, GObject
 
 try:
     from gi.events import GLibEventLoopPolicy
@@ -49,6 +49,15 @@ POSITION_LIST = [
 ]
 
 logger = logging.getLogger('qubes-appmenu')
+
+GObject.signal_new(
+    "app-started",
+    Gtk.Application,
+    GObject.SignalFlags.RUN_LAST,
+    None,
+    (str,),
+)
+
 
 def load_theme(widget: Gtk.Widget, light_theme_path: str,
                dark_theme_path: str):
