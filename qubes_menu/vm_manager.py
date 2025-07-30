@@ -57,12 +57,8 @@ class VMEntry:
         except qubesadmin.exc.QubesDaemonAccessError:
             self._internal = False
         self._servicevm = bool(self.vm.features.get("servicevm", False))
-        self._is_dispvm_template = getattr(
-            self.vm, "template_for_dispvms", False
-        )
-        self._has_network = (
-            self.vm.is_networked() if vm.klass != "AdminVM" else False
-        )
+        self._is_dispvm_template = getattr(self.vm, "template_for_dispvms", False)
+        self._has_network = self.vm.is_networked() if vm.klass != "AdminVM" else False
         self._vm_icon_name = getattr(
             self.vm, "icon", getattr(self.vm.label, "icon", None)
         )
@@ -179,20 +175,14 @@ class VMEntry:
     def _escaped_name(self) -> str:
         """Name escaped according to rules from desktop-linux-common
         package"""
-        return (
-            self.vm_name.replace("_", "_u")
-            .replace("-", "_d")
-            .replace(".", "_p")
-        )
+        return self.vm_name.replace("_", "_u").replace("-", "_d").replace(".", "_p")
 
     @property
     def settings_desktop_file_name(self) -> str:
         """
         Name of relevant .desktop vm settings file.
         """
-        return (
-            "org.qubes-os.qubes-vm-settings._" + self._escaped_name + ".desktop"
-        )
+        return "org.qubes-os.qubes-vm-settings._" + self._escaped_name + ".desktop"
 
     @property
     def start_vm_desktop_file_name(self) -> str:
@@ -275,9 +265,7 @@ class VMManager:
             state = constants.STATE_DICTIONARY[event]
             vm_entry.power_state = state
 
-    def _update_domain_property(
-        self, vm_name, event, newvalue, *_args, **_kwargs
-    ):
+    def _update_domain_property(self, vm_name, event, newvalue, *_args, **_kwargs):
         vm_entry = self.load_vm_from_name(vm_name)
 
         if not vm_entry:
@@ -298,9 +286,7 @@ class VMManager:
             # it will disable any future event handling
             pass
 
-    def _update_domain_feature(
-        self, vm, _event, feature=None, value=None, **_kwargs
-    ):
+    def _update_domain_feature(self, vm, _event, feature=None, value=None, **_kwargs):
         vm_entry = self.load_vm_from_name(vm)
 
         if not vm_entry:
@@ -339,36 +325,20 @@ class VMManager:
 
     def register_events(self):
         """Register handlers for all relevant VM events."""
-        self.dispatcher.add_handler(
-            "domain-pre-start", self._update_domain_state
-        )
+        self.dispatcher.add_handler("domain-pre-start", self._update_domain_state)
         self.dispatcher.add_handler("domain-start", self._update_domain_state)
-        self.dispatcher.add_handler(
-            "domain-start-failed", self._update_domain_state
-        )
+        self.dispatcher.add_handler("domain-start-failed", self._update_domain_state)
         self.dispatcher.add_handler("domain-paused", self._update_domain_state)
-        self.dispatcher.add_handler(
-            "domain-unpaused", self._update_domain_state
-        )
-        self.dispatcher.add_handler(
-            "domain-shutdown", self._update_domain_state
-        )
-        self.dispatcher.add_handler(
-            "domain-pre-shutdown", self._update_domain_state
-        )
-        self.dispatcher.add_handler(
-            "domain-shutdown-failed", self._update_domain_state
-        )
+        self.dispatcher.add_handler("domain-unpaused", self._update_domain_state)
+        self.dispatcher.add_handler("domain-shutdown", self._update_domain_state)
+        self.dispatcher.add_handler("domain-pre-shutdown", self._update_domain_state)
+        self.dispatcher.add_handler("domain-shutdown-failed", self._update_domain_state)
 
         self.dispatcher.add_handler("domain-add", self._add_domain)
         self.dispatcher.add_handler("domain-delete", self._remove_domain)
 
-        self.dispatcher.add_handler(
-            "property-set:netvm", self._update_domain_property
-        )
-        self.dispatcher.add_handler(
-            "property-set:label", self._update_domain_property
-        )
+        self.dispatcher.add_handler("property-set:netvm", self._update_domain_property)
+        self.dispatcher.add_handler("property-set:label", self._update_domain_property)
         self.dispatcher.add_handler(
             "property-set:template_for_dispvms", self._update_domain_property
         )
