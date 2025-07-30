@@ -24,10 +24,10 @@ from qubesadmin.tests.mock_app import MockQubesComplete
 
 def test_menu_settings_load():
     qapp = MockQubesComplete()
-    qapp._qubes['dom0'].features['menu-initial-page'] = 'favorites_page'
-    qapp._qubes['dom0'].features['menu-sort-running'] = '1'
-    qapp._qubes['dom0'].features['menu-favorites'] = ''
-    qapp._qubes['dom0'].features['menu-position'] = ''
+    qapp._qubes["dom0"].features["menu-initial-page"] = "favorites_page"
+    qapp._qubes["dom0"].features["menu-sort-running"] = "1"
+    qapp._qubes["dom0"].features["menu-favorites"] = ""
+    qapp._qubes["dom0"].features["menu-position"] = ""
 
     qapp.update_vm_calls()
 
@@ -42,10 +42,10 @@ def test_menu_settings_load():
 
 def test_menu_settings_change():
     qapp = MockQubesComplete()
-    qapp._qubes['dom0'].features['menu-initial-page'] = 'app_page'
-    qapp._qubes['dom0'].features['menu-sort-running'] = ''
-    qapp._qubes['dom0'].features['menu-favorites'] = ''
-    qapp._qubes['dom0'].features['menu-position'] = 'mouse'
+    qapp._qubes["dom0"].features["menu-initial-page"] = "app_page"
+    qapp._qubes["dom0"].features["menu-sort-running"] = ""
+    qapp._qubes["dom0"].features["menu-favorites"] = ""
+    qapp._qubes["dom0"].features["menu-position"] = "mouse"
 
     qapp.update_vm_calls()
 
@@ -61,19 +61,25 @@ def test_menu_settings_change():
     app.menu_position_combo.set_active_id("Top Left")  # the first option is Top Left
     app.sort_running_check.set_active(True)
 
-    qapp.expected_calls[('dom0', 'admin.vm.feature.Set', 'menu-sort-running', b'1')] = b'0\0'
-    qapp.expected_calls[('dom0', 'admin.vm.feature.Set', 'menu-initial-page', b'search_page')] = b'0\0'
-    qapp.expected_calls[('dom0', 'admin.vm.feature.Set', 'menu-position', b'top-left')] = b'0\0'
+    qapp.expected_calls[("dom0", "admin.vm.feature.Set", "menu-sort-running", b"1")] = (
+        b"0\0"
+    )
+    qapp.expected_calls[
+        ("dom0", "admin.vm.feature.Set", "menu-initial-page", b"search_page")
+    ] = b"0\0"
+    qapp.expected_calls[
+        ("dom0", "admin.vm.feature.Set", "menu-position", b"top-left")
+    ] = b"0\0"
 
     app._save()
 
 
 def test_menu_settings_change2():
     qapp = MockQubesComplete()
-    qapp._qubes['dom0'].features['menu-initial-page'] = 'app_page'
-    qapp._qubes['dom0'].features['menu-sort-running'] = ''
-    qapp._qubes['dom0'].features['menu-favorites'] = ''
-    qapp._qubes['dom0'].features['menu-position'] = 'mouse'
+    qapp._qubes["dom0"].features["menu-initial-page"] = "app_page"
+    qapp._qubes["dom0"].features["menu-sort-running"] = ""
+    qapp._qubes["dom0"].features["menu-favorites"] = ""
+    qapp._qubes["dom0"].features["menu-position"] = "mouse"
 
     qapp.update_vm_calls()
 
@@ -86,6 +92,8 @@ def test_menu_settings_change2():
 
     app.starting_page_combo.set_active_id("Favorites")
 
-    qapp.expected_calls[('dom0', 'admin.vm.feature.Set', 'menu-initial-page', b'favorites_page')] = b'0\0'
+    qapp.expected_calls[
+        ("dom0", "admin.vm.feature.Set", "menu-initial-page", b"favorites_page")
+    ] = b"0\0"
 
     app._save()
