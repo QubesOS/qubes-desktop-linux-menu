@@ -20,10 +20,9 @@
 """Search page for App Menu"""
 from typing import Dict, Optional, Set, Union
 
-import qubesadmin.vm
 from .desktop_file_manager import DesktopFileManager
 from .custom_widgets import SearchVMRow, AnyVMRow, ControlList, KeynavController
-from .app_widgets import SearchAppEntry, AppEntry
+from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
 from .utils import load_icon, parse_search
@@ -61,13 +60,14 @@ class RecentSearchManager:
     def __init__(
         self, recent_list: Gtk.ListBox, search_box: Gtk.SearchEntry, enabled: bool
     ):
-        self.recent_enabled = bool
+        self.recent_enabled = enabled
         self.recent_list_box = recent_list
         self.search_box = search_box
         self.recent_searches: Dict[str, RecentSearchRow] = {}
         self.recent_list_box.connect("row-activated", self._row_clicked)
 
     def set_recent_enabled(self, state):
+        """Set whether recent searches should be stored or not."""
         self.recent_enabled = state
         self.recent_searches.clear()
         for child in self.recent_list_box.get_children():
@@ -83,7 +83,7 @@ class RecentSearchManager:
             label.set_text("No recent searches")
         else:
             label.set_text(
-                "Recent searches saving disabled.\nUse Menu " "Settings to enable."
+                "Recent searches saving disabled.\nUse Menu Settings to enable."
             )
 
         self.recent_list_box.set_placeholder(label)
@@ -138,6 +138,7 @@ class RecentAppsManager:
         )
 
     def set_recent_enabled(self, state):
+        """Set whether recent apps  should be stored or not."""
         self.recent_enabled = state
         self.recent_apps.clear()
         for child in self.recent_list_box.get_children():
@@ -153,12 +154,13 @@ class RecentAppsManager:
             label.set_text("No recent applications")
         else:
             label.set_text(
-                "Recent application saving disabled.\nUse Menu " "Settings to enable."
+                "Recent application saving disabled.\nUse Menu Settings to enable."
             )
 
         self.recent_list_box.set_placeholder(label)
 
     def add_new_recent_app(self, _widget, app_path: str):
+        """Add new "recent" record, based on .desktop file path given as string"""
         if not self.recent_enabled:
             return
 
@@ -185,8 +187,6 @@ class RecentAppsManager:
     def _row_clicked(_widget, row: SearchAppEntry):
         if hasattr(row, "app_info"):
             row.run_app(row.app_info.vm)
-        else:
-            return
 
 
 class SearchPage(MenuPage):
@@ -423,6 +423,7 @@ class SearchPage(MenuPage):
         self.search_entry.grab_focus_without_selecting()
 
     def enable_recent(self, state: bool):
+        """Enable/disable storing recent apps/searches"""
         self.recent_enabled = state
         self.recent_search_manager.set_recent_enabled(state)
         self.recent_apps_manager.set_recent_enabled(state)
@@ -439,10 +440,10 @@ class SearchPage(MenuPage):
             search_label.set_text("No recent searches")
         else:
             app_label.set_text(
-                "Recent application saving disabled.\nUse Menu " "Settings to enable."
+                "Recent application saving disabled.\nUse Menu Settings to enable."
             )
             search_label.set_text(
-                "Recent searches saving disabled.\nUse Menu " "Settings to enable."
+                "Recent searches saving disabled.\nUse Menu Settings to enable."
             )
 
         self.recent_app_list.set_placeholder(app_label)

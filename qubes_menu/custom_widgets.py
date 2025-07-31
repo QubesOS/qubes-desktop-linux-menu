@@ -155,13 +155,17 @@ class FavoritesMenu(SelfAwareMenu):
         "Add to favorites" action: sets appropriate VM feature
         """
         target_vm = self.app_info_getter().vm
+        entry_name = self.app_info_getter().entry_name
+        if not entry_name:
+            return
+
         if not target_vm:
             target_vm = self.app_info_getter().qapp.domains[
                 self.app_info_getter().qapp.local_name
             ]
 
         add_to_feature(
-            target_vm, constants.FAVORITES_FEATURE, self.app_info_getter().entry_name
+            target_vm, constants.FAVORITES_FEATURE, entry_name
         )  # type: ignore
 
     def set_menu_state(self):
