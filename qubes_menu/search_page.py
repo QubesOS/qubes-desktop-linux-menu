@@ -465,7 +465,7 @@ class SearchPage(MenuPage):
                 "disable recent applications."
             )
             search_label.set_text(
-                "No recent searches. \nUse Menu Settings to disable recent applications."
+                "No recent searches. \nUse Menu Settings to disable recent searches."
             )
         else:
             app_label.set_text(

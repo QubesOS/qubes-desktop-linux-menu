@@ -10,7 +10,7 @@ checks:pylint:
   stage: checks
   before_script:
     - sudo dnf install -y python3-gobject gtk3 xorg-x11-server-Xvfb 
-      python3-pip python3-mypy python3-pyxdg gtk-layer-shell
+      python3-pip python3-mypy python3-pyxdg gtk-layer-shell cairo-devel
     - pip3 install --quiet -r ci/requirements.txt
     - git clone https://github.com/QubesOS/qubes-core-admin-client ~/core-admin-client
   script:
