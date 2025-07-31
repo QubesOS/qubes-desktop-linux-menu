@@ -208,8 +208,8 @@ class FavoritesPage(MenuPage):
         self.app_list.invalidate_sort()
 
     def _favorites_sort(self, x: FavoritesAppEntry, y: FavoritesAppEntry):
-        sort_name_x = x.app_info.app_name
-        sort_name_y = y.app_info.app_name
+        sort_name_x = x.app_info.app_name or ""
+        sort_name_y = y.app_info.app_name or ""
 
         if self.sort_qubes is not None:
             sort_name_x = (
