@@ -23,7 +23,7 @@ from typing import Dict, Optional, Set, Union
 
 from .desktop_file_manager import DesktopFileManager
 from .custom_widgets import SearchVMRow, AnyVMRow, ControlList, KeynavController, \
-    HoverListBox, HoverEventBox
+    HoverEventBox
 from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -319,6 +319,7 @@ class SearchPage(MenuPage):
             row.run_app(row.app_info.vm)
 
     def _run_settings(self, widget, *_args):
+        # pylint: disable=consider-using-with
         subprocess.Popen(["qubes-appmenu-settings"], stdin=subprocess.DEVNULL)
         widget.get_toplevel().get_application().hide_menu()
 
@@ -486,7 +487,7 @@ class SearchPage(MenuPage):
                 "disable recent applications."
             )
             search_label.set_text(
-                "No recent searches. \nUse Menu Settings to disable recent applications."
+                "No recent searches. \nUse Menu Settings to disable recent searches."
             )
         else:
             app_label.set_text(
