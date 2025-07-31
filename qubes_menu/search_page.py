@@ -133,9 +133,11 @@ class RecentAppsManager:
         self.vm_manager = vm_manager
         self.recent_apps: list[SearchAppEntry] = []
         self.recent_list_box.connect("row-activated", self._row_clicked)
-        self.recent_list_box.get_toplevel().get_application().connect(
-            "app-started", self.add_new_recent_app
-        )
+        application = self.recent_list_box.get_toplevel().get_application()
+        if application:
+            # this is a workaround for tests: without Gtk.Application.run,
+            # this object does not exist
+            application.connect("app-started", self.add_new_recent_app)
 
     def set_recent_enabled(self, state):
         """Set whether recent apps  should be stored or not."""
