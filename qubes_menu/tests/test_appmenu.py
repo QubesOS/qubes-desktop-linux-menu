@@ -29,6 +29,7 @@ def test_app_menu_conffeatures():
     qapp._qubes['dom0'].features['menu-initial-page'] = 'favorites_page'
     qapp._qubes['dom0'].features['menu-sort-running'] = '1'
     qapp._qubes['dom0'].features['menu-position'] = ''
+    qapp._qubes['dom0'].features['menu-disable-recent'] = '1'
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
@@ -40,6 +41,7 @@ def test_app_menu_conffeatures():
     assert app_menu.initial_page == "favorites_page"
     assert app_menu.sort_running
     assert app_menu.appmenu_position == "mouse"
+    assert app_menu.disable_recent == True
 
 
 def test_app_menu_conffeatures_default():
@@ -51,7 +53,9 @@ def test_app_menu_conffeatures_default():
         features={'menu-favorites': '',
                   'menu-initial-page': 'fake',
                   'menu-sort-running': 'fake',
-                  'menu-position': 'fake'})
+                  'menu-position': 'fake',
+                  'menu-disable-recent': ''
+                  })
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
@@ -63,6 +67,7 @@ def test_app_menu_conffeatures_default():
     assert app_menu.initial_page == "app_page"
     assert not app_menu.sort_running
     assert app_menu.appmenu_position == "mouse"
+    assert not app_menu.disable_recent
 
 
 def test_appmenu_options():
@@ -73,6 +78,7 @@ def test_appmenu_options():
     qapp._qubes['dom0'].features['menu-initial-page'] = 'app_page'
     qapp._qubes['dom0'].features['menu-sort-running'] = '1'
     qapp._qubes['dom0'].features['menu-position'] = 'top-left'
+    qapp._qubes['dom0'].features['menu-disable-recent'] = ''
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
@@ -101,6 +107,7 @@ def test_appmenu_positioning():
     qapp._qubes['dom0'].features['menu-initial-page'] = 'app_page'
     qapp._qubes['dom0'].features['menu-sort-running'] = '1'
     qapp._qubes['dom0'].features['menu-position'] = ''
+    qapp._qubes['dom0'].features['menu-disable-recent'] = ''
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)

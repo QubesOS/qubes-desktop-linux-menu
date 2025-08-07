@@ -24,7 +24,6 @@ from ..vm_manager import VMManager
 from qubesadmin.tests.mock_app import MockDispatcher
 from ..search_page import SearchPage
 
-
 def test_search(test_desktop_file_path, test_qapp, test_builder):
     dispatcher = MockDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
@@ -90,3 +89,71 @@ def test_search(test_desktop_file_path, test_qapp, test_builder):
                 if search_page._is_app_fitting(row)]
     assert len(found_entries) == 1
     assert found_entries[0].app_info.app_name == 'Xfce Appearance Settings'
+
+@mock.patch('gi.repository.Gtk.Application')
+def test_recent_searches(mock_application, test_desktop_file_path, test_qapp,
+                         test_builder):
+    dispatcher = MockDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    with mock.patch.object(DesktopFileManager, 'desktop_dirs',
+                           [test_desktop_file_path]):
+        desktop_file_manager = DesktopFileManager(test_qapp)
+
+    search_page = SearchPage(vm_manager, test_builder, desktop_file_manager)
+
+    assert search_page.search_entry.get_sensitive()
+
+    search_page.search_entry.set_text('dragons')
+
+    # find a dom0 app
+    search_page.search_entry.set_text('dom0')
+
+    for row in search_page.app_list.get_children():
+        if search_page._is_app_fitting(row):
+            with mock.patch('subprocess.Popen') as mock_run, mock.patch.object(
+                    row.get_toplevel(), 'get_application', side_effect=mock_application):
+                row.activate()
+                assert mock_run.call_count == 1
+                assert mock.call().emit('app-started', 'test3.desktop') in mock_application.mock_calls
+
+    # we are faking signals here
+    search_page.recent_apps_manager.add_new_recent_app(None, 'test3.desktop')
+
+    texts = [row.search_text for row in search_page.recent_list.get_children()]
+    assert texts == ['dom0']
+    apps = [row.app_info.entry_name for row in
+            search_page.recent_app_list.get_children()]
+    assert apps == ['test3.desktop']
+
+    # do two more searches, but one should be the same as an existing search
+    search_page.search_entry.set_text('')
+    search_page.search_entry.set_text('xTeRm')
+
+    for row in search_page.app_list.get_children():
+        if search_page._is_app_fitting(row):
+            with mock.patch('subprocess.Popen') as mock_run, mock.patch.object(
+                    row.get_toplevel(), 'get_application', side_effect=mock_application):
+                row.activate()
+                assert mock_run.call_count == 1
+                assert mock.call().emit('app-started', 'test1.desktop') in mock_application.mock_calls
+
+    search_page.recent_apps_manager.add_new_recent_app(None, 'test1.desktop')
+    search_page.search_entry.set_text('')
+    search_page.search_entry.set_text('dom0')
+
+    for row in search_page.app_list.get_children():
+        if search_page._is_app_fitting(row):
+            with mock.patch('subprocess.Popen') as mock_run, mock.patch.object(
+                    row.get_toplevel(), 'get_application', side_effect=mock_application):
+                row.activate()
+                assert mock_run.call_count == 1
+                assert mock.call().emit('app-started', 'test3.desktop') in mock_application.mock_calls
+
+    search_page.recent_apps_manager.add_new_recent_app(None, 'test3.desktop')
+
+    texts = [row.search_text for row in search_page.recent_list.get_children()]
+    assert texts == ['dom0', 'xTeRm']
+    apps = [row.app_info.entry_name for row in
+            search_page.recent_app_list.get_children()]
+    assert apps == ['test3.desktop', 'test1.desktop']

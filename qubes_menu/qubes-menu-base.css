@@ -78,6 +78,24 @@ list :not(:selected) {
   font-weight: 900;
 }
 
+.sort_buttons {
+  background: @left-background;
+  opacity: 0.9;
+  border-width: 0px 0px 0px 2px;
+  border-color: @left-background;
+  border-radius: 0px;
+  margin: 4px 10px 4px 2px;
+  padding: 5px;
+}
+
+.sort_buttons:checked {
+  border-color: @text-color;
+}
+
+.sort_buttons:hover, .sort_buttons:focus {
+    transition: none;
+}
+
 .vm_entry {
   padding: 10px;
 }
