@@ -194,7 +194,7 @@ class AppMenu(Gtk.Application):
                 "/LogoutPrompt",  # object_path
                 "org.kde.LogoutPrompt")  # interface
             proxy.call(
-                'promptLogout',  # method name
+                'promptAll',  # method name
                 None,  # parameters
                 0,  # flags
                 0  # timeout_msec
