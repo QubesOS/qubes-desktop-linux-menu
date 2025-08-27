@@ -548,9 +548,14 @@ def main():
 
     qapp = qubesadmin.Qubes()
     dispatcher = qubesadmin.events.EventsDispatcher(qapp)
-    app = AppMenu(qapp, dispatcher)
+
     if HAS_GBULB:
-        loop: gbulb.GLibEventLoop = asyncio.get_event_loop()
+        loop: gbulb.GLibEventLoop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
+    app = AppMenu(qapp, dispatcher)
+
+    if HAS_GBULB:
         loop.run_forever(application=app, argv=sys.argv)
     else:
         app.run(sys.argv)
