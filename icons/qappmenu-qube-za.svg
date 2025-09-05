@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="6.3403511mm"
+   width="6.3184047mm"
    height="4.7625003mm"
-   viewBox="0 0 6.3403511 4.7625003"
+   viewBox="0 0 6.3184047 4.7625003"
    version="1.1"
    id="svg1"
    xml:space="preserve"
@@ -12,22 +12,22 @@
    xmlns:svg="http://www.w3.org/2000/svg"><defs
      id="defs1" /><g
      id="layer1"
-     transform="translate(-118.58251,-143.13615)"><g
+     transform="translate(-109.6347,-143.13612)"><g
        style="fill:none;stroke:#9B9B9B;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"
-       id="g10"
-       transform="matrix(0.26458333,0,0,0.26458333,118.05335,142.34239)"><path
-         d="m 3,16 4,4 4,-4"
-         id="path6" /><path
+       id="g14"
+       transform="matrix(0.26458333,0,0,0.26458333,109.10553,142.34238)"><path
+         d="M 3,8 7,4 11,8"
+         id="path10" /><path
          d="M 7,4 V 20"
-         id="path7" /></g><g
-       id="g31"
-       transform="translate(6.0222559,-5.7429565)"><path
+         id="path11" /></g><g
+       id="g28"
+       transform="translate(-2.9474999,-5.7429665)"><path
          style="font-variation-settings:normal;opacity:1;fill:none;fill-opacity:1;stroke:#9B9B9B;stroke-width:0.529;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:16;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
-         id="path29"
+         id="path26"
          d="m 118.63611,152.12193 -1.49232,0.86159 -1.49231,-0.86159 0,-1.72317 1.49231,-0.86159 1.49232,0.86159 z" /><path
          style="font-variation-settings:normal;opacity:1;fill:none;fill-opacity:1;stroke:#9B9B9B;stroke-width:0.529;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:16;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
          d="m 115.65147,150.39876 1.49232,0.86158 v 1.72318"
-         id="path30" /><path
+         id="path27" /><path
          style="font-variation-settings:normal;opacity:1;fill:none;fill-opacity:1;stroke:#9B9B9B;stroke-width:0.529;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:16;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
          d="m 117.14379,151.26034 1.49231,-0.86158"
-         id="path31" /></g></g></svg>
+         id="path28" /></g></g></svg>
