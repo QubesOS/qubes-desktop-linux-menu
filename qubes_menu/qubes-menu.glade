@@ -120,6 +120,7 @@
               <object class="GtkBox" id="search_no_box">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
+                <property name="hexpand">True</property>
                 <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkLabel" id="search_recent_apps_title">
@@ -141,6 +142,7 @@
                   <object class="GtkScrolledWindow" id="search_recent_apps_view">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
                     <property name="hscrollbar-policy">never</property>
                     <property name="shadow-type">in</property>
                     <property name="propagate-natural-height">True</property>
@@ -148,18 +150,20 @@
                       <object class="GtkViewport">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
                         <child>
                           <object class="GtkListBox" id="search_recent_apps_list">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="halign">start</property>
                             <property name="valign">start</property>
+                            <property name="hexpand">True</property>
                             <child type="placeholder">
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="halign">start</property>
                                 <property name="valign">start</property>
+                                <property name="hexpand">True</property>
                                 <property name="label" translatable="yes">No recent applications</property>
                                 <style>
                                   <class name="placeholder"/>
@@ -211,18 +215,20 @@
                       <object class="GtkViewport">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
                         <child>
                           <object class="GtkListBox" id="search_recent_list">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="halign">start</property>
                             <property name="valign">start</property>
+                            <property name="hexpand">True</property>
                             <child type="placeholder">
                               <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can-focus">False</property>
                                 <property name="halign">start</property>
                                 <property name="valign">start</property>
+                                <property name="hexpand">True</property>
                                 <property name="label" translatable="yes">No recent searches</property>
                                 <style>
                                   <class name="placeholder"/>

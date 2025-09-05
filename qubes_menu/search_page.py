@@ -58,13 +58,23 @@ class RecentSearchManager:
     SEARCH_VALUES_TO_KEEP = 10
 
     def __init__(
-        self, recent_list: Gtk.ListBox, search_box: Gtk.SearchEntry, enabled: bool
+        self,
+        recent_list: Gtk.ListBox,
+        search_box: Gtk.SearchEntry,
+        enabled: bool,
+        other_widgets: list[Gtk.ListBox],
     ):
         self.recent_enabled = enabled
         self.recent_list_box = recent_list
         self.search_box = search_box
         self.recent_searches: Dict[str, RecentSearchRow] = {}
+        self.other_widgets = other_widgets
         self.recent_list_box.connect("row-activated", self._row_clicked)
+        self.recent_list_box.connect("row-selected", self._deselect_others)
+
+    def _deselect_others(self, *_args):
+        for widget in self.other_widgets:
+            widget.select_row(None)
 
     def set_recent_enabled(self, state):
         """Set whether recent searches should be stored or not."""
@@ -112,6 +122,7 @@ class RecentSearchManager:
         self.recent_searches[text] = row
 
     def _row_clicked(self, _widget, row: RecentSearchRow):
+        self._deselect_others()
         self.search_box.set_text(row.search_text)
 
 
@@ -126,6 +137,7 @@ class RecentAppsManager:
         desktop_file_manager: DesktopFileManager,
         vm_manager: VMManager,
         enabled: bool,
+        other_widgets: list[Gtk.ListBox],
     ):
         self.recent_enabled = enabled
         self.recent_list_box = recent_list
@@ -133,9 +145,17 @@ class RecentAppsManager:
         self.vm_manager = vm_manager
         self.recent_apps: list[SearchAppEntry] = []
         self.recent_list_box.connect("row-activated", self._row_clicked)
-        self.recent_list_box.get_toplevel().get_application().connect(
-            "app-started", self.add_new_recent_app
-        )
+        application = self.recent_list_box.get_toplevel().get_application()
+        if application:
+            # this is a workaround for tests: without Gtk.Application.run,
+            # this object does not exist
+            application.connect("app-started", self.add_new_recent_app)
+        self.other_widgets = other_widgets
+        self.recent_list_box.connect("row-selected", self._deselect_others)
+
+    def _deselect_others(self, *_args):
+        for widget in self.other_widgets:
+            widget.select_row(None)
 
     def set_recent_enabled(self, state):
         """Set whether recent apps  should be stored or not."""
@@ -183,8 +203,8 @@ class RecentAppsManager:
             del self.recent_apps[last_row]
             self.recent_list_box.remove(last_row)
 
-    @staticmethod
-    def _row_clicked(_widget, row: SearchAppEntry):
+    def _row_clicked(self, _widget, row: SearchAppEntry):
+        self._deselect_others()
         if hasattr(row, "app_info"):
             row.run_app(row.app_info.vm)
 
@@ -250,13 +270,17 @@ class SearchPage(MenuPage):
         self.recent_box: Gtk.Box = builder.get_object("search_no_box")
 
         self.recent_search_manager = RecentSearchManager(
-            self.recent_list, self.search_entry, self.recent_enabled
+            self.recent_list,
+            self.search_entry,
+            self.recent_enabled,
+            [self.recent_app_list],
         )
         self.recent_apps_manager = RecentAppsManager(
             self.recent_app_list,
             self.desktop_file_manager,
             self.vm_manager,
             self.recent_enabled,
+            [self.recent_list],
         )
 
         self.vm_list.connect("row-selected", self._selection_changed)
@@ -436,8 +460,13 @@ class SearchPage(MenuPage):
         search_label.set_visible(True)
 
         if state:
-            app_label.set_text("No recent applications")
-            search_label.set_text("No recent searches")
+            app_label.set_text(
+                "No recent applications. \nUse Menu Settings to "
+                "disable recent applications."
+            )
+            search_label.set_text(
+                "No recent searches. \nUse Menu Settings to disable recent applications."
+            )
         else:
             app_label.set_text(
                 "Recent application saving disabled.\nUse Menu Settings to enable."
