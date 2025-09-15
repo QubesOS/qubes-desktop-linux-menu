@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.40.0 -->
 <interface>
-  <requires lib="gtk+" version="3.20"/>
+  <requires lib="gtk+" version="3.24"/>
   <!-- interface-css-provider-path qubes-menu-dark.css -->
   <object class="GtkWindow" id="main_window">
     <property name="can-focus">False</property>
@@ -18,7 +18,7 @@
         <property name="can-focus">True</property>
         <property name="tab-pos">left</property>
         <child>
-          <!-- n-columns=2 n-rows=5 -->
+          <!-- n-columns=2 n-rows=3 -->
           <object class="GtkGrid" id="search_page">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -68,8 +68,7 @@
               </object>
               <packing>
                 <property name="left-attach">0</property>
-                <property name="top-attach">3</property>
-                <property name="height">2</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
             <child>
@@ -114,72 +113,151 @@
               </object>
               <packing>
                 <property name="left-attach">1</property>
-                <property name="top-attach">3</property>
+                <property name="top-attach">2</property>
               </packing>
             </child>
             <child>
-              <object class="GtkScrolledWindow" id="search_recent_view">
+              <object class="GtkBox" id="search_no_box">
                 <property name="visible">True</property>
-                <property name="can-focus">True</property>
+                <property name="can-focus">False</property>
                 <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <property name="hscrollbar-policy">never</property>
-                <property name="shadow-type">in</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkViewport">
+                  <object class="GtkLabel" id="search_recent_apps_title">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">Recent applications</property>
+                    <style>
+                      <class name="search_title"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow" id="search_recent_apps_view">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="shadow-type">in</property>
+                    <property name="propagate-natural-height">True</property>
                     <child>
-                      <object class="GtkListBox" id="search_recent_list">
+                      <object class="GtkViewport">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <child type="placeholder">
-                          <object class="GtkLabel">
+                        <property name="hexpand">True</property>
+                        <child>
+                          <object class="GtkListBox" id="search_recent_apps_list">
                             <property name="visible">True</property>
                             <property name="can-focus">False</property>
-                            <property name="halign">start</property>
                             <property name="valign">start</property>
-                            <property name="label" translatable="yes">No recent searches</property>
+                            <property name="hexpand">True</property>
+                            <child type="placeholder">
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="valign">start</property>
+                                <property name="hexpand">True</property>
+                                <property name="label" translatable="yes">No recent applications</property>
+                                <style>
+                                  <class name="placeholder"/>
+                                </style>
+                              </object>
+                            </child>
                             <style>
-                              <class name="placeholder"/>
+                              <class name="left_pane"/>
                             </style>
                           </object>
                         </child>
-                        <style>
-                          <class name="left_pane"/>
-                        </style>
                       </object>
                     </child>
+                    <style>
+                      <class name="left_pane"/>
+                    </style>
                   </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
-                <style>
-                  <class name="left_pane"/>
-                </style>
-              </object>
-              <packing>
-                <property name="left-attach">0</property>
-                <property name="top-attach">2</property>
-                <property name="width">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="search_recent_title">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="halign">start</property>
-                <property name="label" translatable="yes">Recently searched</property>
-                <style>
-                  <class name="search_title"/>
-                </style>
+                <child>
+                  <object class="GtkLabel" id="search_recent_title">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="halign">start</property>
+                    <property name="label" translatable="yes">Recently searched</property>
+                    <style>
+                      <class name="search_title"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow" id="search_recent_view">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="shadow-type">in</property>
+                    <child>
+                      <object class="GtkViewport">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="hexpand">True</property>
+                        <child>
+                          <object class="GtkListBox" id="search_recent_list">
+                            <property name="visible">True</property>
+                            <property name="can-focus">False</property>
+                            <property name="valign">start</property>
+                            <property name="hexpand">True</property>
+                            <child type="placeholder">
+                              <object class="GtkLabel">
+                                <property name="visible">True</property>
+                                <property name="can-focus">False</property>
+                                <property name="halign">start</property>
+                                <property name="valign">start</property>
+                                <property name="hexpand">True</property>
+                                <property name="label" translatable="yes">No recent searches</property>
+                                <style>
+                                  <class name="placeholder"/>
+                                </style>
+                              </object>
+                            </child>
+                            <style>
+                              <class name="left_pane"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="left_pane"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="left-attach">0</property>
                 <property name="top-attach">1</property>
                 <property name="width">2</property>
               </packing>
-            </child>
-            <child>
-              <placeholder/>
             </child>
             <style>
               <class name="toplevel_left_pane"/>
@@ -483,8 +561,117 @@ To add an application to favorites, right-click on it in the application list.</
               </packing>
             </child>
             <child>
-              <placeholder/>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="valign">start</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkToggleButton" id="favorites_appname_az_toggle">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Sort by application name (A-Z)</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="icon-name">qappmenu-az</property>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="sort_buttons"/>
+                      <class name="flat"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToggleButton" id="favorites_appname_za_toggle">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Sort by application name (Z-A)</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="icon-name">qappmenu-za</property>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="sort_buttons"/>
+                      <class name="flat"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToggleButton" id="favorites_qube_az_toggle">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Sort by qube and application name (A-Z)</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="icon-name">qappmenu-qube-az</property>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="sort_buttons"/>
+                      <class name="flat"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToggleButton" id="favorites_qube_za_toggle">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="tooltip-text" translatable="yes">Sort by qube and application name (Z-A)</property>
+                    <child>
+                      <object class="GtkImage">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="icon-name">qappmenu-qube-za</property>
+                      </object>
+                    </child>
+                    <style>
+                      <class name="sort_buttons"/>
+                      <class name="flat"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">3</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
             </child>
+            <style>
+              <class name="toplevel_left_pane"/>
+            </style>
           </object>
           <packing>
             <property name="position">2</property>
