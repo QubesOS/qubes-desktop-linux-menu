@@ -23,25 +23,26 @@ favorites feature etc.
 """
 
 STATE_DICTIONARY = {
-    'domain-pre-start': 'Transient',
-    'domain-start': 'Running',
-    'domain-start-failed': 'Halted',
-    'domain-paused': 'Paused',
-    'domain-unpaused': 'Running',
-    'domain-shutdown': 'Halted',
-    'domain-pre-shutdown': 'Transient',
-    'domain-shutdown-failed': 'Running'
+    "domain-pre-start": "Transient",
+    "domain-start": "Running",
+    "domain-start-failed": "Halted",
+    "domain-paused": "Paused",
+    "domain-unpaused": "Running",
+    "domain-shutdown": "Halted",
+    "domain-pre-shutdown": "Transient",
+    "domain-shutdown-failed": "Running",
 }
 
-INITIAL_PAGE_FEATURE = 'menu-initial-page'
-SORT_RUNNING_FEATURE = 'menu-sort-running'
-POSITION_FEATURE = 'menu-position'
+INITIAL_PAGE_FEATURE = "menu-initial-page"
+SORT_RUNNING_FEATURE = "menu-sort-running"
+POSITION_FEATURE = "menu-position"
+DISABLE_RECENT_FEATURE = "menu-disable-recent"
 
-FAVORITES_FEATURE = 'menu-favorites'
-DISPOSABLE_PREFIX = '@disp:'
+FAVORITES_FEATURE = "menu-favorites"
+DISPOSABLE_PREFIX = "@disp:"
 
-RESTART_PARAM_LONG = 'restart'
-RESTART_PARAM_SHORT = 'r'
+RESTART_PARAM_LONG = "restart"
+RESTART_PARAM_SHORT = "r"
 
 # Timeout for activation change when hovering over a menu item, in microseconds
 HOVER_TIMEOUT = 15

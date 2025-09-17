@@ -9,7 +9,7 @@
     <property name="icon-name">appmenu-settings-program-icon</property>
     <property name="gravity">center</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkBox" id="main_box">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="margin-start">10</property>
@@ -32,7 +32,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="starting_menu_page_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="spacing">3</property>
@@ -86,7 +86,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="default_menu_position_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="spacing">3</property>
@@ -141,7 +141,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="show_running_on_top_box">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
@@ -187,7 +187,21 @@
           </packing>
         </child>
         <child>
-          <object class="GtkButtonBox">
+          <object class="GtkCheckButton" id="show_recent_apps_check">
+            <property name="label" translatable="yes">Show recent applications/search queries</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">False</property>
+            <property name="draw-indicator">True</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox" id="window_buttons">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="halign">end</property>
@@ -250,7 +264,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">4</property>
+            <property name="position">5</property>
           </packing>
         </child>
       </object>
