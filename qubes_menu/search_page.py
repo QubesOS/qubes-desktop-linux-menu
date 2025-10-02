@@ -18,10 +18,12 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 """Search page for App Menu"""
+import subprocess
 from typing import Dict, Optional, Set, Union
 
 from .desktop_file_manager import DesktopFileManager
-from .custom_widgets import SearchVMRow, AnyVMRow, ControlList, KeynavController
+from .custom_widgets import SearchVMRow, AnyVMRow, ControlList, KeynavController, \
+    HoverListBox, HoverEventBox
 from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -41,6 +43,10 @@ class RecentSearchRow(Gtk.ListBoxRow):
     def __init__(self, search_text: str):
         super().__init__()
         self.search_text = search_text
+
+        self.event_box = HoverEventBox(focus_widget=self)
+        self.add(self.event_box)
+
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
         self.recent_icon = Gtk.Image.new_from_pixbuf(load_icon("qappmenu-search"))
@@ -48,7 +54,7 @@ class RecentSearchRow(Gtk.ListBoxRow):
         self.search_label = Gtk.Label(label=search_text, xalign=0)
         self.hbox.pack_start(self.search_label, False, False, 5)
         self.get_style_context().add_class("app_entry")
-        self.add(self.hbox)
+        self.event_box.add(self.hbox)
         self.show_all()
 
 
@@ -123,6 +129,7 @@ class RecentSearchManager:
 
     def _row_clicked(self, _widget, row: RecentSearchRow):
         self._deselect_others()
+        self.recent_list_box.select_row(None)
         self.search_box.set_text(row.search_text)
 
 
@@ -205,6 +212,7 @@ class RecentAppsManager:
 
     def _row_clicked(self, _widget, row: SearchAppEntry):
         self._deselect_others()
+        self.recent_list_box.select_row(None)
         if hasattr(row, "app_info"):
             row.run_app(row.app_info.vm)
 
@@ -295,12 +303,25 @@ class SearchPage(MenuPage):
             widgets_in_order=[self.app_list, self.control_list]
         )
 
+        self.settings_buttons = [
+            builder.get_object("search_settings_button_1"),
+            builder.get_object("search_settings_button_2")
+        ]
+
+        for button in self.settings_buttons:
+            button.connect('clicked', self._run_settings)
+
     def _app_clicked(self, _widget, row):
         self.recent_search_manager.add_new_recent_search(self.search_entry.get_text())
         if self.selected_vm_row:
             row.run_app(self.selected_vm_row.vm_entry.vm)
         elif hasattr(row, "app_info"):
             row.run_app(row.app_info.vm)
+
+    def _run_settings(self, widget, *_args):
+        subprocess.Popen(["qubes-appmenu-settings"], stdin=subprocess.DEVNULL)
+        widget.get_toplevel().get_application().hide_menu()
+
 
     def _app_info_callback(self, app_info):
         """
