@@ -511,7 +511,7 @@ class SearchPage(MenuPage):
         else:
             self.selected_vm_row = row
             self.control_list.show()
-            self.control_list.update_visibility(row.vm_entry.power_state)
+            self.control_list.update_visibility(row.vm_entry, apps_tab=False)
             self.control_list.unselect_all()
         self.app_list.invalidate_filter()
         self.app_list.select_row(None)

@@ -269,8 +269,9 @@ class SettingsEntry(Gtk.ListBoxRow):
             vm_entry.settings_desktop_file_name
         )
 
-    def update_state(self, state):  # pylint: disable=unused-argument
+    def update_state(self, vm_entry: VMEntry, apps_tab: bool = False):
         """Update state: should be always visible."""
+        # pylint: disable=unused-argument
         self.show_all()
 
     def show_menu(self, _widget, event):
@@ -449,7 +450,7 @@ class ControlRow(Gtk.ListBoxRow):
         self.show_all()
         self.command = None
 
-    def update_state(self, state):
+    def update_state(self, vm_entry: VMEntry):
         """
         Update own state (visibility/text/sensitivity) based on provided VM
         state.
@@ -497,35 +498,49 @@ class StartControlItem(ControlRow):
         if event.button == 3:
             self.menu.popup_at_pointer(None)  # None means current event
 
-    def update_state(self, state):
+    def update_state(self, vm_entry: VMEntry, apps_tab: bool = False):
         """
         Update own state (visibility/text/sensitivity) based on provided VM
         state.
         """
-        self.state = state
-        if state == "Running":
-            self.row_label.set_label("Shutdown qube")
-            self.command = "qvm-shutdown"
+        vm_name = vm_entry.vm_name
+        is_dispvm_template = vm_entry.is_dispvm_template
+        self.state = vm_entry.power_state
+
+        if (
+            vm_name == "dom0"
+            or (apps_tab and is_dispvm_template and self.state != "Running")
+        ):
+            self.row_label.set_label(" ")
+            self.set_sensitive(False)
+            self.command = None
+            self.icon.hide()
+            return
+
+        self.set_sensitive(True)
+        self.icon.show()
+        if self.state == "Halted" and not (is_dispvm_template and apps_tab):
+            self.row_label.set_label("Start qube")
+            self.command = "qvm-start"
             self.icon.set_from_pixbuf(
-                load_icon("qappmenu-shutdown", size=None, pixel_size=15)
+                load_icon("qappmenu-start", size=None, pixel_size=15)
             )
             return
-        if state == "Transient":
+        if self.state == "Transient":
             self.row_label.set_label("Kill qube")
             self.command = "qvm-kill"
             self.icon.set_from_pixbuf(
                 load_icon("qappmenu-shutdown", size=None, pixel_size=15)
             )
             return
-        if state == "Halted":
-            self.row_label.set_label("Start qube")
-            self.command = "qvm-start"
+        if self.state == "Running":
+            self.row_label.set_label("Shutdown qube")
+            self.command = "qvm-shutdown"
             self.icon.set_from_pixbuf(
-                load_icon("qappmenu-start", size=None, pixel_size=15)
+                load_icon("qappmenu-shutdown", size=None, pixel_size=15)
             )
-
             return
-        if state == "Paused":
+        if self.state == "Paused":
             self.row_label.set_label("Unpause qube")
             self.command = "qvm-unpause"
             self.icon.set_from_pixbuf(
@@ -544,13 +559,16 @@ class PauseControlItem(ControlRow):
         self.icon.set_from_pixbuf(load_icon("qappmenu-pause", size=None, pixel_size=15))
         self.state = None
 
-    def update_state(self, state):
+    def update_state(self, vm_entry: VMEntry, apps_tab: bool = False):
         """
         Update own state (visibility/text/sensitivity) based on provided VM
         state.
         """
-        self.state = state
-        if state == "Running":
+        # pylint: disable=unused-argument
+        vm_name = vm_entry.vm_name
+        self.state = vm_entry.power_state
+
+        if self.state == "Running" and vm_name != "dom0":
             self.row_label.set_label("Pause qube")
             self.set_sensitive(True)
             self.command = "qvm-pause"
@@ -581,12 +599,12 @@ class ControlList(Gtk.ListBox):
         self.add(self.start_item)
         self.add(self.pause_item)
 
-    def update_visibility(self, state):
+    def update_visibility(self, vm_entry: VMEntry, apps_tab: bool = False):
         """
         Update children's state based on provided VM state.
         """
         for row in self.get_children():
-            row.update_state(state)
+            row.update_state(vm_entry, apps_tab)
 
 
 class KeynavController:
