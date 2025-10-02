@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Exec=sh -c "systemctl --user import-environment XDG_CURRENT_DESKTOP XDG_DATA_HOME XDG_CONFIG_HOME XDG_STATE_HOME XDG_DATA_DIRS XDG_CONFIG_DIRS XDG_CACHE_HOME XDG_RUNTIME_DIR XDG_SESSION_CLASS XDG_SESSION_DESKTOP XDG_SESSION_ID XDG_SESSION_PATH XDG_SESSION_TYPE; systemctl --user start qubes-app-menu"
+Exec=/usr/libexec/qubes-app-menu-start
 Icon=qubes-manager
 Terminal=false
 Name=Qubes Application Menu
 GenericName=Qubes Application Menu
 StartupNotify=false
-Hidden=False
+Hidden=false
 NotShowIn=X-QUBES

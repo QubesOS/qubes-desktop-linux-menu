@@ -31,6 +31,8 @@ install-icons:
 	cp icons/settings-*.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/
 
 install-autostart:
+	mkdir -p $(DESTDIR)/usr/libexec
+	install -m 0755 autostart/qubes-app-menu-start $(DESTDIR)/usr/libexec
 	mkdir -p $(DESTDIR)/etc/xdg/autostart
 	cp autostart/qubes-app-menu.desktop $(DESTDIR)/etc/xdg/autostart
 	mkdir -p $(DESTDIR)/usr/share/applications

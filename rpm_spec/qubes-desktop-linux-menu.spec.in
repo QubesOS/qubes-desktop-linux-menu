@@ -123,6 +123,8 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 %{python3_sitelib}/qubes_menu_settings/menu_settings.glade
 %{python3_sitelib}/qubes_menu_settings/menu_settings.css
 
+/usr/libexec/qubes-app-menu-start
+
 %{_bindir}/qubes-app-menu
 %{_bindir}/qubes-appmenu-settings
 /usr/share/icons/hicolor/scalable/apps/qappmenu-dispvm-child.svg
