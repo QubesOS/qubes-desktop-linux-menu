@@ -36,7 +36,7 @@ import qubesadmin.events
 
 from . import constants
 
-logger = logging.getLogger('qubes-appmenu')
+logger = logging.getLogger("qubes-appmenu")
 
 
 def exec_parse(desktop_entry: xdg.DesktopEntry.DesktopEntry):
@@ -47,13 +47,24 @@ def exec_parse(desktop_entry: xdg.DesktopEntry.DesktopEntry):
     split_str = shlex.split(desktop_entry.getExec())
     result = []
     for s in split_str:
-        if s in ['%f', '%F', '%u', '%U', '%d', '%D', '%n', '%N', '%v',
-                 '%m', '%k']:
+        if s in [
+            "%f",
+            "%F",
+            "%u",
+            "%U",
+            "%d",
+            "%D",
+            "%n",
+            "%N",
+            "%v",
+            "%m",
+            "%k",
+        ]:
             continue
-        if s == '%i' and desktop_entry.getIcon():
-            result.extend(['--icon', desktop_entry.getIcon()])
+        if s == "%i" and desktop_entry.getIcon():
+            result.extend(["--icon", desktop_entry.getIcon()])
             continue
-        if s == '%c':
+        if s == "%c":
             result.append(desktop_entry.getName())
             continue
         result.append(s)
@@ -64,6 +75,7 @@ class ApplicationInfo:
     """
     Class representing data within a single .desktop file.
     """
+
     def __init__(self, qapp, file_path):
         self.qapp: qubesadmin.Qubes = qapp
         self.file_path: PosixPath = file_path
@@ -81,20 +93,20 @@ class ApplicationInfo:
 
     def load_data(self, entry):
         """Fill own data with information from xdg.DesktopEntry provided."""
-        vm_name = entry.get('X-Qubes-VmName') or None
+        vm_name = entry.get("X-Qubes-VmName") or None
         try:
             self.vm = self.qapp.domains[vm_name]
         except KeyError:
             self.vm = None
 
-        self.app_name = entry.getName() or ''
+        self.app_name = entry.getName() or ""
         if self.vm:
             self.app_name = self.app_name.split(": ", 1)[-1]
         self.sort_name = str(self.app_name).lower()
         self.vm_icon = self.vm.icon if self.vm else None
         self.app_icon = entry.getIcon()
-        self.disposable = bool(entry.get('X-Qubes-NonDispvmExec'))
-        self.entry_name = entry.get('X-Qubes-AppName') or self.file_path.name
+        self.disposable = bool(entry.get("X-Qubes-NonDispvmExec"))
+        self.entry_name = entry.get("X-Qubes-AppName") or self.file_path.name
         if self.disposable:
             self.entry_name = constants.DISPOSABLE_PREFIX + self.entry_name
         self.exec = exec_parse(entry)
@@ -111,35 +123,40 @@ class ApplicationInfo:
          their own .desktop files."""
         command = self.exec
         if vm and not self.vm:
-            logger.warning('Unexpected command: cannot run local'
-                           ' application for a non-local VM: %s', vm)
+            logger.warning(
+                "Unexpected command: cannot run local"
+                " application for a non-local VM: %s",
+                vm,
+            )
             return command
         if vm and str(self.vm) != str(vm):
             # replace name of the old VM - used for opening apps from DVM
             # template in their child dispvm
             if len(command) < 6 or command[5] != str(self.vm):
-                logger.error(
-                    'Unexpected command for a disposable VM: %s', command)
+                logger.error("Unexpected command for a disposable VM: %s", command)
                 return []
             return command[:5] + [str(vm)] + command[6:]
         return command
 
     def is_qubes_specific(self):
         """Check if the current file represents a qubes-generated app."""
-        return 'X-Qubes-VM' in self.categories
+        return "X-Qubes-VM" in self.categories
 
 
 class DesktopFileManager:
     """
     Class that loads, caches and observes changes in .desktop files.
     """
+
     desktop_dirs = [
-        Path(xdg.BaseDirectory.xdg_data_home) / 'applications',
-        Path('/usr/share/applications')]
+        Path(xdg.BaseDirectory.xdg_data_home) / "applications",
+        Path("/usr/share/applications"),
+    ]
 
     # pylint: disable=invalid-name
     class EventProcessor(pyinotify.ProcessEvent):
         """pyinotify helper class"""
+
         def __init__(self, parent):
             self.parent = parent
             super().__init__()
@@ -183,8 +200,7 @@ class DesktopFileManager:
 
         # directories used by Qubes menu tools, not necessarily all possible
         # XDG directories
-        self.current_environments = \
-            os.environ.get('XDG_CURRENT_DESKTOP', '').split(':')
+        self.current_environments = os.environ.get("XDG_CURRENT_DESKTOP", "").split(":")
 
         self.app_entries: Dict[Path, ApplicationInfo] = {}
 
@@ -250,14 +266,13 @@ class DesktopFileManager:
                 self.remove_file(path)
                 return
 
-        if not path.name.endswith('.desktop'):
+        if not path.name.endswith(".desktop"):
             return
 
         try:
             entry = xdg.DesktopEntry.DesktopEntry(path)
         except Exception as ex:  # pylint: disable=broad-except
-            logger.warning(
-                'Cannot load desktop entry file %s: %s', path, str(ex))
+            logger.warning("Cannot load desktop entry file %s: %s", path, str(ex))
             self.remove_file(path)
             return
 
@@ -286,14 +301,12 @@ class DesktopFileManager:
         if entry.getNoDisplay():
             return False
         if entry.getOnlyShowIn():
-            if not set(entry.getOnlyShowIn()).intersection(
-                    self.current_environments):
+            if not set(entry.getOnlyShowIn()).intersection(self.current_environments):
                 return False
         if entry.getNotShowIn():
-            if set(entry.getNotShowIn()).intersection(
-                    self.current_environments):
+            if set(entry.getNotShowIn()).intersection(self.current_environments):
                 return False
-        if entry.get('X-AppStream-Ignore'):
+        if entry.get("X-AppStream-Ignore"):
             return False
         return True
 
@@ -304,17 +317,23 @@ class DesktopFileManager:
         self.watch_manager = pyinotify.WatchManager()
 
         # pylint: disable=no-member
-        mask = pyinotify.IN_CREATE | pyinotify.IN_DELETE | \
-               pyinotify.IN_MODIFY | pyinotify.IN_MOVED_FROM | \
-               pyinotify.IN_MOVED_TO
+        mask = (
+            pyinotify.IN_CREATE
+            | pyinotify.IN_DELETE
+            | pyinotify.IN_MODIFY
+            | pyinotify.IN_MOVED_FROM
+            | pyinotify.IN_MOVED_TO
+        )
 
         loop = asyncio.get_event_loop()
 
         self.notifier = pyinotify.AsyncioNotifier(
-            self.watch_manager, loop,
-            default_proc_fun=DesktopFileManager.EventProcessor(self))
+            self.watch_manager,
+            loop,
+            default_proc_fun=DesktopFileManager.EventProcessor(self),
+        )
 
         for path in self.desktop_dirs:
             self.watches.append(
-                self.watch_manager.add_watch(
-                    str(path), mask, rec=True, auto_add=True))
+                self.watch_manager.add_watch(str(path), mask, rec=True, auto_add=True)
+            )

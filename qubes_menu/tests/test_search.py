@@ -29,8 +29,9 @@ def test_search(test_desktop_file_path, test_qapp, test_builder):
     dispatcher = MockDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
 
-    with mock.patch.object(DesktopFileManager, 'desktop_dirs',
-                           [test_desktop_file_path]):
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
         desktop_file_manager = DesktopFileManager(test_qapp)
 
     search_page = SearchPage(vm_manager, test_builder, desktop_file_manager)
@@ -38,55 +39,99 @@ def test_search(test_desktop_file_path, test_qapp, test_builder):
     assert search_page.search_entry.get_sensitive()
 
     # nothing should be visible
-    assert len([row for row in search_page.app_list.get_children()
-                if search_page._is_app_fitting(row)]) == 0
+    assert (
+        len(
+            [
+                row
+                for row in search_page.app_list.get_children()
+                if search_page._is_app_fitting(row)
+            ]
+        )
+        == 0
+    )
 
     # try to find firefox
-    search_page.search_entry.set_text('firefox')
+    search_page.search_entry.set_text("firefox")
 
-    found_entries = [row for row in search_page.app_list.get_children()
-                if search_page._is_app_fitting(row)]
+    found_entries = [
+        row
+        for row in search_page.app_list.get_children()
+        if search_page._is_app_fitting(row)
+    ]
     assert len(found_entries) == 1
-    assert found_entries[0].app_info.app_name == 'Firefox'
+    assert found_entries[0].app_info.app_name == "Firefox"
 
-    search_page.search_entry.set_text('')
+    search_page.search_entry.set_text("")
 
     # nothing should be visible
-    assert len([row for row in search_page.app_list.get_children()
-                if search_page._is_app_fitting(row)]) == 0
+    assert (
+        len(
+            [
+                row
+                for row in search_page.app_list.get_children()
+                if search_page._is_app_fitting(row)
+            ]
+        )
+        == 0
+    )
 
     # check for no problems with caps
-    search_page.search_entry.set_text('xTeRm')
+    search_page.search_entry.set_text("xTeRm")
 
-    found_entries = [row for row in search_page.app_list.get_children()
-                if search_page._is_app_fitting(row)]
+    found_entries = [
+        row
+        for row in search_page.app_list.get_children()
+        if search_page._is_app_fitting(row)
+    ]
     assert len(found_entries) == 1
-    assert found_entries[0].app_info.app_name == 'XTerm'
+    assert found_entries[0].app_info.app_name == "XTerm"
 
-    search_page.search_entry.set_text('')
+    search_page.search_entry.set_text("")
 
     # nothing should be visible
-    assert len([row for row in search_page.app_list.get_children()
-                if search_page._is_app_fitting(row)]) == 0
+    assert (
+        len(
+            [
+                row
+                for row in search_page.app_list.get_children()
+                if search_page._is_app_fitting(row)
+            ]
+        )
+        == 0
+    )
 
     # try to use keywords in searching
-    search_page.search_entry.set_text('dragons')
+    search_page.search_entry.set_text("dragons")
 
-    found_entries = [row for row in search_page.app_list.get_children()
-                     if search_page._is_app_fitting(row)]
+    found_entries = [
+        row
+        for row in search_page.app_list.get_children()
+        if search_page._is_app_fitting(row)
+    ]
     assert len(found_entries) == 1
-    assert found_entries[0].app_info.app_name == 'Firefox'
+    assert found_entries[0].app_info.app_name == "Firefox"
 
-    search_page.search_entry.set_text('')
+    search_page.search_entry.set_text("")
 
     # nothing should be visible
-    assert len([row for row in search_page.app_list.get_children()
-                if search_page._is_app_fitting(row)]) == 0
+    assert (
+        len(
+            [
+                row
+                for row in search_page.app_list.get_children()
+                if search_page._is_app_fitting(row)
+            ]
+        )
+        == 0
+    )
 
     # find a dom0 app
-    search_page.search_entry.set_text('dom0')
+    search_page.search_entry.set_text("dom0")
 
-    found_entries = [row for row in search_page.app_list.get_children()
-                if search_page._is_app_fitting(row)]
+    found_entries = [
+        row
+        for row in search_page.app_list.get_children()
+        if search_page._is_app_fitting(row)
+    ]
     assert len(found_entries) == 1
-    assert found_entries[0].app_info.app_name == 'Xfce Appearance Settings'
+    assert found_entries[0].app_info.app_name == "Xfce Appearance Settings"

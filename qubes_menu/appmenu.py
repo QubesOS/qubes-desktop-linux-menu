@@ -23,35 +23,43 @@ from .favorites_page import FavoritesPage
 from .custom_widgets import SelfAwareMenu
 from .vm_manager import VMManager
 from .page_handler import MenuPage
-from .constants import INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE, \
-        POSITION_FEATURE
+from .constants import (
+    INITIAL_PAGE_FEATURE,
+    SORT_RUNNING_FEATURE,
+    POSITION_FEATURE,
+)
 
 import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('GtkLayerShell', '0.1')
+
+gi.require_version("Gtk", "3.0")
+gi.require_version("GtkLayerShell", "0.1")
 from gi.repository import Gtk, Gdk, GLib, Gio, GtkLayerShell
 
 try:
     from gi.events import GLibEventLoopPolicy
+
     asyncio.set_event_loop_policy(GLibEventLoopPolicy())
     HAS_GBULB = False
 except ImportError:
     import gbulb
+
     gbulb.install()
     HAS_GBULB = True
 
-PAGE_LIST = [
-    "search_page", "app_page", "favorites_page", "settings_page"
-]
+PAGE_LIST = ["search_page", "app_page", "favorites_page", "settings_page"]
 
 POSITION_LIST = [
-    "mouse", "top-left", "top-right", "bottom-left", "bottom-right"
+    "mouse",
+    "top-left",
+    "top-right",
+    "bottom-left",
+    "bottom-right",
 ]
 
-logger = logging.getLogger('qubes-appmenu')
+logger = logging.getLogger("qubes-appmenu")
 
-def load_theme(widget: Gtk.Widget, light_theme_path: str,
-               dark_theme_path: str):
+
+def load_theme(widget: Gtk.Widget, light_theme_path: str, dark_theme_path: str):
     """
     Load a dark or light theme to current screen, based on widget's
     current (system) defaults.
@@ -65,18 +73,20 @@ def load_theme(widget: Gtk.Widget, light_theme_path: str,
     provider = Gtk.CssProvider()
     provider.load_from_path(path)
     Gtk.StyleContext.add_provider_for_screen(
-        screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    )
 
 
 def is_theme_light(widget):
     """Check if current theme is light or dark"""
     style_context: Gtk.StyleContext = widget.get_style_context()
     background_color: Gdk.RGBA = style_context.get_background_color(
-        Gtk.StateType.NORMAL)
-    text_color: Gdk.RGBA = style_context.get_color(
-        Gtk.StateType.NORMAL)
-    background_intensity = background_color.red + \
-                           background_color.blue + background_color.green
+        Gtk.StateType.NORMAL
+    )
+    text_color: Gdk.RGBA = style_context.get_color(Gtk.StateType.NORMAL)
+    background_intensity = (
+        background_color.red + background_color.blue + background_color.green
+    )
     text_intensity = text_color.red + text_color.blue + text_color.green
 
     return text_intensity < background_intensity
@@ -86,13 +96,16 @@ class AppMenu(Gtk.Application):
     """
     Main Gtk.Application for appmenu.
     """
+
     def __init__(self, qapp, dispatcher):
         """
         :param qapp: qubesadmin.Qubes object
         :param dispatcher: qubesadmin.vm.EventsDispatcher
         """
-        super().__init__(application_id='org.qubesos.appmenu',
-                         flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,)
+        super().__init__(
+            application_id="org.qubesos.appmenu",
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+        )
         self.qapp = qapp
         self.dispatcher = dispatcher
         self.primary = False
@@ -122,7 +135,7 @@ class AppMenu(Gtk.Application):
         self.highlight_tag: Optional[str] = None
 
         self.tasks = []
-        self.appmenu_position: str = 'mouse'
+        self.appmenu_position: str = "mouse"
 
     def _add_cli_options(self):
         self.add_main_option(
@@ -135,12 +148,12 @@ class AppMenu(Gtk.Application):
         )
 
         self.add_main_option(
-            'page',
-            ord('p'),
+            "page",
+            ord("p"),
             GLib.OptionFlags.NONE,
             GLib.OptionArg.INT,
             "Open menu at selected page; 1 is the apps page 1 is the favorites "
-            "page and 2 is the system tools page"
+            "page and 2 is the system tools page",
         )
 
         self.add_main_option(
@@ -187,20 +200,21 @@ class AppMenu(Gtk.Application):
             dbus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
             proxy = Gio.DBusProxy.new_sync(
                 dbus,  # dbus
-                Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS |
-                Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES,  # flags
+                Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS
+                | Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES,  # flags
                 None,  # info
                 "org.kde.LogoutPrompt",  # bus name
                 "/LogoutPrompt",  # object_path
-                "org.kde.LogoutPrompt")  # interface
+                "org.kde.LogoutPrompt",
+            )  # interface
             proxy.call(
-                'promptAll',  # method name
+                "promptAll",  # method name
                 None,  # parameters
                 0,  # flags
-                0  # timeout_msec
+                0,  # timeout_msec
             )
         else:
-            subprocess.Popen('xfce4-session-logout', stdin=subprocess.DEVNULL)
+            subprocess.Popen("xfce4-session-logout", stdin=subprocess.DEVNULL)
 
     def reposition(self):
         """
@@ -208,46 +222,59 @@ class AppMenu(Gtk.Application):
         """
         assert self.main_window
         match self.appmenu_position:
-            case 'top-left':
+            case "top-left":
                 if self.layer_shell:
-                    GtkLayerShell.set_anchor(self.main_window,
-                                             GtkLayerShell.Edge.LEFT, True)
-                    GtkLayerShell.set_anchor(self.main_window,
-                                             GtkLayerShell.Edge.TOP, True)
+                    GtkLayerShell.set_anchor(
+                        self.main_window, GtkLayerShell.Edge.LEFT, True
+                    )
+                    GtkLayerShell.set_anchor(
+                        self.main_window, GtkLayerShell.Edge.TOP, True
+                    )
                 else:
                     self.main_window.move(0, 0)
-            case 'top-right':
+            case "top-right":
                 if self.layer_shell:
-                    GtkLayerShell.set_anchor(self.main_window,
-                                             GtkLayerShell.Edge.RIGHT, True)
-                    GtkLayerShell.set_anchor(self.main_window,
-                                             GtkLayerShell.Edge.TOP, True)
+                    GtkLayerShell.set_anchor(
+                        self.main_window, GtkLayerShell.Edge.RIGHT, True
+                    )
+                    GtkLayerShell.set_anchor(
+                        self.main_window, GtkLayerShell.Edge.TOP, True
+                    )
                 else:
                     self.main_window.move(
-                        self.main_window.get_screen().get_width() -
-                        self.main_window.get_size().width, 0)
-            case 'bottom-left':
+                        self.main_window.get_screen().get_width()
+                        - self.main_window.get_size().width,
+                        0,
+                    )
+            case "bottom-left":
                 if self.layer_shell:
-                    GtkLayerShell.set_anchor(self.main_window,
-                                             GtkLayerShell.Edge.LEFT, True)
-                    GtkLayerShell.set_anchor(self.main_window,
-                                             GtkLayerShell.Edge.BOTTOM, True)
-                else:
-                    self.main_window.move(0,
-                        self.main_window.get_screen().get_height() -
-                        self.main_window.get_size().height)
-            case 'bottom-right':
-                if self.layer_shell:
-                    GtkLayerShell.set_anchor(self.main_window,
-                                             GtkLayerShell.Edge.RIGHT, True)
-                    GtkLayerShell.set_anchor(self.main_window,
-                                             GtkLayerShell.Edge.BOTTOM, True)
+                    GtkLayerShell.set_anchor(
+                        self.main_window, GtkLayerShell.Edge.LEFT, True
+                    )
+                    GtkLayerShell.set_anchor(
+                        self.main_window, GtkLayerShell.Edge.BOTTOM, True
+                    )
                 else:
                     self.main_window.move(
-                        self.main_window.get_screen().get_width() -
-                        self.main_window.get_size().width,
-                        self.main_window.get_screen().get_height() -
-                        self.main_window.get_size().height)
+                        0,
+                        self.main_window.get_screen().get_height()
+                        - self.main_window.get_size().height,
+                    )
+            case "bottom-right":
+                if self.layer_shell:
+                    GtkLayerShell.set_anchor(
+                        self.main_window, GtkLayerShell.Edge.RIGHT, True
+                    )
+                    GtkLayerShell.set_anchor(
+                        self.main_window, GtkLayerShell.Edge.BOTTOM, True
+                    )
+                else:
+                    self.main_window.move(
+                        self.main_window.get_screen().get_width()
+                        - self.main_window.get_size().width,
+                        self.main_window.get_screen().get_height()
+                        - self.main_window.get_size().height,
+                    )
 
     def __present(self) -> None:
         assert self.main_window is not None
@@ -264,12 +291,14 @@ class AppMenu(Gtk.Application):
         assert max_height > 0
         # The default for layer shell is no keyboard input.
         # Explicitly request exclusive access to the keyboard.
-        GtkLayerShell.set_keyboard_mode(self.main_window,
-                                        GtkLayerShell.KeyboardMode.EXCLUSIVE)
+        GtkLayerShell.set_keyboard_mode(
+            self.main_window, GtkLayerShell.KeyboardMode.EXCLUSIVE
+        )
         # Work around https://github.com/wmww/gtk-layer-shell/issues/167
         # by explicitly setting the window size.
-        self.main_window.set_size_request(current_width,
-                                          min(current_height, max_height))
+        self.main_window.set_size_request(
+            current_width, min(current_height, max_height)
+        )
 
     def do_activate(self, *args, **kwargs):
         """
@@ -295,13 +324,14 @@ class AppMenu(Gtk.Application):
                 if not self.start_in_background:
                     # The default for layer shell is no keyboard input.
                     # Explicitly request exclusive access to the keyboard.
-                    GtkLayerShell.set_keyboard_mode(self.main_window,
-                                        GtkLayerShell.KeyboardMode.EXCLUSIVE)
+                    GtkLayerShell.set_keyboard_mode(
+                        self.main_window, GtkLayerShell.KeyboardMode.EXCLUSIVE
+                    )
                 # Work around https://github.com/wmww/gtk-layer-shell/issues/167
                 # by explicitly setting the window size.
                 self.main_window.set_size_request(
-                        current_width,
-                        min(current_height, max_height))
+                    current_width, min(current_height, max_height)
+                )
             elif current_height > max_height:
                 self.main_window.resize(current_height, max_height)
 
@@ -314,8 +344,7 @@ class AppMenu(Gtk.Application):
             ]
         else:
             if self.main_notebook:
-                self.main_notebook.set_current_page(
-                    PAGE_LIST.index(self.initial_page))
+                self.main_notebook.set_current_page(PAGE_LIST.index(self.initial_page))
             if self.main_window:
                 self.main_window.set_keep_above(True)
                 if self.main_window.is_visible() and not self.keep_visible:
@@ -330,7 +359,7 @@ class AppMenu(Gtk.Application):
         app or clicking outside the menu.
         """
         # reset search tab
-        self.handlers['search_page'].initialize_page()
+        self.handlers["search_page"].initialize_page()
         if not self.keep_visible and self.main_window:
             self.main_window.hide()
 
@@ -344,7 +373,7 @@ class AppMenu(Gtk.Application):
         if event.keyval == Gdk.KEY_Escape:
             self.hide_menu()
         if event.keyval == Gdk.KEY_space:
-            search_page = self.handlers.get('search_page')
+            search_page = self.handlers.get("search_page")
             if isinstance(search_page, SearchPage):
                 p = search_page.search_entry.get_position()
                 search_page.search_entry.insert_text(" ", p)
@@ -369,8 +398,7 @@ class AppMenu(Gtk.Application):
         for page in self.handlers.values():
             page.initialize_page()
         if self.main_notebook:
-            self.main_notebook.set_current_page(
-                PAGE_LIST.index(self.initial_page))
+            self.main_notebook.set_current_page(PAGE_LIST.index(self.initial_page))
 
     def perform_setup(self):
         """
@@ -380,59 +408,70 @@ class AppMenu(Gtk.Application):
         # build the frontend
         self.builder = Gtk.Builder()
 
-        self.fav_app_list = self.builder.get_object('fav_app_list')
-        self.sys_tools_list = self.builder.get_object('sys_tools_list')
+        self.fav_app_list = self.builder.get_object("fav_app_list")
+        self.sys_tools_list = self.builder.get_object("sys_tools_list")
 
-        glade_path = (importlib.resources.files('qubes_menu') /
-                      'qubes-menu.glade')
+        glade_path = importlib.resources.files("qubes_menu") / "qubes-menu.glade"
         with importlib.resources.as_file(glade_path) as path:
             self.builder.add_from_file(str(path))
 
-        self.main_window = self.builder.get_object('main_window')
+        self.main_window = self.builder.get_object("main_window")
         self.layer_shell = GtkLayerShell.is_supported()
-        self.main_notebook = self.builder.get_object('main_notebook')
+        self.main_notebook = self.builder.get_object("main_notebook")
 
         self.main_window.set_events(Gdk.EventMask.FOCUS_CHANGE_MASK)
-        self.main_window.connect('focus-out-event', self._focus_out)
-        self.main_window.connect('key_press_event', self._key_press)
+        self.main_window.connect("focus-out-event", self._focus_out)
+        self.main_window.connect("key_press_event", self._key_press)
         self.add_window(self.main_window)
         self.desktop_file_manager = DesktopFileManager(self.qapp)
         self.vm_manager = VMManager(self.qapp, self.dispatcher)
 
         self.handlers = {
-            'search_page': SearchPage(self.vm_manager, self.builder,
-                                      self.desktop_file_manager),
-            'app_page': AppPage(self.vm_manager, self.builder,
-                                self.desktop_file_manager),
-            'favorites_page': FavoritesPage(self.qapp, self.builder,
-                                            self.desktop_file_manager,
-                                            self.dispatcher, self.vm_manager),
-            'settings_page': SettingsPage(self.qapp, self.builder,
-                                          self.desktop_file_manager,
-                                          self.dispatcher)}
-        self.power_button = self.builder.get_object('power_button')
-        self.power_button.connect('clicked', self._do_power_button)
-        self.main_notebook.connect('switch-page', self._handle_page_switch)
-        self.connect('shutdown', self.do_shutdown)
+            "search_page": SearchPage(
+                self.vm_manager, self.builder, self.desktop_file_manager
+            ),
+            "app_page": AppPage(
+                self.vm_manager, self.builder, self.desktop_file_manager
+            ),
+            "favorites_page": FavoritesPage(
+                self.qapp,
+                self.builder,
+                self.desktop_file_manager,
+                self.dispatcher,
+                self.vm_manager,
+            ),
+            "settings_page": SettingsPage(
+                self.qapp,
+                self.builder,
+                self.desktop_file_manager,
+                self.dispatcher,
+            ),
+        }
+        self.power_button = self.builder.get_object("power_button")
+        self.power_button.connect("clicked", self._do_power_button)
+        self.main_notebook.connect("switch-page", self._handle_page_switch)
+        self.connect("shutdown", self.do_shutdown)
 
         self.main_window.add_events(Gdk.EventMask.KEY_PRESS_MASK)
-        self.main_window.connect('key_press_event', self._key_pressed)
+        self.main_window.connect("key_press_event", self._key_pressed)
 
         self.load_style()
-        Gtk.Settings.get_default().connect('notify::gtk-theme-name',
-                                           self.load_style)
+        Gtk.Settings.get_default().connect("notify::gtk-theme-name", self.load_style)
 
         self.load_settings()
 
         # monitor for settings changes
-        for feature in [INITIAL_PAGE_FEATURE, SORT_RUNNING_FEATURE, \
-                POSITION_FEATURE]:
+        for feature in [
+            INITIAL_PAGE_FEATURE,
+            SORT_RUNNING_FEATURE,
+            POSITION_FEATURE,
+        ]:
             self.dispatcher.add_handler(
-                'domain-feature-set:' + feature,
-                self._update_settings)
+                "domain-feature-set:" + feature, self._update_settings
+            )
             self.dispatcher.add_handler(
-                'domain-feature-delete:' + feature,
-                self._update_settings)
+                "domain-feature-delete:" + feature, self._update_settings
+            )
 
         if self.layer_shell:
             GtkLayerShell.init_for_window(self.main_window)
@@ -440,28 +479,31 @@ class AppMenu(Gtk.Application):
 
     def load_style(self, *_args):
         """Load appropriate CSS stylesheet and associated properties."""
-        light_ref = (importlib.resources.files('qubes_menu') /
-                     'qubes-menu-light.css')
-        dark_ref = (importlib.resources.files('qubes_menu') /
-                    'qubes-menu-dark.css')
+        light_ref = importlib.resources.files("qubes_menu") / "qubes-menu-light.css"
+        dark_ref = importlib.resources.files("qubes_menu") / "qubes-menu-dark.css"
 
-        with importlib.resources.as_file(light_ref) as light_path, \
-                importlib.resources.as_file(dark_ref) as dark_path:
-            load_theme(self.main_window,
-                       light_theme_path=str(light_path),
-                       dark_theme_path=str(dark_path))
+        with (
+            importlib.resources.as_file(light_ref) as light_path,
+            importlib.resources.as_file(dark_ref) as dark_path,
+        ):
+            load_theme(
+                self.main_window,
+                light_theme_path=str(light_path),
+                dark_theme_path=str(dark_path),
+            )
 
         label = Gtk.Label()
         style_context: Gtk.StyleContext = label.get_style_context()
-        style_context.add_class('search_highlight')
+        style_context.add_class("search_highlight")
         bg_color = style_context.get_background_color(Gtk.StateFlags.NORMAL)
         fg_color = style_context.get_color(Gtk.StateFlags.NORMAL)
 
         # This converts a Gdk.RGBA color to a hex representation liked by span
         # tags in Pango
-        self.highlight_tag = \
-            f'<span background="{self._rgba_color_to_hex(bg_color)}" ' \
+        self.highlight_tag = (
+            f'<span background="{self._rgba_color_to_hex(bg_color)}" '
             f'color="{self._rgba_color_to_hex(fg_color)}">'
+        )
 
     def load_settings(self):
         """Load settings from dom0 features."""
@@ -472,8 +514,7 @@ class AppMenu(Gtk.Application):
             initial_page = "app_page"
         self.initial_page = initial_page
 
-        self.sort_running = \
-            bool(local_vm.features.get(SORT_RUNNING_FEATURE, False))
+        self.sort_running = bool(local_vm.features.get(SORT_RUNNING_FEATURE, False))
 
         position = local_vm.features.get(POSITION_FEATURE, "mouse")
         if position not in POSITION_LIST:
@@ -494,14 +535,17 @@ class AppMenu(Gtk.Application):
 
     @staticmethod
     def _rgba_color_to_hex(color: Gdk.RGBA):
-        return '#' + ''.join([f'{int(c*255):0>2x}'
-                              for c in (color.red, color.green, color.blue)])
+        return "#" + "".join(
+            [f"{int(c*255):0>2x}" for c in (color.red, color.green, color.blue)]
+        )
 
     def _key_pressed(self, _widget, event_key: Gdk.EventKey):
         """If user presses a non-control key, move to search."""
-        if Gdk.keyval_to_unicode(event_key.keyval) > 32 or \
-                event_key.keyval == Gdk.KEY_BackSpace:
-            search_page = self.handlers.get('search_page')
+        if (
+            Gdk.keyval_to_unicode(event_key.keyval) > 32
+            or event_key.keyval == Gdk.KEY_BackSpace
+        ):
+            search_page = self.handlers.get("search_page")
             if not isinstance(search_page, SearchPage):
                 return False
 
@@ -531,7 +575,8 @@ class AppMenu(Gtk.Application):
         """
         assert self.main_notebook
         current_page_handler = self.handlers[
-            PAGE_LIST[self.main_notebook.get_current_page()]]
+            PAGE_LIST[self.main_notebook.get_current_page()]
+        ]
         if hasattr(current_page_handler, "get_selected_vm"):
             return current_page_handler.get_selected_vm()
         return None
@@ -556,5 +601,5 @@ def main():
         app.run(sys.argv)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

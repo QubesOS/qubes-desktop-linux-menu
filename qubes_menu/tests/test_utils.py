@@ -20,13 +20,14 @@
 from ..utils import highlight_words
 
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
 def test_highlight_words():
     # make a mock highlight tag
-    highlight_tag = '<span>'
+    highlight_tag = "<span>"
 
     # create some labels
     label_1 = Gtk.Label("Come forth my lovely languorous Sphinx")
@@ -37,33 +38,26 @@ def test_highlight_words():
 
     highlight_words(labels, ["sphinx"], highlight_tag)
 
-    assert label_1.get_label() == \
-           "Come forth my lovely languorous <span>Sphinx</span>"
-    assert label_2.get_label() == \
-           "<span>sphinx</span> of black quartz, judge my vow"
-    assert label_3.get_label() == \
-           "A shape with lion body and the head of a man"
+    assert label_1.get_label() == "Come forth my lovely languorous <span>Sphinx</span>"
+    assert label_2.get_label() == "<span>sphinx</span> of black quartz, judge my vow"
+    assert label_3.get_label() == "A shape with lion body and the head of a man"
 
     # further highlighting should not break things and should remove
     # old highlights
 
     highlight_words(labels, ["black"], highlight_tag)
 
-    assert label_1.get_label() == \
-           "Come forth my lovely languorous Sphinx"
-    assert label_2.get_label() == \
-           "sphinx of <span>black</span> quartz, judge my vow"
-    assert label_3.get_label() == \
-           "A shape with lion body and the head of a man"
+    assert label_1.get_label() == "Come forth my lovely languorous Sphinx"
+    assert label_2.get_label() == "sphinx of <span>black</span> quartz, judge my vow"
+    assert label_3.get_label() == "A shape with lion body and the head of a man"
 
     # multiple words should work, even when they overlap
 
     highlight_words(labels, ["on", "lion", "languorous"], highlight_tag)
 
-    assert label_1.get_label() == \
-           "Come forth my lovely <span>languorous</span> Sphinx"
-    assert label_2.get_label() == \
-           "sphinx of black quartz, judge my vow"
-    assert label_3.get_label() == \
-           "A shape with <span>lion</span> body and the head of a man"
-
+    assert label_1.get_label() == "Come forth my lovely <span>languorous</span> Sphinx"
+    assert label_2.get_label() == "sphinx of black quartz, judge my vow"
+    assert (
+        label_3.get_label()
+        == "A shape with <span>lion</span> body and the head of a man"
+    )
