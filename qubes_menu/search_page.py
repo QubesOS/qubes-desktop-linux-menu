@@ -28,7 +28,8 @@ from .page_handler import MenuPage
 from .utils import load_icon, parse_search
 
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
 
 
@@ -36,29 +37,31 @@ class RecentSearchRow(Gtk.ListBoxRow):
     """
     Gtk.ListBoxRow with a recently searched text.
     """
+
     def __init__(self, search_text: str):
         super().__init__()
         self.search_text = search_text
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
-        self.recent_icon = Gtk.Image.new_from_pixbuf(
-            load_icon('qappmenu-search'))
+        self.recent_icon = Gtk.Image.new_from_pixbuf(load_icon("qappmenu-search"))
         self.hbox.pack_start(self.recent_icon, False, False, 5)
         self.search_label = Gtk.Label(label=search_text, xalign=0)
         self.hbox.pack_start(self.search_label, False, False, 5)
-        self.get_style_context().add_class('app_entry')
+        self.get_style_context().add_class("app_entry")
         self.add(self.hbox)
         self.show_all()
 
 
 class RecentSearchManager:
     """Class for managing the list of recent searches."""
+
     SEARCH_VALUES_TO_KEEP = 10
+
     def __init__(self, recent_list: Gtk.ListBox, search_box: Gtk.SearchEntry):
         self.recent_list_box = recent_list
         self.search_box = search_box
         self.recent_searches: Dict[str, RecentSearchRow] = {}
-        self.recent_list_box.connect('row-activated', self._row_clicked)
+        self.recent_list_box.connect("row-activated", self._row_clicked)
 
     def add_new_recent_search(self, text: str):
         """Add new recent search entry"""
@@ -89,8 +92,13 @@ class SearchPage(MenuPage):
     """
     Helper class for managing the Search menu page.
     """
-    def __init__(self, vm_manager: VMManager, builder: Gtk.Builder,
-                 desktop_file_manager: DesktopFileManager):
+
+    def __init__(
+        self,
+        vm_manager: VMManager,
+        builder: Gtk.Builder,
+        desktop_file_manager: DesktopFileManager,
+    ):
         """
         :param vm_manager: VM Manager object
         :param builder: Gtk.Builder with loaded glade object
@@ -103,22 +111,22 @@ class SearchPage(MenuPage):
 
         self.sort_running = False  # sort running vms to top
 
-        self.vm_list: Gtk.ListBox = builder.get_object('search_vm_list')
-        self.app_list: Gtk.ListBox = builder.get_object('search_app_list')
-        self.search_entry: Gtk.SearchEntry = builder.get_object('search_entry')
+        self.vm_list: Gtk.ListBox = builder.get_object("search_vm_list")
+        self.app_list: Gtk.ListBox = builder.get_object("search_app_list")
+        self.search_entry: Gtk.SearchEntry = builder.get_object("search_entry")
 
         self.selected_vm_row: Optional[SearchVMRow] = None
         self.filtered_vms: Set[str] = set()
 
-        self.main_notebook = builder.get_object('main_notebook')
+        self.main_notebook = builder.get_object("main_notebook")
 
-        self.search_entry.connect('search-changed', self._do_search)
-        self.search_entry.connect('key-press-event', self._search_key_press)
+        self.search_entry.connect("search-changed", self._do_search)
+        self.search_entry.connect("key-press-event", self._search_key_press)
 
         desktop_file_manager.register_callback(self._app_info_callback)
 
         self.app_list.set_filter_func(self._is_app_fitting)
-        self.app_list.connect('row-activated', self._app_clicked)
+        self.app_list.connect("row-activated", self._app_clicked)
 
         self.vm_list.add(AnyVMRow())
         vm_manager.register_new_vm_callback(self._vm_callback)
@@ -129,37 +137,35 @@ class SearchPage(MenuPage):
         self.app_list.invalidate_sort()
         self.vm_list.invalidate_sort()
 
-        self.recent_list: Gtk.ListBox = builder.get_object('search_recent_list')
+        self.recent_list: Gtk.ListBox = builder.get_object("search_recent_list")
 
-        self.app_view: Gtk.ScrolledWindow = \
-            builder.get_object("search_app_view")
-        self.app_placeholder: Gtk.Label = \
-            builder.get_object('search_app_placeholder')
+        self.app_view: Gtk.ScrolledWindow = builder.get_object("search_app_view")
+        self.app_placeholder: Gtk.Label = builder.get_object("search_app_placeholder")
         self.vm_view: Gtk.ScrolledWindow = builder.get_object("search_vm_view")
-        self.recent_view: Gtk.ScrolledWindow = \
-            builder.get_object("search_recent_view")
-        self.recent_title: Gtk.Label = builder.get_object('search_recent_title')
+        self.recent_view: Gtk.ScrolledWindow = builder.get_object("search_recent_view")
+        self.recent_title: Gtk.Label = builder.get_object("search_recent_title")
 
         self.recent_search_manager = RecentSearchManager(
-            self.recent_list, self.search_entry)
+            self.recent_list, self.search_entry
+        )
 
-        self.vm_list.connect('row-selected', self._selection_changed)
-        self.search_entry.connect('activate', self._move_to_first)
+        self.vm_list.connect("row-selected", self._selection_changed)
+        self.search_entry.connect("activate", self._move_to_first)
 
         self.control_list = ControlList(self)
         self.page_widget.attach(self.control_list, 1, 4, 1, 1)
-        self.control_list.connect('row-activated', self._app_clicked)
+        self.control_list.connect("row-activated", self._app_clicked)
         self.control_list.set_selection_mode(Gtk.SelectionMode.NONE)
 
         self.keynav_manager = KeynavController(
-            widgets_in_order=[self.app_list, self.control_list])
+            widgets_in_order=[self.app_list, self.control_list]
+        )
 
     def _app_clicked(self, _widget, row):
-        self.recent_search_manager.add_new_recent_search(
-            self.search_entry.get_text())
+        self.recent_search_manager.add_new_recent_search(self.search_entry.get_text())
         if self.selected_vm_row:
             row.run_app(self.selected_vm_row.vm_entry.vm)
-        elif hasattr(row, 'app_info'):
+        elif hasattr(row, "app_info"):
             row.run_app(row.app_info.vm)
 
     def _app_info_callback(self, app_info):
@@ -189,8 +195,7 @@ class SearchPage(MenuPage):
 
         self._filter_lists()
 
-        self.vm_view.set_visible(has_search and
-                                 not self.app_placeholder.get_mapped())
+        self.vm_view.set_visible(has_search and not self.app_placeholder.get_mapped())
 
         if not self.app_placeholder.get_mapped():
             for row in self.app_list.get_children():
@@ -297,7 +302,7 @@ class SearchPage(MenuPage):
         """
         Initialize own state.
         """
-        self.search_entry.set_text('')
+        self.search_entry.set_text("")
         self.app_list.select_row(None)
         self.vm_list.select_row(None)
         self.app_view.set_visible(False)

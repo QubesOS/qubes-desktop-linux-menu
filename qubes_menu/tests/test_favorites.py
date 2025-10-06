@@ -25,10 +25,10 @@ from unittest.mock import Mock, patch
 
 def test_add_to_favorites(tmp_path, test_qapp):
     app_info = ApplicationInfo(test_qapp, tmp_path)
-    vm = test_qapp.domains['test-vm']
+    vm = test_qapp.domains["test-vm"]
     app_info.vm = vm
-    app_info.app_name = 'Test App'
-    app_info.entry_name = 'org.test.app'
+    app_info.app_name = "Test App"
+    app_info.entry_name = "org.test.app"
     app_info.app_icon = None
     app_info.vm_icon = None
     vm.features = {}  # overwrite smart features object with a dumb dict
@@ -36,48 +36,48 @@ def test_add_to_favorites(tmp_path, test_qapp):
     base_entry = BaseAppEntry(app_info)
     base_entry.menu._add_to_favorites()
 
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
 
     base_entry.menu._add_to_favorites()
     base_entry.menu._add_to_favorites()
 
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
 
     mock_manager = Mock()
 
     fav_entry = FavoritesAppEntry(app_info, mock_manager)
     fav_entry._remove_from_favorites()
-    assert vm.features.get('menu-favorites') == ''
+    assert vm.features.get("menu-favorites") == ""
     base_entry.menu._add_to_favorites()
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
 
     second_app_info = ApplicationInfo(test_qapp, tmp_path)
     second_app_info.vm = vm
-    second_app_info.app_name = 'Second App'
-    second_app_info.entry_name = 'org.second.app'
+    second_app_info.app_name = "Second App"
+    second_app_info.entry_name = "org.second.app"
     second_app_info.app_icon = None
     second_app_info.vm_icon = None
 
     second_base_entry = BaseAppEntry(second_app_info)
     second_fav_entry = FavoritesAppEntry(second_app_info, mock_manager)
 
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
     second_base_entry.menu._add_to_favorites()
-    assert vm.features.get('menu-favorites') == 'org.test.app org.second.app'
+    assert vm.features.get("menu-favorites") == "org.test.app org.second.app"
     second_fav_entry._remove_from_favorites()
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
     second_base_entry.menu._add_to_favorites()
     fav_entry._remove_from_favorites()
-    assert vm.features.get('menu-favorites') == 'org.second.app'
+    assert vm.features.get("menu-favorites") == "org.second.app"
 
 
 def test_correct_menu_states(tmp_path, test_qapp):
 
     app_info = ApplicationInfo(test_qapp, tmp_path)
-    vm = test_qapp.domains['test-vm']
+    vm = test_qapp.domains["test-vm"]
     app_info.vm = vm
-    app_info.app_name = 'Test App'
-    app_info.entry_name = 'org.test.app'
+    app_info.app_name = "Test App"
+    app_info.entry_name = "org.test.app"
     app_info.app_icon = None
     app_info.vm_icon = None
     vm.features = {}  # overwrite smart features object with a dumb dict
@@ -112,47 +112,47 @@ def test_correct_menu_states(tmp_path, test_qapp):
 
 def test_add_to_favorites_dom0(tmp_path, test_qapp):
     app_info = ApplicationInfo(test_qapp, tmp_path)
-    app_info.app_name = 'Test App'
-    app_info.entry_name = 'org.test.app'
+    app_info.app_name = "Test App"
+    app_info.entry_name = "org.test.app"
     app_info.app_icon = None
     app_info.vm_icon = None
 
-    vm = test_qapp.domains['dom0']
+    vm = test_qapp.domains["dom0"]
     vm.features = {}  # overwrite smart features object with a dumb dict
 
     base_entry = BaseAppEntry(app_info)
     base_entry.menu._add_to_favorites()
 
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
 
     base_entry.menu._add_to_favorites()
     base_entry.menu._add_to_favorites()
 
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
 
     mock_manager = Mock()
 
     fav_entry = FavoritesAppEntry(app_info, mock_manager)
     fav_entry._remove_from_favorites()
-    assert vm.features.get('menu-favorites') == ''
+    assert vm.features.get("menu-favorites") == ""
     base_entry.menu._add_to_favorites()
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
 
     second_app_info = ApplicationInfo(test_qapp, tmp_path)
     second_app_info.vm = vm
-    second_app_info.app_name = 'Second App'
-    second_app_info.entry_name = 'org.second.app'
+    second_app_info.app_name = "Second App"
+    second_app_info.entry_name = "org.second.app"
     second_app_info.app_icon = None
     second_app_info.vm_icon = None
 
     second_base_entry = BaseAppEntry(second_app_info)
     second_fav_entry = FavoritesAppEntry(second_app_info, mock_manager)
 
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
     second_base_entry.menu._add_to_favorites()
-    assert vm.features.get('menu-favorites') == 'org.test.app org.second.app'
+    assert vm.features.get("menu-favorites") == "org.test.app org.second.app"
     second_fav_entry._remove_from_favorites()
-    assert vm.features.get('menu-favorites') == 'org.test.app'
+    assert vm.features.get("menu-favorites") == "org.test.app"
     second_base_entry.menu._add_to_favorites()
     fav_entry._remove_from_favorites()
-    assert vm.features.get('menu-favorites') == 'org.second.app'
+    assert vm.features.get("menu-favorites") == "org.second.app"

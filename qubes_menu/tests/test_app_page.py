@@ -30,43 +30,48 @@ def test_app_page_vm_state(test_desktop_file_path, test_qapp, test_builder):
     dispatcher = MockDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
 
-    with mock.patch.object(DesktopFileManager, 'desktop_dirs',
-                           [test_desktop_file_path]):
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
         desktop_file_manager = DesktopFileManager(test_qapp)
 
     app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
 
     # select a turned off vm
-    app_page.vm_list.select_row([row for row in app_page.vm_list.get_children()
-                                 if row.vm_name == 'test-red'][0])
+    app_page.vm_list.select_row(
+        [row for row in app_page.vm_list.get_children() if row.vm_name == "test-red"][0]
+    )
 
-    assert app_page.control_list.start_item.row_label.get_label() == \
-           "Start qube"
-    assert app_page.control_list.pause_item.row_label.get_label() == \
-           " "
+    assert app_page.control_list.start_item.row_label.get_label() == "Start qube"
+    assert app_page.control_list.pause_item.row_label.get_label() == " "
 
     # select a turned on vm
-    app_page.vm_list.select_row([row for row in app_page.vm_list.get_children()
-                                 if row.vm_name == 'sys-usb'][0])
+    app_page.vm_list.select_row(
+        [row for row in app_page.vm_list.get_children() if row.vm_name == "sys-usb"][0]
+    )
 
-    assert app_page.control_list.start_item.row_label.get_label() == \
-           "Shutdown qube"
-    assert app_page.control_list.pause_item.row_label.get_label() == \
-           "Pause qube"
+    assert app_page.control_list.start_item.row_label.get_label() == "Shutdown qube"
+    assert app_page.control_list.pause_item.row_label.get_label() == "Pause qube"
 
 
 def test_dispvm_parent_sorting(test_desktop_file_path, test_qapp, test_builder):
     # check if dispvm child is sorted after the parent
-    test_qapp._qubes['disp1233'] = MockQube(
-        name="disp1233", qapp=test_qapp, klass='DispVM',
-        template_for_dispvms='True', template='default-dvm', auto_cleanup=True)
+    test_qapp._qubes["disp1233"] = MockQube(
+        name="disp1233",
+        qapp=test_qapp,
+        klass="DispVM",
+        template_for_dispvms="True",
+        template="default-dvm",
+        auto_cleanup=True,
+    )
     test_qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
 
-    with mock.patch.object(DesktopFileManager, 'desktop_dirs',
-                           [test_desktop_file_path]):
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
         desktop_file_manager = DesktopFileManager(test_qapp)
 
     app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
@@ -75,11 +80,11 @@ def test_dispvm_parent_sorting(test_desktop_file_path, test_qapp, test_builder):
 
     for row in app_page.vm_list.get_children():
         if found_dvm:
-            if row.vm_name == 'disp1233' and row.vm_entry.parent_vm:
+            if row.vm_name == "disp1233" and row.vm_entry.parent_vm:
                 break
             found_dvm = False
             continue
-        if row.vm_name == 'default-dvm' and row.vm_entry._is_dispvm_template:
+        if row.vm_name == "default-dvm" and row.vm_entry._is_dispvm_template:
             found_dvm = True
             continue
         found_dvm = False
@@ -92,12 +97,14 @@ def test_settings_app_page(test_desktop_file_path, test_qapp, test_builder):
     dispatcher = MockDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
 
-    with mock.patch.object(DesktopFileManager, 'desktop_dirs',
-                           [test_desktop_file_path]):
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
         desktop_file_manager = DesktopFileManager(test_qapp)
 
-    settings_page = SettingsPage(test_qapp, test_builder,
-                                 desktop_file_manager, dispatcher)
+    settings_page = SettingsPage(
+        test_qapp, test_builder, desktop_file_manager, dispatcher
+    )
 
     for row in settings_page.app_list.get_children():
         assert not row.app_info.vm

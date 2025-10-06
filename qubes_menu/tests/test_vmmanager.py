@@ -57,12 +57,8 @@ def test_vm_manager(test_qapp):
     )
     assert entry_template.has_network
 
-    test_qapp._qubes[vm_name].properties["label"] = Property(
-        "red", "label", False
-    )
-    test_qapp._qubes[vm_name].properties["icon"] = Property(
-        "appvm-red", "str", False
-    )
+    test_qapp._qubes[vm_name].properties["label"] = Property("red", "label", False)
+    test_qapp._qubes[vm_name].properties["icon"] = Property("appvm-red", "str", False)
     test_qapp._qubes[vm_name].update_calls()
     vm_manager._update_domain_property(
         vm_name,

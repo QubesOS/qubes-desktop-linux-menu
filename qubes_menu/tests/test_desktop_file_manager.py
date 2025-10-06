@@ -26,7 +26,7 @@ from qubesadmin.tests import TestVM
 from unittest.mock import Mock
 import asyncio
 
-correct_bytes = b'''
+correct_bytes = b"""
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -39,9 +39,9 @@ Comment=standard terminal emulator for the X window system
 Categories=System;TerminalEmulator;X-Qubes-VM;
 Exec=qvm-run -q -a --service -- test-vm qubes.StartApp+xterm
 X-Qubes-DispvmExec=qvm-run -q -a --service --dispvm=test-vm -- qubes.StartApp+xterm
-'''
+"""
 
-correct_bytes_2 = b'''
+correct_bytes_2 = b"""
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -54,9 +54,9 @@ Comment=standard terminal emulator for the X window system
 Categories=System;TerminalEmulator;X-Qubes-VM;
 Exec=qvm-run -q -a --service -- template qubes.StartApp+xterm
 X-Qubes-DispvmExec=qvm-run -q -a --service --dispvm=template -- qubes.StartApp+xterm
-'''
+"""
 
-correct_local_qubes = b'''
+correct_local_qubes = b"""
 [Desktop Entry]
 Type=Application
 Exec=qubes-backup
@@ -66,9 +66,9 @@ Name=Backup Qubes
 GenericName=Backup Qubes
 StartupNotify=false
 Categories=Settings;X-XFCE-SettingsDialog
-'''
+"""
 
-correct_local_non_qubes = b'''
+correct_local_non_qubes = b"""
 [Desktop Entry]
 Version=1.0
 Name=Power Manager
@@ -84,9 +84,9 @@ StartupNotify=true
 X-XfcePluggable=true
 X-XfceHelpComponent=xfce4-power-manager
 X-XfceHelpPage=start
-'''
+"""
 
-correct_other = b'''
+correct_other = b"""
 [Desktop Entry]
 Version=1.0
 Name=Pinta
@@ -103,11 +103,11 @@ Type=Application
 Categories=Graphics;2DGraphics;RasterGraphics;GTK;
 Keywords=draw;drawing;paint;painting;graphics;raster;2d;
 MimeType=image/bmp;image/gif;image/jpeg;image/jpg;image/pjpeg;image/png;image/svg+xml;image/tiff;image/x-bmp;image/x-gray;image/x-icb;image/x-ico;image/x-png;image/x-portable-anymap;image/x-portable-bitmap;image/x-portable-graymap;image/x-portable-pixmap;image/x-xbitmap;image/x-xpixmap;image/x-pcx;image/x-targa;image/x-tga;image/openraster;
-'''
+"""
 
 
 def test_appinfo_correct_file(tmp_path, test_qapp):
-    file_path = tmp_path / 'test.desktop'
+    file_path = tmp_path / "test.desktop"
     file_path.write_bytes(correct_bytes)
 
     desktop_entry = DesktopEntry(file_path)
@@ -115,27 +115,38 @@ def test_appinfo_correct_file(tmp_path, test_qapp):
     app_info = ApplicationInfo(test_qapp, file_path)
     app_info.load_data(desktop_entry)
 
-    assert app_info.app_name == 'XTerm'
-    assert str(app_info.vm) == str(TestVM('test-vm'))
-    assert app_info.app_icon == '/tmp/test.png'
-    assert app_info.vm_icon == 'appvm-green'
+    assert app_info.app_name == "XTerm"
+    assert str(app_info.vm) == str(TestVM("test-vm"))
+    assert app_info.app_icon == "/tmp/test.png"
+    assert app_info.vm_icon == "appvm-green"
 
-    assert app_info.entry_name == 'XTerm'\
-           or app_info.entry_name == 'test.desktop'
+    assert app_info.entry_name == "XTerm" or app_info.entry_name == "test.desktop"
     assert not app_info.disposable
     assert app_info.is_qubes_specific()
 
-    assert app_info.get_command_for_vm(TestVM('test-vm')) ==\
-           ['qvm-run', '-q', '-a', '--service', '--', 'test-vm',
-            'qubes.StartApp+xterm']
+    assert app_info.get_command_for_vm(TestVM("test-vm")) == [
+        "qvm-run",
+        "-q",
+        "-a",
+        "--service",
+        "--",
+        "test-vm",
+        "qubes.StartApp+xterm",
+    ]
 
-    assert app_info.get_command_for_vm(TestVM('other-vm')) ==\
-           ['qvm-run', '-q', '-a', '--service', '--', 'other-vm',
-            'qubes.StartApp+xterm']
+    assert app_info.get_command_for_vm(TestVM("other-vm")) == [
+        "qvm-run",
+        "-q",
+        "-a",
+        "--service",
+        "--",
+        "other-vm",
+        "qubes.StartApp+xterm",
+    ]
 
 
 def test_file_dvmtemplate(tmp_path, test_qapp):
-    correct_dvm_template = b'''
+    correct_dvm_template = b"""
     [Desktop Entry]
     Version=1.0
     Type=Application
@@ -148,9 +159,9 @@ def test_file_dvmtemplate(tmp_path, test_qapp):
     Categories=Network;WebBrowser;X-Qubes-VM;
     X-Qubes-NonDispvmExec=qvm-run -q -a --service -- default-dvm qubes.StartApp+firefox
     Exec=qvm-run -q -a --service --dispvm=default-dvm -- qubes.StartApp+firefox
-    '''
+    """
 
-    file_path = tmp_path / 'test.desktop'
+    file_path = tmp_path / "test.desktop"
     file_path.write_bytes(correct_dvm_template)
 
     desktop_entry = DesktopEntry(file_path)
@@ -158,20 +169,26 @@ def test_file_dvmtemplate(tmp_path, test_qapp):
     app_info = ApplicationInfo(test_qapp, file_path)
     app_info.load_data(desktop_entry)
 
-    assert app_info.app_name == 'Firefox'
-    assert str(app_info.vm) == str(TestVM('default-dvm'))
-    assert app_info.app_icon == '/test/firefox.png'
-    assert app_info.vm_icon == 'templatevm-green'
+    assert app_info.app_name == "Firefox"
+    assert str(app_info.vm) == str(TestVM("default-dvm"))
+    assert app_info.app_icon == "/test/firefox.png"
+    assert app_info.vm_icon == "templatevm-green"
     assert app_info.disposable
     assert app_info.is_qubes_specific()
-    assert app_info.get_command_for_vm('default-dvm') == [
-        'qvm-run', '-q', '-a', '--service', '--dispvm=default-dvm', '--',
-        'qubes.StartApp+firefox']
+    assert app_info.get_command_for_vm("default-dvm") == [
+        "qvm-run",
+        "-q",
+        "-a",
+        "--service",
+        "--dispvm=default-dvm",
+        "--",
+        "qubes.StartApp+firefox",
+    ]
 
 
 def test_appinfo_local(tmp_path, test_qapp):
-    file_path_qubes = tmp_path / 'test.desktop'
-    file_path_non_qubes = tmp_path / 'test2.desktop'
+    file_path_qubes = tmp_path / "test.desktop"
+    file_path_non_qubes = tmp_path / "test2.desktop"
     file_path_qubes.write_bytes(correct_local_qubes)
     file_path_non_qubes.write_bytes(correct_local_non_qubes)
 
@@ -183,32 +200,34 @@ def test_appinfo_local(tmp_path, test_qapp):
     app_info_qubes.load_data(desktop_entry_qubes)
     app_info_non_qubes.load_data(desktop_entry_non_qubes)
 
-    assert app_info_qubes.app_name == 'Backup Qubes'
-    assert app_info_non_qubes.app_name == 'Power Manager'
+    assert app_info_qubes.app_name == "Backup Qubes"
+    assert app_info_non_qubes.app_name == "Power Manager"
     assert app_info_qubes.vm is None
     assert app_info_non_qubes.vm is None
     assert app_info_qubes.vm_icon is None
     assert app_info_non_qubes.vm_icon is None
 
-    assert app_info_qubes.app_icon == 'qubes-manager'
-    assert app_info_non_qubes.app_icon == 'xfce4-power-manager-settings'
+    assert app_info_qubes.app_icon == "qubes-manager"
+    assert app_info_non_qubes.app_icon == "xfce4-power-manager-settings"
 
     assert not app_info_non_qubes.disposable
     assert not app_info_qubes.disposable
     assert not app_info_qubes.is_qubes_specific()
     assert not app_info_non_qubes.is_qubes_specific()
 
-    assert app_info_qubes.get_command_for_vm(None) == ['qubes-backup']
-    assert app_info_non_qubes.get_command_for_vm(None) == \
-           ['xfce4-power-manager-settings']
+    assert app_info_qubes.get_command_for_vm(None) == ["qubes-backup"]
+    assert app_info_non_qubes.get_command_for_vm(None) == [
+        "xfce4-power-manager-settings"
+    ]
 
-    assert app_info_qubes.get_command_for_vm('dom0') == ['qubes-backup']
-    assert app_info_non_qubes.get_command_for_vm('dom0') == \
-           ['xfce4-power-manager-settings']
+    assert app_info_qubes.get_command_for_vm("dom0") == ["qubes-backup"]
+    assert app_info_non_qubes.get_command_for_vm("dom0") == [
+        "xfce4-power-manager-settings"
+    ]
 
 
 def test_file_qubes_virtual(tmp_path, test_qapp):
-    qubes_virtual = b'''
+    qubes_virtual = b"""
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -219,9 +238,9 @@ Terminal=false
 Name=fedora-32: Qube Settings
 GenericName=fedora-32: Qube Settings
 StartupNotify=false
-Categories=System;X-Qubes-VM;'''
+Categories=System;X-Qubes-VM;"""
 
-    file_path = tmp_path / 'test.desktop'
+    file_path = tmp_path / "test.desktop"
     file_path.write_bytes(qubes_virtual)
 
     desktop_entry = DesktopEntry(file_path)
@@ -233,7 +252,7 @@ Categories=System;X-Qubes-VM;'''
 
 
 def test_space_exec(tmp_path, test_qapp):
-    qubes_virtual = b'''
+    qubes_virtual = b"""
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -243,9 +262,9 @@ Terminal=false
 Name=Generic Name
 GenericName=Generic Name
 StartupNotify=false
-Categories=System;X-Qubes-VM;'''
+Categories=System;X-Qubes-VM;"""
 
-    file_path = tmp_path / 'test.desktop'
+    file_path = tmp_path / "test.desktop"
     file_path.write_bytes(qubes_virtual)
 
     desktop_entry = DesktopEntry(file_path)
@@ -253,11 +272,11 @@ Categories=System;X-Qubes-VM;'''
     app_info = ApplicationInfo(test_qapp, file_path)
     app_info.load_data(desktop_entry)
 
-    assert app_info.get_command_for_vm(None) == ['command', 'a vm']
+    assert app_info.get_command_for_vm(None) == ["command", "a vm"]
 
 
 def test_special_characters_exec(tmp_path, test_qapp):
-    qubes_virtual = b'''
+    qubes_virtual = b"""
 [Desktop Entry]
 Version=1.0
 Type=Application
@@ -267,9 +286,9 @@ Terminal=false
 Name=Generic Name
 GenericName=Generic Name
 StartupNotify=false
-Categories=System;X-Qubes-VM;'''
+Categories=System;X-Qubes-VM;"""
 
-    file_path = tmp_path / 'test.desktop'
+    file_path = tmp_path / "test.desktop"
     file_path.write_bytes(qubes_virtual)
 
     desktop_entry = DesktopEntry(file_path)
@@ -277,14 +296,14 @@ Categories=System;X-Qubes-VM;'''
     app_info = ApplicationInfo(test_qapp, file_path)
     app_info.load_data(desktop_entry)
 
-    assert app_info.get_command_for_vm(None) == ['command', "a\\b\\c"]
+    assert app_info.get_command_for_vm(None) == ["command", "a\\b\\c"]
 
 
 @pytest.mark.asyncio
 async def test_file_manager(tmp_path, test_qapp):
     DesktopFileManager.desktop_dirs = [tmp_path]
-    (tmp_path / 'test.desktop').write_bytes(correct_bytes)
-    (tmp_path / 'wrong.desktop').write_bytes(b'faulty')
+    (tmp_path / "test.desktop").write_bytes(correct_bytes)
+    (tmp_path / "wrong.desktop").write_bytes(b"faulty")
 
     dfm = DesktopFileManager(test_qapp)
     assert len(dfm.app_entries) == 1
@@ -300,16 +319,16 @@ async def test_file_manager(tmp_path, test_qapp):
 
     assert len(entry_list) == 1
 
-    (tmp_path / 'test2.desktop').write_bytes(correct_bytes_2)
+    (tmp_path / "test2.desktop").write_bytes(correct_bytes_2)
 
     # process file events
     await asyncio.sleep(1)
 
     assert len(entry_list) == 2
 
-    (tmp_path / 'test.desktop').write_bytes(correct_bytes)
-    (tmp_path / 'test2.desktop').write_bytes(correct_bytes_2)
-    (tmp_path / 'wrong.desktop').write_bytes(b'faulty')
+    (tmp_path / "test.desktop").write_bytes(correct_bytes)
+    (tmp_path / "test2.desktop").write_bytes(correct_bytes_2)
+    (tmp_path / "wrong.desktop").write_bytes(b"faulty")
 
     # process file events
     await asyncio.sleep(1)
@@ -321,7 +340,7 @@ async def test_file_manager(tmp_path, test_qapp):
 
 
 def test_filter_system(tmp_path, test_qapp):
-    file_path_non_qubes = tmp_path / 'correct_local_non.desktop'
+    file_path_non_qubes = tmp_path / "correct_local_non.desktop"
     file_path_non_qubes.write_bytes(correct_local_non_qubes)
     desktop_entry_non_qubes = DesktopEntry(file_path_non_qubes)
     app_info_non_qubes = ApplicationInfo(test_qapp, file_path_non_qubes)
@@ -329,7 +348,7 @@ def test_filter_system(tmp_path, test_qapp):
     row_non_qubes = Mock()
     row_non_qubes.app_info = app_info_non_qubes
 
-    file_path_qubes = tmp_path / 'correct_local_qubes.desktop'
+    file_path_qubes = tmp_path / "correct_local_qubes.desktop"
     file_path_qubes.write_bytes(correct_local_qubes)
     desktop_entry_qubes = DesktopEntry(file_path_qubes)
     app_info_qubes = ApplicationInfo(test_qapp, file_path_qubes)
@@ -337,7 +356,7 @@ def test_filter_system(tmp_path, test_qapp):
     row_qubes = Mock()
     row_qubes.app_info = app_info_qubes
 
-    file_path_other = tmp_path / 'correct_other.desktop'
+    file_path_other = tmp_path / "correct_other.desktop"
     file_path_other.write_bytes(correct_other)
     desktop_entry_other = DesktopEntry(file_path_other)
     app_info_other = ApplicationInfo(test_qapp, file_path_other)

@@ -30,20 +30,26 @@ from .page_handler import MenuPage
 from . import constants
 
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-logger = logging.getLogger('qubes-appmenu')
+logger = logging.getLogger("qubes-appmenu")
 
 
 class FavoritesPage(MenuPage):
     """
     Helper class for managing the entirety of Favorites menu page.
     """
-    def __init__(self, qapp: qubesadmin.Qubes, builder: Gtk.Builder,
-                 desktop_file_manager: DesktopFileManager,
-                 dispatcher: qubesadmin.events.EventsDispatcher,
-                 vm_manager: VMManager):
+
+    def __init__(
+        self,
+        qapp: qubesadmin.Qubes,
+        builder: Gtk.Builder,
+        desktop_file_manager: DesktopFileManager,
+        dispatcher: qubesadmin.events.EventsDispatcher,
+        vm_manager: VMManager,
+    ):
         self.qapp = qapp
         self.desktop_file_manager = desktop_file_manager
         self.dispatcher = dispatcher
@@ -51,24 +57,27 @@ class FavoritesPage(MenuPage):
 
         self.page_widget: Gtk.Box = builder.get_object("favorites_page")
 
-        self.app_list: Gtk.ListBox = builder.get_object('fav_app_list')
-        self.app_list.connect('row-activated', self._app_clicked)
+        self.app_list: Gtk.ListBox = builder.get_object("fav_app_list")
+        self.app_list.connect("row-activated", self._app_clicked)
 
         self.app_list.set_sort_func(
-            lambda x, y: x.app_info.sort_name > y.app_info.sort_name)
+            lambda x, y: x.app_info.sort_name > y.app_info.sort_name
+        )
         self.desktop_file_manager.register_callback(self._app_info_callback)
         self.app_list.show_all()
         self.app_list.invalidate_sort()
         self.app_list.set_selection_mode(Gtk.SelectionMode.NONE)
 
         self.dispatcher.add_handler(
-            f'domain-feature-delete:{constants.FAVORITES_FEATURE}',
-            self._feature_deleted)
+            f"domain-feature-delete:{constants.FAVORITES_FEATURE}",
+            self._feature_deleted,
+        )
         self.dispatcher.add_handler(
-            f'domain-feature-set:{constants.FAVORITES_FEATURE}',
-            self._feature_set)
-        self.dispatcher.add_handler('domain-add', self._domain_added)
-        self.dispatcher.add_handler('domain-delete', self._domain_deleted)
+            f"domain-feature-set:{constants.FAVORITES_FEATURE}",
+            self._feature_set,
+        )
+        self.dispatcher.add_handler("domain-add", self._domain_added)
+        self.dispatcher.add_handler("domain-delete", self._domain_deleted)
 
     def _load_vms_favorites(self, vm):
         """
@@ -80,14 +89,15 @@ class FavoritesPage(MenuPage):
                 vm = self.qapp.domains[vm]
             except KeyError:
                 return
-        favorites = vm.features.get(constants.FAVORITES_FEATURE, '')
-        favorites = favorites.split(' ')
+        favorites = vm.features.get(constants.FAVORITES_FEATURE, "")
+        favorites = favorites.split(" ")
 
         is_local_vm = vm.name == self.qapp.local_name
 
         for app_info in self.desktop_file_manager.get_app_infos():
-            if (not is_local_vm and app_info.vm == vm)\
-                    or (is_local_vm and not app_info.vm):
+            if (not is_local_vm and app_info.vm == vm) or (
+                is_local_vm and not app_info.vm
+            ):
                 if app_info.entry_name in favorites:
                     self._add_from_app_info(app_info)
         self.app_list.invalidate_sort()
@@ -100,7 +110,7 @@ class FavoritesPage(MenuPage):
         else:
             vm = app_info.qapp.domains[app_info.qapp.local_name]
 
-        feature = vm.features.get(constants.FAVORITES_FEATURE, '').split(' ')
+        feature = vm.features.get(constants.FAVORITES_FEATURE, "").split(" ")
         if app_info.entry_name in feature:
             self._add_from_app_info(app_info)
 
@@ -124,8 +134,7 @@ class FavoritesPage(MenuPage):
                     self.app_list.remove(child)
             self.app_list.invalidate_sort()
         except Exception as ex:  # pylint: disable=broad-except
-            logger.warning(
-                'Encountered problem removing favorite entry: %s', repr(ex))
+            logger.warning("Encountered problem removing favorite entry: %s", repr(ex))
 
     def _feature_set(self, vm, event, feature, *_args, **_kwargs):
         """When VM feature specified in constants.py is changed, all existing
@@ -135,8 +144,7 @@ class FavoritesPage(MenuPage):
             self._feature_deleted(vm, event, feature)
             self._load_vms_favorites(vm)
         except Exception as ex:  # pylint: disable=broad-except
-            logger.warning(
-                'Encountered problem adding favorite entry: %s', repr(ex))
+            logger.warning("Encountered problem adding favorite entry: %s", repr(ex))
 
     def _domain_added(self, _submitter, _event, vm, **_kwargs):
         """On a newly created domain, load all favorites from features

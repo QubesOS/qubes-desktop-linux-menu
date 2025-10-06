@@ -26,21 +26,26 @@ import urllib.parse
 from typing import Optional, List
 from functools import reduce
 
-from .custom_widgets import (LimitedWidthLabel, SelfAwareMenu, HoverEventBox,
-                             FavoritesMenu)
+from .custom_widgets import (
+    LimitedWidthLabel,
+    SelfAwareMenu,
+    HoverEventBox,
+    FavoritesMenu,
+)
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
 from .utils import load_icon, text_search, highlight_words, remove_from_feature
 from . import constants
 
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
 
 
-logger = logging.getLogger('qubes-appmenu')
+logger = logging.getLogger("qubes-appmenu")
 
-DISP_TEXT = 'new Disposable Qube from '
+DISP_TEXT = "new Disposable Qube from "
 
 
 class AppEntry(Gtk.ListBoxRow):
@@ -53,6 +58,7 @@ class AppEntry(Gtk.ListBoxRow):
     - supports running an application on click; after click signals to the
     complete menu it might need hiding
     """
+
     def __init__(self, app_info: ApplicationInfo, **properties):
         """
         :param app_info: ApplicationInfo obj with data about related app file
@@ -61,23 +67,21 @@ class AppEntry(Gtk.ListBoxRow):
         super().__init__(**properties)
         self.app_info = app_info
         self.app_info.entries.append(self)
-        self.vm_name = app_info.vm.name if app_info.vm else 'dom0'
+        self.vm_name = app_info.vm.name if app_info.vm else "dom0"
 
         self.menu = SelfAwareMenu()
 
         self.event_box = HoverEventBox(focus_widget=self)
         self.add(self.event_box)
         self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
-        self.event_box.connect('button-press-event', self.show_menu)
+        self.event_box.connect("button-press-event", self.show_menu)
 
-        self.drag_source_set(
-            Gdk.ModifierType.BUTTON1_MASK, [], Gdk.DragAction.COPY)
+        self.drag_source_set(Gdk.ModifierType.BUTTON1_MASK, [], Gdk.DragAction.COPY)
         self.drag_source_add_uri_targets()
         self.connect("drag-data-get", self._on_drag_data_get)
 
     def _on_drag_data_get(self, _widget, _drag_context, data, _info, _time):
-        data.set_uris(['file://' +
-                       urllib.parse.quote(str(self.app_info.file_path))])
+        data.set_uris(["file://" + urllib.parse.quote(str(self.app_info.file_path))])
 
     def show_menu(self, _widget, event):
         """
@@ -107,6 +111,7 @@ class BaseAppEntry(AppEntry):
     """
     A 'normal' Application row, used by main applications menu and system tools.
     """
+
     def __init__(self, app_info: ApplicationInfo, **properties):
         """
         :param app_info: ApplicationInfo obj with data about related app file
@@ -115,7 +120,7 @@ class BaseAppEntry(AppEntry):
         super().__init__(app_info, **properties)
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.event_box.add(self.box)
-        self.get_style_context().add_class('app_entry')
+        self.get_style_context().add_class("app_entry")
         self.menu = FavoritesMenu(lambda: self.app_info)
 
         self.icon = Gtk.Image()
@@ -137,13 +142,15 @@ class BaseAppEntry(AppEntry):
     def update_contents(self):
         """Update icon and app name."""
         self.icon.set_from_pixbuf(
-            load_icon(self.app_info.app_icon, Gtk.IconSize.LARGE_TOOLBAR))
+            load_icon(self.app_info.app_icon, Gtk.IconSize.LARGE_TOOLBAR)
+        )
         self.label.set_label(self.app_info.app_name)
         self.show_all()
 
 
 class VMIcon(Gtk.Image):
     """Helper class for displaying and auto-updating"""
+
     def __init__(self, vm_entry: Optional[VMEntry]):
         super().__init__()
         self.vm_entry = vm_entry
@@ -151,11 +158,13 @@ class VMIcon(Gtk.Image):
             self.vm_entry.entries.append(self)
         self.update_contents(update_label=True)
 
-    def update_contents(self,
-                        update_power_state=False,
-                        update_label=False,
-                        update_has_network=False,
-                        update_type=False):
+    def update_contents(
+        self,
+        update_power_state=False,
+        update_label=False,
+        update_has_network=False,
+        update_type=False,
+    ):
         # pylint: disable=unused-argument
         """
         Update own contents (or related widgets, if applicable) based on state
@@ -168,8 +177,7 @@ class VMIcon(Gtk.Image):
         :return:
         """
         if update_label and self.vm_entry:
-            vm_icon = load_icon(self.vm_entry.vm_icon_name,
-                                Gtk.IconSize.LARGE_TOOLBAR)
+            vm_icon = load_icon(self.vm_entry.vm_icon_name, Gtk.IconSize.LARGE_TOOLBAR)
             self.set_from_pixbuf(vm_icon)
             self.show_all()
 
@@ -177,10 +185,10 @@ class VMIcon(Gtk.Image):
 class AppEntryWithVM(AppEntry):
     """Application Gtk.ListBoxRow with VM description underneath; to be
     used in Search and Favorites."""
-    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
-                 **properties):
+
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager, **properties):
         super().__init__(app_info, **properties)
-        self.get_style_context().add_class('favorite_entry')
+        self.get_style_context().add_class("favorite_entry")
         self.grid = Gtk.Grid()
         self.event_box.add(self.grid)
 
@@ -192,8 +200,8 @@ class AppEntryWithVM(AppEntry):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.pack_start(self.vm_icon, False, False, 5)
         box.pack_start(self.vm_label, False, False, 5)
-        self.vm_label.get_style_context().add_class('favorite_vm_name')
-        self.app_label.get_style_context().add_class('favorite_app_name')
+        self.vm_label.get_style_context().add_class("favorite_vm_name")
+        self.app_label.get_style_context().add_class("favorite_app_name")
         self.app_label.set_halign(Gtk.Align.START)
 
         self.grid.attach(self.app_icon, 0, 0, 1, 2)
@@ -210,8 +218,7 @@ class AppEntryWithVM(AppEntry):
         self.app_icon.set_from_pixbuf(app_icon)
 
         if self.app_info.disposable:
-            self.vm_label.set_text(
-                DISP_TEXT + str(self.app_info.vm))
+            self.vm_label.set_text(DISP_TEXT + str(self.app_info.vm))
         elif self.app_info.vm:
             self.vm_label.set_text(str(self.app_info.vm))
         else:
@@ -228,11 +235,11 @@ class FavoritesAppEntry(AppEntryWithVM):
     constants.py, as a space-separated list containing a subset of menu-items
     feature.
     """
-    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
-                 **properties):
+
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager, **properties):
         super().__init__(app_info, vm_manager, **properties)
-        self.remove_item = Gtk.MenuItem(label='Remove from favorites')
-        self.remove_item.connect('activate', self._remove_from_favorites)
+        self.remove_item = Gtk.MenuItem(label="Remove from favorites")
+        self.remove_item.connect("activate", self._remove_from_favorites)
         self.menu.add(self.remove_item)
         self.menu.show_all()
 
@@ -241,16 +248,17 @@ class FavoritesAppEntry(AppEntryWithVM):
         feature"""
         if not self.app_info.entry_name:
             return  # there is nothing to remove
-        vm = self.app_info.vm or self.app_info.qapp.domains[
-            self.app_info.qapp.local_name]
-        remove_from_feature(vm, constants.FAVORITES_FEATURE,
-                            self.app_info.entry_name)
+        vm = (
+            self.app_info.vm
+            or self.app_info.qapp.domains[self.app_info.qapp.local_name]
+        )
+        remove_from_feature(vm, constants.FAVORITES_FEATURE, self.app_info.entry_name)
 
 
 class SearchAppEntry(AppEntryWithVM):
     """Entry for apps listed on the Search tab."""
-    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager,
-                 **properties):
+
+    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager, **properties):
 
         super().__init__(app_info, vm_manager, **properties)
         self.menu = FavoritesMenu(lambda: self.app_info)
@@ -269,17 +277,21 @@ class SearchAppEntry(AppEntryWithVM):
 
         if self.app_info.vm:
             self.search_words.extend(
-                self.app_info.vm.name.lower().replace('_', '-').split('-'))
+                self.app_info.vm.name.lower().replace("_", "-").split("-")
+            )
         else:
-            self.search_words.append('dom0')
+            self.search_words.append("dom0")
 
         if self.app_info.disposable:
             self.search_words.extend(DISP_TEXT.lower().split())
 
         if self.app_info.app_name:
             self.search_words.extend(
-                self.app_info.app_name.lower().replace(
-                    '_', ' ').replace('-', ' ').split())
+                self.app_info.app_name.lower()
+                .replace("_", " ")
+                .replace("-", " ")
+                .split()
+            )
 
         if self.app_info.keywords:
             self.search_words.extend(k.lower() for k in self.app_info.keywords)
@@ -293,9 +305,10 @@ class SearchAppEntry(AppEntryWithVM):
             return self.last_search_result
 
         if search_words:
-            result = reduce(lambda x, y: x*y,
-                            [text_search(word, self.search_words)
-                        for word in search_words])
+            result = reduce(
+                lambda x, y: x * y,
+                [text_search(word, self.search_words) for word in search_words],
+            )
         else:
             result = 0
 
