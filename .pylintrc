@@ -1,6 +1,6 @@
 [MASTER]
 persistent=no
-ignore=qubes_menu/tests
+ignore-paths=qubes_menu/tests
 
 [MESSAGES CONTROL]
 disable=
