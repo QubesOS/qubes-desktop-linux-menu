@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="14px" height="17px" viewBox="0 0 14 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>Fill 1</title>
-    <g id="PROTOTYPE-—-Valentina" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="valentina---1st-release-(2)" transform="translate(-16.000000, -96.000000)" fill="#9B9B9B">
-            <path d="M25.2727273,99.0909091 L17.5454545,99.0909091 C16.6954545,99.0909091 16,99.7863636 16,100.636364 L16,113 L21.4090909,110.681818 L26.8181818,113 L26.8181818,100.636364 C26.8181818,99.7863636 26.1227273,99.0909091 25.2727273,99.0909091 L25.2727273,99.0909091 Z M28.3636364,109.136364 L29.9090909,109.909091 L29.9090909,97.5454545 C29.9090909,96.6954545 29.2136364,96 28.3636364,96 L20.6286364,96 C19.7786364,96 19.0909091,96.6954545 19.0909091,97.5454545 L26.8181818,97.5454545 C27.6681818,97.5454545 28.3636364,98.2409091 28.3636364,99.0909091 L28.3636364,109.136364 Z" id="Fill-1"></path>
+<svg xmlns="http://www.w3.org/2000/svg" width="14" height="17" viewBox="0 0 14 17">
+    <g id="PROTOTYPE-—-Valentina" fill="none" fill-rule="evenodd" stroke="none" stroke-width="1">
+        <g id="valentina---1st-release-(2)" fill="#9B9B9B" transform="translate(-16 -96)">
+            <path id="Fill-1" d="M25.273 99.09h-7.728A1.55 1.55 0 0 0 16 100.637V113l5.41-2.318L26.817 113v-12.364a1.55 1.55 0 0 0-1.545-1.545m3.09 10.046 1.546.773V97.545A1.55 1.55 0 0 0 28.364 96h-7.735c-.85 0-1.538.695-1.538 1.545h7.727c.85 0 1.546.696 1.546 1.546z"/>
         </g>
     </g>
 </svg>

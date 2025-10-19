@@ -1,25 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="18px" height="18px" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>Group 6</title>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18" viewBox="0 0 18 18">
     <defs>
-        <polygon id="path-1" points="0 0 17.3985227 0 17.3985227 16.2284665 0 16.2284665"></polygon>
-        <polygon id="path-3" points="0 18 17.3985462 18 17.3985462 0 0 0"></polygon>
+        <path id="path-1" d="M0 0h17.399v16.228H0z"/>
+        <path id="path-3" d="M0 18h17.399V0H0z"/>
     </defs>
-    <g id="PROTOTYPE-—-Valentina" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="valentina---1st-release-(2)" transform="translate(-12.000000, -605.000000)">
-            <g id="Group-6" transform="translate(12.000000, 605.000000)">
-                <g id="Group-3" transform="translate(0.000000, 1.771510)">
-                    <mask id="mask-2" fill="white">
-                        <use xlink:href="#path-1"></use>
+    <g id="PROTOTYPE-—-Valentina" fill="none" fill-rule="evenodd" stroke="none" stroke-width="1">
+        <g id="valentina---1st-release-(2)" transform="translate(-12 -605)">
+            <g id="Group-6" transform="translate(12 605)">
+                <g id="Group-3" transform="translate(0 1.772)">
+                    <mask id="mask-2" fill="#fff">
+                        <use xlink:href="#path-1"/>
                     </mask>
-                    <g id="Clip-2"></g>
-                    <path d="M4.27041582,0.0403314053 C1.62870877,1.60434579 -2.34484915e-05,4.44677192 -2.34484915e-05,7.52907613 C-2.34484915e-05,12.3261685 3.90250899,16.2284665 8.69936689,16.2284665 C13.4962248,16.2284665 17.3985227,12.3261685 17.3985227,7.52907613 C17.3985227,4.41675786 15.7425903,1.55533844 13.0589104,0 L11.7345396,2.4855401 C13.4995076,3.54916367 14.5847038,5.45693294 14.5847038,7.52907613 C14.5847038,10.7743474 11.9446381,13.4146475 8.69936689,13.4146475 C5.45409567,13.4146475 2.81379553,10.7743474 2.81379553,7.52907613 C2.81379553,5.48577458 3.87226043,3.59770205 5.59713147,2.52634047" id="Fill-1" fill="#9B9B9B" mask="url(#mask-2)"></path>
+                    <path id="Fill-1" fill="#9B9B9B" d="M4.27.04A8.7 8.7 0 0 0 0 7.53c0 4.796 3.903 8.698 8.7 8.698s8.699-3.902 8.699-8.699A8.7 8.7 0 0 0 13.059 0l-1.324 2.486a5.88 5.88 0 0 1 2.85 5.043 5.89 5.89 0 0 1-5.886 5.886 5.89 5.89 0 0 1-5.885-5.886 5.89 5.89 0 0 1 2.783-5.003" mask="url(#mask-2)"/>
                 </g>
-                <mask id="mask-4" fill="white">
-                    <use xlink:href="#path-3"></use>
+                <mask id="mask-4" fill="#fff">
+                    <use xlink:href="#path-3"/>
                 </mask>
-                <g id="Clip-5"></g>
-                <polygon id="Fill-4" fill="#9B9B9B" mask="url(#mask-4)" points="7.39330936 8.67430045 10.0640925 8.67430045 10.0640925 -0.000234484915 7.39330936 -0.000234484915"></polygon>
+                <path id="Fill-4" fill="#9B9B9B" d="M7.393 8.674h2.671V0h-2.67z" mask="url(#mask-4)"/>
             </g>
         </g>
     </g>
