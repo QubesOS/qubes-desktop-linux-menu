@@ -1,3 +1,27 @@
+qubes-desktop-linux-menu (1.2.9-1) unstable; urgency=medium
+
+  [ Davíð Steinn Geirsson ]
+  * Show shutdown/restart/sleep options in KDE logout dialog
+
+  [ Marek Marczykowski-Górecki ]
+  * ci: switch pylint ignore to ignore-paths option
+
+  [ Yanase Yuki ]
+  * optimize SVG icons
+
+  [ Marta Marczykowska-Górecka ]
+  * Add sorting to favorites page
+  * Add Recently Used Apps to Search
+  * Black-ify menu files
+  * Add enabling/disabling recent apps/searches to Menu Settings
+  * Blackify qubes menu settings
+  * Fix typing errors and errors introduced by black
+  * Fix icons and improve communication
+  * Improve hover, add menu settings
+  * Add tests for the recents feature
+
+ -- Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>  Thu, 23 Oct 2025 04:38:16 +0200
+
 qubes-desktop-linux-menu (1.2.8-1) unstable; urgency=medium
 
   * debian: include gir1.2-gtklayershell-0.1 in runtime deps too
