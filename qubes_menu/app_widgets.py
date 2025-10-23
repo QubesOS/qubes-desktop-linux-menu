@@ -45,7 +45,7 @@ from gi.repository import Gtk, Gdk
 
 logger = logging.getLogger("qubes-appmenu")
 
-DISP_TEXT = "new Disposable Qube from "
+DISP_TEXT = "New disposable qube from "
 
 
 class AppEntry(Gtk.ListBoxRow):
