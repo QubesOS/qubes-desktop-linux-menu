@@ -342,7 +342,9 @@ class AppPage(MenuPage):
             self.selected_vm_entry = row
             self._set_right_visibility(True)
             self.network_indicator.set_network_state(row.vm_entry.has_network)
-            self.control_list.update_visibility(row.vm_entry.power_state)
+            self.control_list.update_visibility(
+                row.vm_entry, self.toggle_buttons.apps_toggle.get_active()
+            )
             self.control_list.unselect_all()
             self.app_list.ephemeral_vm = bool(self.selected_vm_entry.vm_entry.parent_vm)
         self.app_list.invalidate_filter()
