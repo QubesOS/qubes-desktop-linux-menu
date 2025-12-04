@@ -157,3 +157,22 @@ def test_recent_searches(mock_application, test_desktop_file_path, test_qapp,
     apps = [row.app_info.entry_name for row in
             search_page.recent_app_list.get_children()]
     assert apps == ['test3.desktop', 'test1.desktop']
+
+def test_recent_searches_max(test_desktop_file_path, test_qapp,
+                         test_builder):
+    # this test should detect if recent apps work correctly even if counter is exceeded
+    dispatcher = MockDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    with mock.patch.object(DesktopFileManager, 'desktop_dirs',
+                           [test_desktop_file_path]):
+        desktop_file_manager = DesktopFileManager(test_qapp)
+
+    search_page = SearchPage(vm_manager, test_builder, desktop_file_manager)
+    search_page.recent_apps_manager.APPS_TO_KEEP = 1
+
+    assert search_page.search_entry.get_sensitive()
+
+    search_page.recent_apps_manager.add_new_recent_app(None, f'test3.desktop')
+    search_page.recent_apps_manager.add_new_recent_app(None, f'test1.desktop')
+    search_page.recent_apps_manager.add_new_recent_app(None, f'test2.desktop')

@@ -207,7 +207,7 @@ class RecentAppsManager:
 
         if len(self.recent_apps) == self.APPS_TO_KEEP + 1:
             last_row: SearchAppEntry = self.recent_list_box.get_children()[-1]
-            del self.recent_apps[last_row]
+            self.recent_apps.pop(0)
             self.recent_list_box.remove(last_row)
 
     def _row_clicked(self, _widget, row: SearchAppEntry):

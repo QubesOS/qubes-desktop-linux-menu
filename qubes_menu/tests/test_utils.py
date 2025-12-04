@@ -29,9 +29,9 @@ def test_highlight_words():
     highlight_tag = '<span>'
 
     # create some labels
-    label_1 = Gtk.Label("Come forth my lovely languorous Sphinx")
-    label_2 = Gtk.Label("sphinx of black quartz, judge my vow")
-    label_3 = Gtk.Label("A shape with lion body and the head of a man")
+    label_1 = Gtk.Label(label="Come forth my lovely languorous Sphinx")
+    label_2 = Gtk.Label(label="sphinx of black quartz, judge my vow")
+    label_3 = Gtk.Label(label="A shape with lion body and the head of a man")
 
     labels = [label_1, label_2, label_3]
 
