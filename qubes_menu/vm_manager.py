@@ -348,6 +348,12 @@ class VMManager:
                 vm_entry.show_dispvm_template_in_apps = value
             if feature == constants.FOLDER_FEATURE:
                 vm_entry.folder = vm_entry.vm.features.get(constants.FOLDER_FEATURE, "")
+            if feature in (
+                constants.FOLDER_FEATURE_APPS,
+                constants.FOLDER_FEATURE_TEMPLATES,
+                constants.FOLDER_FEATURE_SERVICE,
+            ):
+                vm_entry.update_entries(update_type=True)
         except Exception:  # pylint: disable=broad-except
             # dispatcher functions cannot raise any Exception, because
             # it will disable any future event handling
@@ -422,3 +428,14 @@ class VMManager:
             "domain-feature-delete:" + constants.FOLDER_FEATURE,
             self._update_domain_feature,
         )
+        for feature in (
+            constants.FOLDER_FEATURE_APPS,
+            constants.FOLDER_FEATURE_TEMPLATES,
+            constants.FOLDER_FEATURE_SERVICE,
+        ):
+            self.dispatcher.add_handler(
+                "domain-feature-set:" + feature, self._update_domain_feature
+            )
+            self.dispatcher.add_handler(
+                "domain-feature-delete:" + feature, self._update_domain_feature
+            )
