@@ -28,6 +28,7 @@ from .custom_widgets import (
     NetworkIndicator,
     VMRow,
     FolderRow,
+    SelfAwareMenu,
     ControlList,
     KeynavController,
 )
@@ -367,7 +368,7 @@ class AppPage(MenuPage):
 
         self.vm_list.select_row(row)
 
-        menu = Gtk.Menu()
+        menu = SelfAwareMenu()
 
         move_to_folder = Gtk.MenuItem(label="Move to folder")
         move_to_folder.set_submenu(self._folder_selection_menu(row.vm_entry, include_remove=False))
@@ -377,7 +378,7 @@ class AppPage(MenuPage):
         menu.popup_at_pointer(None)
 
     def _folder_selection_menu(self, vm_entry: VMEntry, include_remove: bool):
-        submenu = Gtk.Menu()
+        submenu = SelfAwareMenu()
         current_folder = self._vm_folder(vm_entry) or self.UNGROUPED
 
         for folder_name in self.folder_order:
@@ -547,7 +548,7 @@ class AppPage(MenuPage):
         if event.button != 3:
             return
 
-        menu = Gtk.Menu()
+        menu = SelfAwareMenu()
 
         if row.folder_name != self.UNGROUPED:
             rename_folder = Gtk.MenuItem(label="Rename folder…")
