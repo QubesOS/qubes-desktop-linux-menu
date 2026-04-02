@@ -22,6 +22,7 @@ import qubesadmin
 import qubesadmin.events
 from ..vm_manager import VMManager
 from ..application_page import VMTypeToggle
+from .. import constants
 from qubesadmin.tests.mock_app import Property
 
 
@@ -112,6 +113,26 @@ def test_vm_manager(test_qapp):
         vm_name, "feature-set:internal", feature="internal", value=1
     )
     assert entry_test.internal
+
+    test_qapp._qubes[vm_name].features[constants.FOLDER_FEATURE] = "Work"
+    test_qapp._qubes[vm_name].update_calls()
+    vm_manager._update_domain_feature(
+        vm_name,
+        f"feature-set:{constants.FOLDER_FEATURE}",
+        feature=constants.FOLDER_FEATURE,
+        value="Work",
+    )
+    assert entry_test.folder == "Work"
+    assert entry_test.sort_name == "test-vm "
+
+    del test_qapp._qubes[vm_name].features[constants.FOLDER_FEATURE]
+    test_qapp._qubes[vm_name].update_calls()
+    vm_manager._update_domain_feature(
+        vm_name,
+        f"feature-delete:{constants.FOLDER_FEATURE}",
+        feature=constants.FOLDER_FEATURE,
+    )
+    assert entry_test.folder == ""
 
 
 def test_filter(test_qapp):
