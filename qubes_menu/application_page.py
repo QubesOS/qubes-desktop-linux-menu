@@ -191,10 +191,14 @@ class AppPage(MenuPage):
         self.sort_running = False  # Sort running VMs to top
         self.desktop_file_manager = desktop_file_manager
         self.vm_manager = vm_manager
-        self.local_vm = self.vm_manager.qapp.domains[self.vm_manager.qapp.local_name]
+        self.local_vm = self.vm_manager.qapp.domains[
+            self.vm_manager.qapp.local_name
+        ]
         self.vm_rows: Dict[str, VMRow] = {}
         self.folder_rows: Dict[str, FolderRow] = {}
-        self.scope_folder_order: Dict[str, List[str]] = {scope: [] for scope in self.SCOPES}
+        self.scope_folder_order: Dict[str, List[str]] = {
+            scope: [] for scope in self.SCOPES
+        }
         self.scope_collapsed_folders: Dict[str, Set[str]] = {
             scope: set() for scope in self.SCOPES
         }
@@ -371,7 +375,9 @@ class AppPage(MenuPage):
         menu = SelfAwareMenu()
 
         move_to_folder = Gtk.MenuItem(label="Move to folder")
-        move_to_folder.set_submenu(self._folder_selection_menu(row.vm_entry, include_remove=False))
+        move_to_folder.set_submenu(
+            self._folder_selection_menu(row.vm_entry, include_remove=False)
+        )
         menu.add(move_to_folder)
 
         menu.show_all()
@@ -385,7 +391,9 @@ class AppPage(MenuPage):
             if folder_name == current_folder:
                 continue
             item = Gtk.MenuItem(label=folder_name)
-            item.connect("activate", self._assign_folder_to_vm, vm_entry, folder_name)
+            item.connect(
+                "activate", self._assign_folder_to_vm, vm_entry, folder_name
+            )
             submenu.add(item)
 
         create_item = Gtk.MenuItem(label="Create new folder…")
@@ -394,7 +402,9 @@ class AppPage(MenuPage):
 
         if include_remove:
             remove_item = Gtk.MenuItem(label="Remove from folder")
-            remove_item.connect("activate", self._assign_folder_to_vm, vm_entry, "")
+            remove_item.connect(
+                "activate", self._assign_folder_to_vm, vm_entry, ""
+            )
             submenu.add(remove_item)
 
         submenu.show_all()
@@ -409,7 +419,9 @@ class AppPage(MenuPage):
             return
         self._assign_folder(vm_entry, folder_name)
 
-    def _assign_folder_to_vm(self, _widget, vm_entry: VMEntry, folder_name: str):
+    def _assign_folder_to_vm(
+        self, _widget, vm_entry: VMEntry, folder_name: str
+    ):
         self._assign_folder(vm_entry, folder_name)
 
     def _rename_folder_from_row(self, _widget, row: VMRow):
@@ -552,11 +564,15 @@ class AppPage(MenuPage):
 
         if row.folder_name != self.UNGROUPED:
             rename_folder = Gtk.MenuItem(label="Rename folder…")
-            rename_folder.connect("activate", self._rename_folder_from_folder_row, row)
+            rename_folder.connect(
+                "activate", self._rename_folder_from_folder_row, row
+            )
             menu.add(rename_folder)
 
             delete_folder = Gtk.MenuItem(label="Delete folder")
-            delete_folder.connect("activate", self._delete_folder_from_folder_row, row)
+            delete_folder.connect(
+                "activate", self._delete_folder_from_folder_row, row
+            )
             menu.add(delete_folder)
 
         move_up = Gtk.MenuItem(label="Move folder up")
@@ -647,16 +663,17 @@ class AppPage(MenuPage):
             allowed_collapsed = set(folders)
             allowed_collapsed.add(self.UNGROUPED)
             collapsed = {
-                f for f in parsed_collapsed if isinstance(f, str) and f in allowed_collapsed
+                f
+                for f in parsed_collapsed
+                if isinstance(f, str) and f in allowed_collapsed
             }
 
             self.scope_folder_order[scope] = folders
             self.scope_collapsed_folders[scope] = collapsed
 
     def _save_folder_state(self):
-        self.local_vm.features[self.SCOPE_FOLDERS_FEATURE[self._current_scope()]] = json.dumps(
-            self.folder_order
-        )
+        feature_name = self.SCOPE_FOLDERS_FEATURE[self._current_scope()]
+        self.local_vm.features[feature_name] = json.dumps(self.folder_order)
 
     def _save_collapsed_state(self):
         collapsed = [f for f in self.folder_order if f in self.collapsed_folders]

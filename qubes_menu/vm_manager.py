@@ -45,7 +45,9 @@ class VMEntry:
         else:
             self.parent_vm = None
 
-        self._folder = str(vm.features.get(constants.FOLDER_FEATURE, "")).strip()
+        self._folder = str(
+            vm.features.get(constants.FOLDER_FEATURE, "")
+        ).strip()
         self.sort_name = ""
         self._update_sort_name()
 
@@ -73,7 +75,9 @@ class VMEntry:
 
     def _update_sort_name(self):
         if self.parent_vm:
-            base_sort = f"{str(self.parent_vm.name).lower()} :{self.vm_name.lower()}"
+            base_sort = (
+                f"{str(self.parent_vm.name).lower()} :{self.vm_name.lower()}"
+            )
         else:
             # the space here is to assure correct sorting for dispvm children
             base_sort = self.vm_name.lower() + " "
@@ -347,7 +351,9 @@ class VMManager:
                 value = bool(value)
                 vm_entry.show_dispvm_template_in_apps = value
             if feature == constants.FOLDER_FEATURE:
-                vm_entry.folder = vm_entry.vm.features.get(constants.FOLDER_FEATURE, "")
+                vm_entry.folder = vm_entry.vm.features.get(
+                    constants.FOLDER_FEATURE, ""
+                )
             if feature in (
                 constants.FOLDER_FEATURE_APPS,
                 constants.FOLDER_FEATURE_TEMPLATES,
@@ -422,7 +428,8 @@ class VMManager:
             "domain-feature-delete:internal", self._update_domain_feature
         )
         self.dispatcher.add_handler(
-            "domain-feature-set:" + constants.FOLDER_FEATURE, self._update_domain_feature
+            "domain-feature-set:" + constants.FOLDER_FEATURE,
+            self._update_domain_feature,
         )
         self.dispatcher.add_handler(
             "domain-feature-delete:" + constants.FOLDER_FEATURE,

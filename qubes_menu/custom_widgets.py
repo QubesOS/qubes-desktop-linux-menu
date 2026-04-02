@@ -441,7 +441,8 @@ class FolderRow(HoverListBox):
     def update_contents(self):
         arrow = "▸" if self.collapsed else "▾"
         self.arrow.set_text(arrow)
-        self.label.set_markup(f"<b>{GLib.markup_escape_text(self.folder_name)}</b>")
+        escaped_folder = GLib.markup_escape_text(self.folder_name)
+        self.label.set_markup(f"<b>{escaped_folder}</b>")
         self.main_box.show_all()
 
     def _on_button_press(self, _widget, event):
