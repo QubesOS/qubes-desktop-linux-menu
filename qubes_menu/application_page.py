@@ -633,10 +633,10 @@ class AppPage(MenuPage):
         self.vm_list.invalidate_sort()
 
     def _set_all_folders_collapsed(self, _widget, collapsed: bool):
+        # mutate in place to preserve per-scope set references
+        self.collapsed_folders.clear()
         if collapsed:
-            self.collapsed_folders = set(self.folder_order)
-        else:
-            self.collapsed_folders = set()
+            self.collapsed_folders.update(self.folder_order)
 
         for _folder_name, folder_row in self.folder_rows.items():
             folder_row.collapsed = collapsed
