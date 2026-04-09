@@ -18,10 +18,12 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 from unittest import mock
+import json
 
 from ..desktop_file_manager import DesktopFileManager
 from ..vm_manager import VMManager
-from ..custom_widgets import VMRow
+from ..custom_widgets import VMRow, FolderRow
+from .. import constants
 from qubesadmin.tests.mock_app import MockDispatcher, MockQube
 from ..application_page import AppPage
 from ..settings_page import SettingsPage
@@ -172,3 +174,151 @@ def test_settings_app_page(test_desktop_file_path, test_qapp, test_builder):
 
     for row in settings_page.app_list.get_children():
         assert not row.app_info.vm
+
+
+def test_folder_create_assign_rename_delete(
+    test_desktop_file_path, test_qapp, test_builder
+):
+    dispatcher = MockDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
+        desktop_file_manager = DesktopFileManager(test_qapp)
+
+    app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
+    app_page.toggle_buttons.apps_toggle.set_active(True)
+    app_page._save_folder_state = mock.Mock()
+    app_page._save_collapsed_state = mock.Mock()
+
+    vm_entry = vm_manager.load_vm_from_name("test-red")
+    assert vm_entry
+    vm_entry.vm.features = {}
+
+    app_page._create_folder("Work")
+    assert "Work" in app_page.folder_order
+
+    app_page._assign_folder(vm_entry, "Work")
+    assert app_page._vm_folder(vm_entry) == "Work"
+    assert vm_entry.vm.features[constants.FOLDER_FEATURE_APPS] == "Work"
+
+    app_page._rename_folder("Work", "Projects")
+    assert "Work" not in app_page.folder_order
+    assert "Projects" in app_page.folder_order
+    assert app_page._vm_folder(vm_entry) == "Projects"
+    assert vm_entry.vm.features[constants.FOLDER_FEATURE_APPS] == "Projects"
+
+    app_page._delete_folder("Projects")
+    assert "Projects" not in app_page.folder_order
+    assert app_page._vm_folder(vm_entry) == ""
+    assert constants.FOLDER_FEATURE_APPS not in vm_entry.vm.features
+
+
+def test_folder_move_and_collapsed_state_saved(
+    test_desktop_file_path, test_qapp, test_builder
+):
+    dispatcher = MockDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
+        desktop_file_manager = DesktopFileManager(test_qapp)
+
+    app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
+    app_page.toggle_buttons.apps_toggle.set_active(True)
+    app_page._save_folder_state = mock.Mock()
+    app_page._save_collapsed_state = mock.Mock()
+
+    app_page._create_folder("A")
+    app_page._create_folder("B")
+    app_page._create_folder("C")
+    assert app_page.folder_order == [app_page.UNGROUPED, "A", "B", "C"]
+
+    app_page._move_folder(None, "B", -1)
+    assert app_page.folder_order == [app_page.UNGROUPED, "B", "A", "C"]
+
+    app_page._move_folder(None, "B", 1)
+    assert app_page.folder_order == [app_page.UNGROUPED, "A", "B", "C"]
+
+    folder_b = app_page.folder_rows["B"]
+    assert isinstance(folder_b, FolderRow)
+    assert "B" not in app_page.collapsed_folders
+
+    app_page._toggle_folder(folder_b)
+    assert "B" in app_page.collapsed_folders
+    app_page._save_collapsed_state.assert_called()
+
+    app_page._set_all_folders_collapsed(None, True)
+    assert set(app_page.folder_order) == app_page.collapsed_folders
+
+    app_page._set_all_folders_collapsed(None, False)
+    assert app_page.collapsed_folders == set()
+
+
+def test_folder_state_is_scope_specific(test_desktop_file_path, test_qapp, test_builder):
+    test_qapp._qubes["dom0"].features[constants.FOLDERS_FEATURE_APPS] = json.dumps(
+        ["Ungrouped", "AppsOnly"]
+    )
+    test_qapp._qubes["dom0"].features[
+        constants.FOLDERS_COLLAPSED_FEATURE_APPS
+    ] = json.dumps(["AppsOnly"])
+    test_qapp._qubes["dom0"].features[constants.FOLDERS_FEATURE_TEMPLATES] = (
+        json.dumps(["Ungrouped", "TplOnly"])
+    )
+    test_qapp._qubes["dom0"].features[constants.FOLDERS_FEATURE_SERVICE] = (
+        json.dumps(["Ungrouped", "SvcOnly"])
+    )
+    test_qapp.update_vm_calls()
+
+    dispatcher = MockDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
+        desktop_file_manager = DesktopFileManager(test_qapp)
+
+    app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
+
+    app_page.toggle_buttons.apps_toggle.set_active(True)
+    assert app_page.folder_order == ["Ungrouped", "AppsOnly"]
+    assert app_page.collapsed_folders == {"AppsOnly"}
+
+    app_page.toggle_buttons.templates_toggle.set_active(True)
+    assert app_page.folder_order == ["Ungrouped", "TplOnly"]
+
+    app_page.toggle_buttons.system_toggle.set_active(True)
+    assert app_page.folder_order == ["Ungrouped", "SvcOnly"]
+
+
+def test_folder_selection_menu_entries(test_desktop_file_path, test_qapp, test_builder):
+    dispatcher = MockDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
+        desktop_file_manager = DesktopFileManager(test_qapp)
+
+    app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
+    app_page.toggle_buttons.apps_toggle.set_active(True)
+    app_page._save_folder_state = mock.Mock()
+    app_page._save_collapsed_state = mock.Mock()
+
+    vm_entry = vm_manager.load_vm_from_name("test-red")
+    assert vm_entry
+    vm_entry.vm.features = {}
+
+    app_page._create_folder("Work")
+    app_page._create_folder("Personal")
+    app_page._assign_folder(vm_entry, "Work")
+
+    submenu = app_page._folder_selection_menu(vm_entry, include_remove=True)
+    labels = [item.get_label() for item in submenu.get_children()]
+
+    assert "Work" not in labels
+    assert "Personal" in labels
+    assert "Create new folder…" in labels
+    assert "Remove from folder" in labels

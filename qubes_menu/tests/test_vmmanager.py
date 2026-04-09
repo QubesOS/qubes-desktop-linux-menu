@@ -20,6 +20,7 @@
 
 import qubesadmin
 import qubesadmin.events
+from unittest import mock
 from ..vm_manager import VMManager
 from ..application_page import VMTypeToggle
 from .. import constants
@@ -163,3 +164,29 @@ def test_filter(test_qapp):
     assert VMTypeToggle._filter_appvms(entry_dvm_template)
     assert VMTypeToggle._filter_templatevms(entry_dvm_template)
     assert not VMTypeToggle._filter_service(entry_dvm_template)
+
+
+def test_folder_scope_feature_events_refresh_entries(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    vm_name = "test-vm"
+    entry_test = vm_manager.load_vm_from_name(vm_name)
+    assert entry_test
+
+    with mock.patch.object(entry_test, "update_entries") as update_entries:
+        vm_manager._update_domain_feature(
+            vm_name,
+            f"feature-set:{constants.FOLDER_FEATURE_APPS}",
+            feature=constants.FOLDER_FEATURE_APPS,
+            value="Work",
+        )
+        update_entries.assert_called_once_with(update_type=True)
+
+    with mock.patch.object(entry_test, "update_entries") as update_entries:
+        vm_manager._update_domain_feature(
+            vm_name,
+            f"feature-delete:{constants.FOLDER_FEATURE_TEMPLATES}",
+            feature=constants.FOLDER_FEATURE_TEMPLATES,
+        )
+        update_entries.assert_called_once_with(update_type=True)
