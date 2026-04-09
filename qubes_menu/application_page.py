@@ -310,7 +310,14 @@ class AppPage(MenuPage):
         if not scope:
             scope = self._current_scope()
         feature_name = self.SCOPE_VM_FEATURE[scope]
-        return str(vm_entry.vm.features.get(feature_name, "")).strip()
+        return self._safe_feature_get(vm_entry.vm, feature_name, "")
+
+    @staticmethod
+    def _safe_feature_get(vm, feature_name: str, default=""):
+        try:
+            return str(vm.features.get(feature_name, default)).strip()
+        except Exception:  # pylint: disable=broad-except
+            return str(default).strip()
 
     def set_sorting_order(self, sort_running: bool = False):
         self.sort_running = sort_running
@@ -640,12 +647,18 @@ class AppPage(MenuPage):
 
     def _load_folder_state_all(self):
         for scope in self.SCOPES:
-            raw_folders = self.local_vm.features.get(
-                self.SCOPE_FOLDERS_FEATURE[scope], "[]"
-            )
-            raw_collapsed = self.local_vm.features.get(
-                self.SCOPE_COLLAPSED_FEATURE[scope], "[]"
-            )
+            try:
+                raw_folders = self.local_vm.features.get(
+                    self.SCOPE_FOLDERS_FEATURE[scope], "[]"
+                )
+            except Exception:  # pylint: disable=broad-except
+                raw_folders = "[]"
+            try:
+                raw_collapsed = self.local_vm.features.get(
+                    self.SCOPE_COLLAPSED_FEATURE[scope], "[]"
+                )
+            except Exception:  # pylint: disable=broad-except
+                raw_collapsed = "[]"
 
             try:
                 parsed_folders = json.loads(raw_folders)

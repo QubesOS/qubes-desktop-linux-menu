@@ -21,6 +21,7 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 import subprocess
+from types import SimpleNamespace
 from typing import Optional, List, Callable
 
 from . import constants
@@ -417,10 +418,14 @@ class FolderRow(HoverListBox):
     ):
         super().__init__()
         self.folder_name = folder_name
+        self.vm_name = folder_name
         self.collapsed = collapsed
         self.toggle_handler = toggle_handler
         self.menu_handler = menu_handler
         self.sort_order = ""
+        # compatibility with older code/tests iterating vm_list rows and
+        # expecting each row to expose vm_entry.* attributes
+        self.vm_entry = SimpleNamespace(is_dispvm_template=False, parent_vm=None)
 
         self.get_style_context().add_class("vm_entry")
         self.get_style_context().add_class("folder_entry")
@@ -446,6 +451,7 @@ class FolderRow(HoverListBox):
         self.main_box.show_all()
 
     def _on_button_press(self, _widget, event):
+        """Handle left click for collapse toggling and right click menu."""
         if event.button == 3 and self.menu_handler:
             self.menu_handler(self, event)
             return True
