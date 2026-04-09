@@ -22,7 +22,7 @@ import json
 
 from ..desktop_file_manager import DesktopFileManager
 from ..vm_manager import VMManager
-from ..custom_widgets import VMRow, FolderRow
+from ..custom_widgets import FolderRow
 from .. import constants
 from qubesadmin.tests.mock_app import MockDispatcher, MockQube
 from ..application_page import AppPage
@@ -48,7 +48,6 @@ def test_app_page_vm_state(test_desktop_file_path, test_qapp, test_builder):
         [
             row
             for row in app_page.vm_list.get_children()
-            if isinstance(row, VMRow)
             if row.vm_name == "dom0"
         ][0]
     )
@@ -60,7 +59,6 @@ def test_app_page_vm_state(test_desktop_file_path, test_qapp, test_builder):
         [
             row
             for row in app_page.vm_list.get_children()
-            if isinstance(row, VMRow)
             if row.vm_name == "test-red"
         ][0]
     )
@@ -75,7 +73,6 @@ def test_app_page_vm_state(test_desktop_file_path, test_qapp, test_builder):
         [
             row
             for row in app_page.vm_list.get_children()
-            if isinstance(row, VMRow)
             if row.vm_name == "sys-usb"
         ][0]
     )
@@ -93,7 +90,6 @@ def test_app_page_vm_state(test_desktop_file_path, test_qapp, test_builder):
         [
             row
             for row in app_page.vm_list.get_children()
-            if isinstance(row, VMRow)
             if row.vm_name == "test-alt-dvm"
         ][0]
     )
@@ -105,7 +101,6 @@ def test_app_page_vm_state(test_desktop_file_path, test_qapp, test_builder):
         [
             row
             for row in app_page.vm_list.get_children()
-            if isinstance(row, VMRow)
             if row.vm_name == "test-alt-dvm-running"
         ][0]
     )
@@ -143,8 +138,6 @@ def test_dispvm_parent_sorting(test_desktop_file_path, test_qapp, test_builder):
     found_dvm = False
 
     for row in app_page.vm_list.get_children():
-        if not isinstance(row, VMRow):
-            continue
         if found_dvm:
             if row.vm_name == "disp1233" and row.vm_entry.parent_vm:
                 break
