@@ -29,8 +29,9 @@ checks:tests:
     - pip3 install --quiet -r ci/requirements.txt
     - git clone https://github.com/QubesOS/qubes-core-admin-client ~/core-admin-client
     - git clone https://github.com/QubesOS/qubes-desktop-linux-manager ~/desktop-linux-manager
+    - git clone https://github.com/QubesOS/qubes-core-qrexec ~/core-qrexec
   script:
-    - PYTHONPATH=~/core-admin-client:~/desktop-linux-manager:. xvfb-run ./run-tests.sh
+    - PYTHONPATH=~/core-admin-client:~/desktop-linux-manager:~/core-qrexec:. xvfb-run ./run-tests.sh
   after_script:
     - "PATH=$PATH:$HOME/.local/bin"
     - ci/codecov-wrapper
