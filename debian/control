@@ -10,6 +10,7 @@ Build-Depends:
  python3-setuptools,
  python3-systemd,
  python3-qubesadmin,
+ python3-qrexec,
  qubes-desktop-linux-manager,
  python3-gi,
  gobject-introspection,
