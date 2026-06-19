@@ -4,4 +4,3 @@ docutils
 types-setuptools
 pylint
 pyinotify
-gbulb
