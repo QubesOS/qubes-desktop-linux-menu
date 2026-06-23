@@ -56,7 +56,9 @@ class FavoritesPage(MenuPage):
         self.dispatcher = dispatcher
         self.vm_manager = vm_manager
 
-        self.sort_names: bool | None = None  # sort by app name, AZ (True) or ZA (False)
+        self.sort_names: bool | None = (
+            None  # sort by app name, AZ (True) or ZA (False)
+        )
         self.sort_qubes: bool | None = (
             None  # sort by qube name, AZ (True) or ZA (False)
         )
@@ -108,7 +110,8 @@ class FavoritesPage(MenuPage):
             self._feature_deleted,
         )
         self.dispatcher.add_handler(
-            f"domain-feature-set:{constants.FAVORITES_FEATURE}", self._feature_set
+            f"domain-feature-set:{constants.FAVORITES_FEATURE}",
+            self._feature_set,
         )
         self.dispatcher.add_handler("domain-add", self._domain_added)
         self.dispatcher.add_handler("domain-delete", self._domain_deleted)
@@ -170,7 +173,9 @@ class FavoritesPage(MenuPage):
                     self.app_list.remove(child)
             self.app_list.invalidate_sort()
         except Exception as ex:  # pylint: disable=broad-except
-            logger.warning("Encountered problem removing favorite entry: %s", repr(ex))
+            logger.warning(
+                "Encountered problem removing favorite entry: %s", repr(ex)
+            )
 
     def _feature_set(self, vm, event, feature, *_args, **_kwargs):
         """When VM feature specified in constants.py is changed, all existing
@@ -180,7 +185,9 @@ class FavoritesPage(MenuPage):
             self._feature_deleted(vm, event, feature)
             self._load_vms_favorites(vm)
         except Exception as ex:  # pylint: disable=broad-except
-            logger.warning("Encountered problem adding favorite entry: %s", repr(ex))
+            logger.warning(
+                "Encountered problem adding favorite entry: %s", repr(ex)
+            )
 
     def _domain_added(self, _submitter, _event, vm, **_kwargs):
         """On a newly created domain, load all favorites from features
@@ -213,10 +220,14 @@ class FavoritesPage(MenuPage):
 
         if self.sort_qubes is not None:
             sort_name_x = (
-                (x.app_info.vm.name if x.app_info.vm else "") + " | " + sort_name_x
+                (x.app_info.vm.name if x.app_info.vm else "")
+                + " | "
+                + sort_name_x
             )
             sort_name_y = (
-                (y.app_info.vm.name if y.app_info.vm else "") + " | " + sort_name_y
+                (y.app_info.vm.name if y.app_info.vm else "")
+                + " | "
+                + sort_name_y
             )
             if self.sort_qubes:
                 return sort_name_x > sort_name_y

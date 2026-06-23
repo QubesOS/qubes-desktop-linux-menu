@@ -61,14 +61,18 @@ def test_menu_settings_change():
     assert not app.sort_running_check.get_active()
     assert not app.show_recent_check.get_active()
 
-    app.starting_page_combo.set_active_id("Search")  # the first option is search
-    app.menu_position_combo.set_active_id("Top Left")  # the first option is Top Left
+    app.starting_page_combo.set_active_id(
+        "Search"
+    )  # the first option is search
+    app.menu_position_combo.set_active_id(
+        "Top Left"
+    )  # the first option is Top Left
     app.sort_running_check.set_active(True)
     app.show_recent_check.set_active(True)
 
-    qapp.expected_calls[("dom0", "admin.vm.feature.Set", "menu-sort-running", b"1")] = (
-        b"0\0"
-    )
+    qapp.expected_calls[
+        ("dom0", "admin.vm.feature.Set", "menu-sort-running", b"1")
+    ] = b"0\0"
     qapp.expected_calls[
         ("dom0", "admin.vm.feature.Set", "menu-initial-page", b"search_page")
     ] = b"0\0"

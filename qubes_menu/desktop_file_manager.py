@@ -47,8 +47,10 @@ def exec_parse(desktop_entry: xdg.DesktopEntry.DesktopEntry):
     split_str = shlex.split(desktop_entry.getExec())
     result = []
     for s in split_str:
+        # fmt: off
         if s in ["%f", "%F", "%u", "%U", "%d", "%D", "%n", "%N", "%v", "%m", "%k"]:
             continue
+        # fmt: on
         if s == "%i" and desktop_entry.getIcon():
             result.extend(["--icon", desktop_entry.getIcon()])
             continue
@@ -121,7 +123,9 @@ class ApplicationInfo:
             # replace name of the old VM - used for opening apps from DVM
             # template in their child dispvm
             if len(command) < 6 or command[5] != str(self.vm):
-                logger.error("Unexpected command for a disposable VM: %s", command)
+                logger.error(
+                    "Unexpected command for a disposable VM: %s", command
+                )
                 return []
             return command[:5] + [str(vm)] + command[6:]
         return command
@@ -188,7 +192,9 @@ class DesktopFileManager:
 
         # directories used by Qubes menu tools, not necessarily all possible
         # XDG directories
-        self.current_environments = os.environ.get("XDG_CURRENT_DESKTOP", "").split(":")
+        self.current_environments = os.environ.get(
+            "XDG_CURRENT_DESKTOP", ""
+        ).split(":")
 
         self.app_entries: Dict[Path, ApplicationInfo] = {}
 
@@ -260,7 +266,9 @@ class DesktopFileManager:
         try:
             entry = xdg.DesktopEntry.DesktopEntry(path)
         except Exception as ex:  # pylint: disable=broad-except
-            logger.warning("Cannot load desktop entry file %s: %s", path, str(ex))
+            logger.warning(
+                "Cannot load desktop entry file %s: %s", path, str(ex)
+            )
             self.remove_file(path)
             return
 
@@ -289,10 +297,14 @@ class DesktopFileManager:
         if entry.getNoDisplay():
             return False
         if entry.getOnlyShowIn():
-            if not set(entry.getOnlyShowIn()).intersection(self.current_environments):
+            if not set(entry.getOnlyShowIn()).intersection(
+                self.current_environments
+            ):
                 return False
         if entry.getNotShowIn():
-            if set(entry.getNotShowIn()).intersection(self.current_environments):
+            if set(entry.getNotShowIn()).intersection(
+                self.current_environments
+            ):
                 return False
         if entry.get("X-AppStream-Ignore"):
             return False
@@ -323,5 +335,7 @@ class DesktopFileManager:
 
         for path in self.desktop_dirs:
             self.watches.append(
-                self.watch_manager.add_watch(str(path), mask, rec=True, auto_add=True)
+                self.watch_manager.add_watch(
+                    str(path), mask, rec=True, auto_add=True
+                )
             )

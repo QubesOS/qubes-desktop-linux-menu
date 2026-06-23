@@ -76,12 +76,16 @@ class AppEntry(Gtk.ListBoxRow):
         self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
         self.event_box.connect("button-press-event", self.show_menu)
 
-        self.drag_source_set(Gdk.ModifierType.BUTTON1_MASK, [], Gdk.DragAction.COPY)
+        self.drag_source_set(
+            Gdk.ModifierType.BUTTON1_MASK, [], Gdk.DragAction.COPY
+        )
         self.drag_source_add_uri_targets()
         self.connect("drag-data-get", self._on_drag_data_get)
 
     def _on_drag_data_get(self, _widget, _drag_context, data, _info, _time):
-        data.set_uris(["file://" + urllib.parse.quote(str(self.app_info.file_path))])
+        data.set_uris(
+            ["file://" + urllib.parse.quote(str(self.app_info.file_path))]
+        )
 
     def show_menu(self, _widget, event):
         """
@@ -180,7 +184,9 @@ class VMIcon(Gtk.Image):
         :return:
         """
         if update_label and self.vm_entry:
-            vm_icon = load_icon(self.vm_entry.vm_icon_name, Gtk.IconSize.LARGE_TOOLBAR)
+            vm_icon = load_icon(
+                self.vm_entry.vm_icon_name, Gtk.IconSize.LARGE_TOOLBAR
+            )
             self.set_from_pixbuf(vm_icon)
             self.show_all()
 
@@ -189,7 +195,9 @@ class AppEntryWithVM(AppEntry):
     """Application Gtk.ListBoxRow with VM description underneath; to be
     used in Search and Favorites."""
 
-    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager, **properties):
+    def __init__(
+        self, app_info: ApplicationInfo, vm_manager: VMManager, **properties
+    ):
         super().__init__(app_info, **properties)
         self.get_style_context().add_class("favorite_entry")
         self.grid = Gtk.Grid()
@@ -239,7 +247,9 @@ class FavoritesAppEntry(AppEntryWithVM):
     feature.
     """
 
-    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager, **properties):
+    def __init__(
+        self, app_info: ApplicationInfo, vm_manager: VMManager, **properties
+    ):
         super().__init__(app_info, vm_manager, **properties)
         self.remove_item = Gtk.MenuItem(label="Remove from favorites")
         self.remove_item.connect("activate", self._remove_from_favorites)
@@ -255,13 +265,17 @@ class FavoritesAppEntry(AppEntryWithVM):
             self.app_info.vm
             or self.app_info.qapp.domains[self.app_info.qapp.local_name]
         )
-        remove_from_feature(vm, constants.FAVORITES_FEATURE, self.app_info.entry_name)
+        remove_from_feature(
+            vm, constants.FAVORITES_FEATURE, self.app_info.entry_name
+        )
 
 
 class SearchAppEntry(AppEntryWithVM):
     """Entry for apps listed on the Search tab."""
 
-    def __init__(self, app_info: ApplicationInfo, vm_manager: VMManager, **properties):
+    def __init__(
+        self, app_info: ApplicationInfo, vm_manager: VMManager, **properties
+    ):
 
         super().__init__(app_info, vm_manager, **properties)
         self.menu = FavoritesMenu(lambda: self.app_info)

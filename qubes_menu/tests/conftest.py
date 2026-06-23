@@ -26,7 +26,8 @@ from qubesadmin.tests.mock_app import MockQubesComplete
 
 
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
 
@@ -40,8 +41,7 @@ def test_builder():
     """Gtk builder with correct menu glade file"""
     builder = Gtk.Builder()
 
-    glade_path = (importlib.resources.files('qubes_menu') /
-                  'qubes-menu.glade')
+    glade_path = importlib.resources.files("qubes_menu") / "qubes-menu.glade"
     with importlib.resources.as_file(glade_path) as path:
         builder.add_from_file(str(path))
 
@@ -50,7 +50,7 @@ def test_builder():
 
 @pytest.fixture
 def test_desktop_file_path(tmp_path):
-    app_entry1 = b'''
+    app_entry1 = b"""
     [Desktop Entry]
     Version=1.0
     Type=Application
@@ -63,9 +63,9 @@ def test_desktop_file_path(tmp_path):
     Categories=System;TerminalEmulator;X-Qubes-VM;
     Exec=qvm-run -q -a --service -- test-vm qubes.StartApp+xterm
     X-Qubes-DispvmExec=qvm-run -q -a --service --dispvm=test-vm -- qubes.StartApp+xterm
-    '''
+    """
 
-    app_entry2 = b'''
+    app_entry2 = b"""
     [Desktop Entry]
     Version=1.0
     Type=Application
@@ -79,9 +79,9 @@ def test_desktop_file_path(tmp_path):
     Categories=System;X-Qubes-VM;
     Exec=qvm-run -q -a --service -- test-red qubes.StartApp+firefox
     X-Qubes-DispvmExec=qvm-run -q -a --service --dispvm=test-red -- qubes.StartApp+firefox
-    '''
+    """
 
-    app_entry3 = b'''
+    app_entry3 = b"""
     [Desktop Entry]
     Version=1.0
     Type=Application
@@ -92,11 +92,11 @@ def test_desktop_file_path(tmp_path):
     Keywords=settings;desktop
     Categories=Gtk;Settings;X-XFCE-SettingsDialog;X-XFCE;
     Exec=xfce4-appearance-settings
-    '''
+    """
 
-    (tmp_path / 'test1.desktop').write_bytes(app_entry1)
-    (tmp_path / 'test2.desktop').write_bytes(app_entry2)
-    (tmp_path / 'test3.desktop').write_bytes(app_entry3)
+    (tmp_path / "test1.desktop").write_bytes(app_entry1)
+    (tmp_path / "test2.desktop").write_bytes(app_entry2)
+    (tmp_path / "test3.desktop").write_bytes(app_entry3)
 
     return tmp_path
 
@@ -107,8 +107,10 @@ def asyncio_wrap(func):
     loop - which is incompatible with Glib's event loop. See
     https://github.com/pytest-dev/pytest-asyncio/issues/1233
     """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         loop = asyncio.get_event_loop()
         loop.run_until_complete(func(*args, **kwargs))
+
     return wrapper

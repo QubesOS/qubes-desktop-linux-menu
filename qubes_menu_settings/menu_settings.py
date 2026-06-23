@@ -101,16 +101,23 @@ class AppMenuSettings(Gtk.Application):
         self.builder = Gtk.Builder()
 
         glade_path = (
-            importlib.resources.files("qubes_menu_settings") / "menu_settings.glade"
+            importlib.resources.files("qubes_menu_settings")
+            / "menu_settings.glade"
         )
         with importlib.resources.as_file(glade_path) as path:
             self.builder.add_from_file(str(path))
 
-        self.main_window: Gtk.ApplicationWindow = self.builder.get_object("main_window")
+        self.main_window: Gtk.ApplicationWindow = self.builder.get_object(
+            "main_window"
+        )
 
-        self.confirm_button: Gtk.Button = self.builder.get_object("button_confirm")
+        self.confirm_button: Gtk.Button = self.builder.get_object(
+            "button_confirm"
+        )
         self.apply_button: Gtk.Button = self.builder.get_object("button_apply")
-        self.cancel_button: Gtk.Button = self.builder.get_object("button_cancel")
+        self.cancel_button: Gtk.Button = self.builder.get_object(
+            "button_cancel"
+        )
 
         self.starting_page_combo: Gtk.ComboBox = self.builder.get_object(
             "starting_page_combo"
@@ -131,7 +138,8 @@ class AppMenuSettings(Gtk.Application):
         provider = Gtk.CssProvider()
 
         css_path = (
-            importlib.resources.files("qubes_menu_settings") / "menu_settings.css"
+            importlib.resources.files("qubes_menu_settings")
+            / "menu_settings.css"
         )
         with importlib.resources.as_file(css_path) as path:
             provider.load_from_path(str(path))
@@ -175,7 +183,9 @@ class AppMenuSettings(Gtk.Application):
         sort_running = bool(self.vm.features.get(SORT_RUNNING_FEATURE, False))
         self.sort_running_check.set_active(sort_running)
 
-        disable_recent = bool(self.vm.features.get(DISABLE_RECENT_FEATURE, False))
+        disable_recent = bool(
+            self.vm.features.get(DISABLE_RECENT_FEATURE, False)
+        )
         self.show_recent_check.set_active(not disable_recent)
 
     def _quit(self, *_args):
@@ -201,7 +211,9 @@ class AppMenuSettings(Gtk.Application):
             if not old_sort_running:
                 self.vm.features[DISABLE_RECENT_FEATURE] = "1"
 
-        old_initial_page = self.vm.features.get(INITIAL_PAGE_FEATURE, "app_page")
+        old_initial_page = self.vm.features.get(
+            INITIAL_PAGE_FEATURE, "app_page"
+        )
 
         if self.initial_page_model.get_selected() != old_initial_page:
             self.vm.features[INITIAL_PAGE_FEATURE] = (
@@ -211,7 +223,9 @@ class AppMenuSettings(Gtk.Application):
         old_menu_position = self.vm.features.get(POSITION_FEATURE, "mouse")
 
         if self.menu_position_model.get_selected() != old_menu_position:
-            self.vm.features[POSITION_FEATURE] = self.menu_position_model.get_selected()
+            self.vm.features[POSITION_FEATURE] = (
+                self.menu_position_model.get_selected()
+            )
 
     def _save_exit(self, *_args):
         self._save()

@@ -22,8 +22,13 @@ import subprocess
 from typing import Dict, Optional, Set, Union
 
 from .desktop_file_manager import DesktopFileManager
-from .custom_widgets import SearchVMRow, AnyVMRow, ControlList, KeynavController, \
-    HoverEventBox
+from .custom_widgets import (
+    SearchVMRow,
+    AnyVMRow,
+    ControlList,
+    KeynavController,
+    HoverEventBox,
+)
 from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -49,7 +54,9 @@ class RecentSearchRow(Gtk.ListBoxRow):
 
         self.hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
-        self.recent_icon = Gtk.Image.new_from_pixbuf(load_icon("qappmenu-search"))
+        self.recent_icon = Gtk.Image.new_from_pixbuf(
+            load_icon("qappmenu-search")
+        )
         self.hbox.pack_start(self.recent_icon, False, False, 5)
         self.search_label = Gtk.Label(label=search_text, xalign=0)
         self.hbox.pack_start(self.search_label, False, False, 5)
@@ -272,8 +279,12 @@ class SearchPage(MenuPage):
             "search_recent_apps_list"
         )
 
-        self.app_view: Gtk.ScrolledWindow = builder.get_object("search_app_view")
-        self.app_placeholder: Gtk.Label = builder.get_object("search_app_placeholder")
+        self.app_view: Gtk.ScrolledWindow = builder.get_object(
+            "search_app_view"
+        )
+        self.app_placeholder: Gtk.Label = builder.get_object(
+            "search_app_placeholder"
+        )
         self.vm_view: Gtk.ScrolledWindow = builder.get_object("search_vm_view")
         self.recent_box: Gtk.Box = builder.get_object("search_no_box")
 
@@ -305,14 +316,16 @@ class SearchPage(MenuPage):
 
         self.settings_buttons = [
             builder.get_object("search_settings_button_1"),
-            builder.get_object("search_settings_button_2")
+            builder.get_object("search_settings_button_2"),
         ]
 
         for button in self.settings_buttons:
-            button.connect('clicked', self._run_settings)
+            button.connect("clicked", self._run_settings)
 
     def _app_clicked(self, _widget, row):
-        self.recent_search_manager.add_new_recent_search(self.search_entry.get_text())
+        self.recent_search_manager.add_new_recent_search(
+            self.search_entry.get_text()
+        )
         if self.selected_vm_row:
             row.run_app(self.selected_vm_row.vm_entry.vm)
         elif hasattr(row, "app_info"):
@@ -322,7 +335,6 @@ class SearchPage(MenuPage):
         # pylint: disable=consider-using-with
         subprocess.Popen(["qubes-appmenu-settings"], stdin=subprocess.DEVNULL)
         widget.get_toplevel().get_application().hide_menu()
-
 
     def _app_info_callback(self, app_info):
         """
@@ -350,7 +362,9 @@ class SearchPage(MenuPage):
 
         self._filter_lists()
 
-        self.vm_view.set_visible(has_search and not self.app_placeholder.get_mapped())
+        self.vm_view.set_visible(
+            has_search and not self.app_placeholder.get_mapped()
+        )
 
         if not self.app_placeholder.get_mapped():
             for row in self.app_list.get_children():

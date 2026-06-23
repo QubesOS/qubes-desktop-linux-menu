@@ -74,7 +74,9 @@ class SettingsPage(MenuPage):
         )
         self.app_list.set_filter_func(self._filter_apps)
 
-        self.category_list: Gtk.ListBox = builder.get_object("settings_categories")
+        self.category_list: Gtk.ListBox = builder.get_object(
+            "settings_categories"
+        )
 
         self.category_list.connect("row-selected", self._category_clicked)
         self.category_list.add(

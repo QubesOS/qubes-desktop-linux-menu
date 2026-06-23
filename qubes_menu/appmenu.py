@@ -49,7 +49,13 @@ except ImportError:
 
 PAGE_LIST = ["search_page", "app_page", "favorites_page", "settings_page"]
 
-POSITION_LIST = ["mouse", "top-left", "top-right", "bottom-left", "bottom-right"]
+POSITION_LIST = [
+    "mouse",
+    "top-left",
+    "top-right",
+    "bottom-left",
+    "bottom-right",
+]
 
 logger = logging.getLogger("qubes-appmenu")
 
@@ -209,10 +215,10 @@ class AppMenu(Gtk.Application):
                 None,  # info
                 "org.kde.LogoutPrompt",  # bus name
                 "/LogoutPrompt",  # object_path
-                "org.kde.LogoutPrompt", # interface
+                "org.kde.LogoutPrompt",  # interface
             )
             proxy.call(
-                'promptAll',  # method name
+                "promptAll",  # method name
                 None,  # parameters
                 0,  # flags
                 0,  # timeout_msec
@@ -354,7 +360,9 @@ class AppMenu(Gtk.Application):
             ]
         else:
             if self.main_notebook:
-                self.main_notebook.set_current_page(PAGE_LIST.index(self.initial_page))
+                self.main_notebook.set_current_page(
+                    PAGE_LIST.index(self.initial_page)
+                )
             if self.main_window:
                 self.main_window.set_keep_above(True)
                 if self.main_window.is_visible() and not self.keep_visible:
@@ -408,7 +416,9 @@ class AppMenu(Gtk.Application):
         for page in self.handlers.values():
             page.initialize_page()
         if self.main_notebook:
-            self.main_notebook.set_current_page(PAGE_LIST.index(self.initial_page))
+            self.main_notebook.set_current_page(
+                PAGE_LIST.index(self.initial_page)
+            )
 
     def perform_setup(self):
         """
@@ -421,7 +431,9 @@ class AppMenu(Gtk.Application):
         self.fav_app_list = self.builder.get_object("fav_app_list")
         self.sys_tools_list = self.builder.get_object("sys_tools_list")
 
-        glade_path = importlib.resources.files("qubes_menu") / "qubes-menu.glade"
+        glade_path = (
+            importlib.resources.files("qubes_menu") / "qubes-menu.glade"
+        )
         with importlib.resources.as_file(glade_path) as path:
             self.builder.add_from_file(str(path))
 
@@ -451,7 +463,10 @@ class AppMenu(Gtk.Application):
                 self.vm_manager,
             ),
             "settings_page": SettingsPage(
-                self.qapp, self.builder, self.desktop_file_manager, self.dispatcher
+                self.qapp,
+                self.builder,
+                self.desktop_file_manager,
+                self.dispatcher,
             ),
         }
         self.power_button = self.builder.get_object("power_button")
@@ -463,7 +478,9 @@ class AppMenu(Gtk.Application):
         self.main_window.connect("key_press_event", self._key_pressed)
 
         self.load_style()
-        Gtk.Settings.get_default().connect("notify::gtk-theme-name", self.load_style)
+        Gtk.Settings.get_default().connect(
+            "notify::gtk-theme-name", self.load_style
+        )
 
         self.load_settings()
 
@@ -487,8 +504,12 @@ class AppMenu(Gtk.Application):
 
     def load_style(self, *_args):
         """Load appropriate CSS stylesheet and associated properties."""
-        light_ref = importlib.resources.files("qubes_menu") / "qubes-menu-light.css"
-        dark_ref = importlib.resources.files("qubes_menu") / "qubes-menu-dark.css"
+        light_ref = (
+            importlib.resources.files("qubes_menu") / "qubes-menu-light.css"
+        )
+        dark_ref = (
+            importlib.resources.files("qubes_menu") / "qubes-menu-dark.css"
+        )
 
         with (
             importlib.resources.as_file(light_ref) as light_path,
@@ -522,8 +543,12 @@ class AppMenu(Gtk.Application):
             initial_page = "app_page"
         self.initial_page = initial_page
 
-        self.disable_recent = bool(local_vm.features.get(DISABLE_RECENT_FEATURE, False))
-        self.sort_running = bool(local_vm.features.get(SORT_RUNNING_FEATURE, False))
+        self.disable_recent = bool(
+            local_vm.features.get(DISABLE_RECENT_FEATURE, False)
+        )
+        self.sort_running = bool(
+            local_vm.features.get(SORT_RUNNING_FEATURE, False)
+        )
 
         position = local_vm.features.get(POSITION_FEATURE, "mouse")
         if position not in POSITION_LIST:

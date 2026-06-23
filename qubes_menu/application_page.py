@@ -23,7 +23,12 @@ Application page and related widgets and logic
 from typing import Optional
 
 from .desktop_file_manager import DesktopFileManager
-from .custom_widgets import NetworkIndicator, VMRow, ControlList, KeynavController
+from .custom_widgets import (
+    NetworkIndicator,
+    VMRow,
+    ControlList,
+    KeynavController,
+)
 from .app_widgets import AppEntry, BaseAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
@@ -46,12 +51,20 @@ class VMTypeToggle:
         :param builder: Gtk.Builder, containing loaded glade data
         """
         self.apps_toggle: Gtk.RadioButton = builder.get_object("apps_toggle")
-        self.templates_toggle: Gtk.RadioButton = builder.get_object("templates_toggle")
-        self.system_toggle: Gtk.RadioButton = builder.get_object("system_toggle")
+        self.templates_toggle: Gtk.RadioButton = builder.get_object(
+            "templates_toggle"
+        )
+        self.system_toggle: Gtk.RadioButton = builder.get_object(
+            "system_toggle"
+        )
         self.vm_list: Gtk.ListBox = builder.get_object("vm_list")
         self.app_list: Gtk.ListBox = builder.get_object("app_list")
 
-        self.buttons = [self.apps_toggle, self.templates_toggle, self.system_toggle]
+        self.buttons = [
+            self.apps_toggle,
+            self.templates_toggle,
+            self.system_toggle,
+        ]
 
         for button in self.buttons:
             button.set_relief(Gtk.ReliefStyle.NONE)
@@ -270,7 +283,9 @@ class AppPage(MenuPage):
         Callback to be performed on all newly loaded VMEntry instances.
         """
         if vm_entry:
-            vm_row = VMRow(vm_entry, show_dispvm_inheritance=not self.sort_running)
+            vm_row = VMRow(
+                vm_entry, show_dispvm_inheritance=not self.sort_running
+            )
             vm_row.show_all()
             vm_entry.entries.append(vm_row)
             self.vm_list.add(vm_row)
@@ -288,10 +303,12 @@ class AppPage(MenuPage):
             return False
         if (
             appentry.app_info.vm
-            and appentry.app_info.vm.name != self.selected_vm_entry.vm_entry.vm_name
+            and appentry.app_info.vm.name
+            != self.selected_vm_entry.vm_entry.vm_name
         ):
             return (
-                self.selected_vm_entry.vm_entry.parent_vm == appentry.app_info.vm.name
+                self.selected_vm_entry.vm_entry.parent_vm
+                == appentry.app_info.vm.name
                 and not appentry.app_info.disposable
             )
         if self.selected_vm_entry.vm_entry.is_dispvm_template:
@@ -346,7 +363,9 @@ class AppPage(MenuPage):
                 row.vm_entry, self.toggle_buttons.apps_toggle.get_active()
             )
             self.control_list.unselect_all()
-            self.app_list.ephemeral_vm = bool(self.selected_vm_entry.vm_entry.parent_vm)
+            self.app_list.ephemeral_vm = bool(
+                self.selected_vm_entry.vm_entry.parent_vm
+            )
         self.app_list.invalidate_filter()
 
     def _set_right_visibility(self, visibility: bool):

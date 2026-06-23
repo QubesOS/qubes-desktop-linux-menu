@@ -67,7 +67,9 @@ def show_error(title, text):
     """
     Helper function to display error messages.
     """
-    dialog = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK)
+    dialog = Gtk.MessageDialog(
+        None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.OK
+    )
     dialog.set_title(title)
     dialog.set_markup(GLib.markup_escape_text(text))
     dialog.connect("response", lambda *x: dialog.destroy())
@@ -76,7 +78,9 @@ def show_error(title, text):
 
 def parse_search(search_text: str) -> List[str]:
     """Parse search text into separate words"""
-    search_words = search_text.lower().replace("-", " ").replace("_", " ").split(" ")
+    search_words = (
+        search_text.lower().replace("-", " ").replace("_", " ").split(" ")
+    )
     return [w for w in search_words if w]
 
 
@@ -97,7 +101,9 @@ def text_search(search_word: str, text_words: List[str]):
 
 
 def highlight_words(
-    labels: List[Gtk.Label], search_words: List[str], hl_tag: Optional[str] = None
+    labels: List[Gtk.Label],
+    search_words: List[str],
+    hl_tag: Optional[str] = None,
 ) -> None:
     """Highlight provided search_words in the provided labels."""
     if not labels:
@@ -182,7 +188,9 @@ def add_to_feature(vm: qubesadmin.vm.QubesVM, feature_name: str, text: str):
     vm.features[feature_name] = " ".join(feature_list)
 
 
-def remove_from_feature(vm: qubesadmin.vm.QubesVM, feature_name: str, text: str):
+def remove_from_feature(
+    vm: qubesadmin.vm.QubesVM, feature_name: str, text: str
+):
     """
     Remove a given string to a feature containing a list of space-separated
      strings.Can raise ValueError if ext was not found in the feature.
