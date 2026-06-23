@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 
+import asyncio
+import functools
 import pytest
 import importlib.resources
 from qubesadmin.tests.mock_app import MockQubesComplete
@@ -97,3 +99,16 @@ def test_desktop_file_path(tmp_path):
     (tmp_path / 'test3.desktop').write_bytes(app_entry3)
 
     return tmp_path
+
+
+def asyncio_wrap(func):
+    """
+    Wrapper simulating pytest-asyncio behavior but without creating new event
+    loop - which is incompatible with Glib's event loop. See
+    https://github.com/pytest-dev/pytest-asyncio/issues/1233
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(func(*args, **kwargs))
+    return wrapper

@@ -26,6 +26,8 @@ from qubesadmin.tests import TestVM
 from unittest.mock import Mock
 import asyncio
 
+from .conftest import asyncio_wrap
+
 correct_bytes = b'''
 [Desktop Entry]
 Version=1.0
@@ -280,7 +282,7 @@ Categories=System;X-Qubes-VM;'''
     assert app_info.get_command_for_vm(None) == ['command', "a\\b\\c"]
 
 
-@pytest.mark.asyncio
+@asyncio_wrap
 async def test_file_manager(tmp_path, test_qapp):
     DesktopFileManager.desktop_dirs = [tmp_path]
     (tmp_path / 'test.desktop').write_bytes(correct_bytes)
