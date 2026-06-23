@@ -291,8 +291,11 @@ class AppMenu(Gtk.Application):
         current_width = self.main_window.get_allocated_width()
         current_height = self.main_window.get_allocated_height()
         # set size if too big
-        max_height = int(self.main_window.get_screen().get_height() * 0.9)
+        max_height = int(self.main_window.get_screen().get_height() * 0.95)
         assert max_height > 0
+        default_height = self.main_window.get_default_size()[1]
+        if default_height > max_height:
+            self.main_window.set_default_size(-1, max_height)
         # The default for layer shell is no keyboard input.
         # Explicitly request exclusive access to the keyboard.
         GtkLayerShell.set_keyboard_mode(
@@ -322,7 +325,10 @@ class AppMenu(Gtk.Application):
             current_width = self.main_window.get_allocated_width()
             current_height = self.main_window.get_allocated_height()
             # set size if too big
-            max_height = int(self.main_window.get_screen().get_height() * 0.9)
+            max_height = int(self.main_window.get_screen().get_height() * 0.95)
+            default_height = self.main_window.get_default_size()[1]
+            if default_height > max_height:
+                self.main_window.set_default_size(-1, max_height)
             assert max_height > 0
             if self.layer_shell:
                 if not self.start_in_background:
