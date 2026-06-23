@@ -5,17 +5,21 @@ include:
     file: '/r4.3/gitlab-host.yml'
   - project: 'QubesOS/qubes-continuous-integration'
     file: '/r4.3/gitlab-vm.yml'
+  - project: 'QubesOS/qubes-continuous-integration'
+    file: '/common.yml'
 
 checks:pylint:
-  stage: checks
+  extends: .lint
   before_script:
-    - sudo dnf install -y python3-gobject gtk3 xorg-x11-server-Xvfb 
+    - !reference [.lint, before_script]
+    - sudo dnf install -y git python3-gobject gtk3 xorg-x11-server-Xvfb
       python3-pip python3-mypy python3-pyxdg gtk-layer-shell cairo-devel
       cairo-gobject-devel gobject-introspection-devel
     - pip3 install --quiet -r ci/requirements.txt
     - git clone https://github.com/QubesOS/qubes-core-admin-client ~/core-admin-client
+    - export PYTHONPATH=~/core-admin-client:.
   script:
-    - PYTHONPATH=~/core-admin-client:. python3 -m pylint --rcfile=.pylintrc qubes_menu qubes_menu_settings
+    - !reference [.lint, script]
     - mypy
 
 checks:tests:
