@@ -20,6 +20,7 @@
 """
 A collection of custom Gtk widgets used elsewhere in the App Menu
 """
+
 import subprocess
 import logging
 import urllib.parse
@@ -41,7 +42,6 @@ import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
-
 
 logger = logging.getLogger("qubes-appmenu")
 

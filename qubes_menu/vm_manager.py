@@ -20,6 +20,7 @@
 """
 Helper class that manages all events related to VMs.
 """
+
 import qubesadmin.events
 import qubesadmin.exc
 from qubesadmin.vm import QubesVM

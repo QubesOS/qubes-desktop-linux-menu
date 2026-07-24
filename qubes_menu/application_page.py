@@ -20,6 +20,7 @@
 """
 Application page and related widgets and logic
 """
+
 from typing import Optional
 
 from .desktop_file_manager import DesktopFileManager

@@ -20,6 +20,7 @@
 """
 Miscellaneous Qubes Menu utility functions.
 """
+
 from typing import List, Optional
 
 import gi

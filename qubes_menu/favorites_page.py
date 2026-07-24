@@ -20,6 +20,7 @@
 """
 Qubes App Menu favorites page and related widgets.
 """
+
 import logging
 from functools import partial
 

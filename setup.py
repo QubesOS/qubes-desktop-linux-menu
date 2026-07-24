@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Setup.py file"""
+
 import setuptools.command.install
 
 setuptools.setup(

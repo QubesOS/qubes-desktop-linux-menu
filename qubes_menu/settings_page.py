@@ -20,6 +20,7 @@
 """
 Qubes App Menu settings/system tools page and related widgets.
 """
+
 import qubesadmin.events
 
 from .desktop_file_manager import DesktopFileManager

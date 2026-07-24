@@ -20,6 +20,7 @@
 """
 Helper class that manages all events related to .desktop files.
 """
+
 import pyinotify
 import logging
 import asyncio

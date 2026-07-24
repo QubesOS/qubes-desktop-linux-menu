@@ -3,6 +3,7 @@
 """
 Main Application Menu class and helpers.
 """
+
 # pylint: disable=import-error
 import asyncio
 import os

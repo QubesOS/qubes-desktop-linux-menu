@@ -20,6 +20,7 @@
 """
 Various custom Gtk widgets used in Qubes App Menu.
 """
+
 import subprocess
 from typing import Optional, List, Callable
 

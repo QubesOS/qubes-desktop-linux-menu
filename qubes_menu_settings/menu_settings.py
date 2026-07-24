@@ -20,6 +20,7 @@
 """
 Settings for Qubes App Menu.
 """
+
 import sys
 
 import gi
@@ -38,7 +39,6 @@ from qubes_menu.constants import (
     POSITION_FEATURE,
     DISABLE_RECENT_FEATURE,
 )
-
 
 MENU_PAGES = {
     "search_page": "Search",
