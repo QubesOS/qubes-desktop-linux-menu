@@ -254,6 +254,7 @@ class AppPage(MenuPage):
         self._selection_changed(None, None)
 
         self.vm_list.connect("map", self._on_map_vm_list)
+        self._rebuild_vm_rows_from_manager()
         self._rebuild_folder_rows()
 
     def _on_map_vm_list(self, *_args):
@@ -275,7 +276,7 @@ class AppPage(MenuPage):
         if not isinstance(row, VMRow):
             return "~"
 
-        folder_name = self._vm_folder(row.vm_entry) or self.UNGROUPED
+        folder_name = self._effective_vm_folder(row.vm_entry)
         folder_index = self._folder_index(folder_name)
 
         state_prefix = "1"
@@ -311,6 +312,20 @@ class AppPage(MenuPage):
             scope = self._current_scope()
         feature_name = self.SCOPE_VM_FEATURE[scope]
         return self._safe_feature_get(vm_entry.vm, feature_name, "")
+
+    def _effective_vm_folder(self, vm_entry: VMEntry, scope: Optional[str] = None) -> str:
+        """Resolve VM folder name to an existing folder in current scope.
+
+        Unknown/missing folder names are treated as Ungrouped to avoid
+        orphaned rows when folder metadata and folder list are temporarily out
+        of sync.
+        """
+        folder_name = self._vm_folder(vm_entry, scope)
+        if not folder_name:
+            return self.UNGROUPED
+        if folder_name not in self.folder_order:
+            return self.UNGROUPED
+        return folder_name
 
     @staticmethod
     def _safe_feature_get(vm, feature_name: str, default=""):
@@ -358,8 +373,23 @@ class AppPage(MenuPage):
         Callback to be performed on all newly loaded VMEntry instances.
         """
         if vm_entry:
-            if vm_entry.vm_name in self.vm_rows:
-                return
+            # Full rebuild guarantees the VM list reflects current
+            # VMManager contents after any domain addition.
+            self._rebuild_vm_rows_from_manager()
+
+    def _rebuild_vm_rows_from_manager(self):
+        selected = self.vm_list.get_selected_row()
+        selected_name = getattr(selected, "vm_name", None)
+
+        for child in list(self.vm_list.get_children()):
+            if isinstance(child, VMRow):
+                if child.vm_entry and child in child.vm_entry.entries:
+                    child.vm_entry.entries.remove(child)
+                self.vm_list.remove(child)
+
+        self.vm_rows = {}
+
+        for vm_entry in self.vm_manager.vms.values():
             vm_row = VMRow(
                 vm_entry,
                 show_dispvm_inheritance=not self.sort_running,
@@ -369,9 +399,13 @@ class AppPage(MenuPage):
             self.vm_rows[vm_entry.vm_name] = vm_row
             vm_entry.entries.append(vm_row)
             self.vm_list.add(vm_row)
-            self._rebuild_folder_rows()
-            self.vm_list.invalidate_filter()
-            self.vm_list.invalidate_sort()
+
+        self._rebuild_folder_rows()
+        self.vm_list.invalidate_filter()
+        self.vm_list.invalidate_sort()
+
+        if selected_name and selected_name in self.vm_rows:
+            self.vm_list.select_row(self.vm_rows[selected_name])
 
     def _show_vm_folder_menu(self, row: VMRow, event):
         if event.button != 3:
@@ -719,7 +753,7 @@ class AppPage(MenuPage):
 
     def _folder_has_visible_vms(self, folder_name: str):
         for row in self.vm_rows.values():
-            vm_folder = self._vm_folder(row.vm_entry) or self.UNGROUPED
+            vm_folder = self._effective_vm_folder(row.vm_entry)
             if vm_folder != folder_name:
                 continue
             if self.toggle_buttons.filter_function(row):
@@ -735,7 +769,7 @@ class AppPage(MenuPage):
         if not isinstance(row, VMRow):
             return False
 
-        vm_folder = self._vm_folder(row.vm_entry) or self.UNGROUPED
+        vm_folder = self._effective_vm_folder(row.vm_entry)
         if not self.toggle_buttons.filter_function(row):
             return False
         if vm_folder in self.collapsed_folders:

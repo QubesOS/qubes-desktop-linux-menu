@@ -24,7 +24,7 @@ from unittest import mock
 from ..vm_manager import VMManager
 from ..application_page import VMTypeToggle
 from .. import constants
-from qubesadmin.tests.mock_app import Property
+from qubesadmin.tests.mock_app import Property, MockQube
 
 
 def test_vm_manager(test_qapp):
@@ -190,3 +190,53 @@ def test_folder_scope_feature_events_refresh_entries(test_qapp):
             feature=constants.FOLDER_FEATURE_TEMPLATES,
         )
         update_entries.assert_called_once_with(update_type=True)
+
+
+def test_domain_add_remove_accept_vm_objects(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    new_vm = MockQube(name="new-appvm", qapp=test_qapp)
+    test_qapp._qubes["new-appvm"] = new_vm
+    test_qapp.update_vm_calls()
+
+    vm_manager._add_domain(None, "domain-add", new_vm)
+    assert "new-appvm" in vm_manager.vms
+
+    vm_manager._remove_domain(None, "domain-delete", new_vm)
+    assert "new-appvm" not in vm_manager.vms
+
+
+def test_domain_add_receives_vm_object(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    # Simulate domain-add where the event delivers a QubesVM object
+    # instead of a string name, and the handler must extract the name.
+    new_vm = MockQube(name="new-test-vm", qapp=test_qapp)
+
+    vm_manager._add_domain(None, "domain-add", new_vm)
+
+    assert "new-test-vm" in vm_manager.vms
+
+
+def test_servicevm_feature_string_false_is_not_hidden_in_apps(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    vm_name = "test-vm"
+    entry = vm_manager.load_vm_from_name(vm_name)
+    assert entry
+
+    test_qapp._qubes[vm_name].features["servicevm"] = "False"
+    test_qapp._qubes[vm_name].update_calls()
+
+    vm_manager._update_domain_feature(
+        vm_name,
+        "feature-set:servicevm",
+        feature="servicevm",
+        value="False",
+    )
+
+    assert not entry.service_vm
+    assert VMTypeToggle._filter_appvms(entry)

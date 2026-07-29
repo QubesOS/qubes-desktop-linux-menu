@@ -315,3 +315,27 @@ def test_folder_selection_menu_entries(test_desktop_file_path, test_qapp, test_b
     assert "Personal" in labels
     assert "Create new folder…" in labels
     assert "Remove from folder" in labels
+
+
+def test_unknown_vm_folder_falls_back_to_ungrouped(
+    test_desktop_file_path, test_qapp, test_builder
+):
+    dispatcher = MockDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
+        desktop_file_manager = DesktopFileManager(test_qapp)
+
+    app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
+    app_page.toggle_buttons.apps_toggle.set_active(True)
+
+    vm_entry = vm_manager.load_vm_from_name("test-red")
+    assert vm_entry
+    vm_entry.vm.features = {constants.FOLDER_FEATURE_APPS: "MissingFolder"}
+
+    vm_row = app_page.vm_rows["test-red"]
+
+    assert app_page._effective_vm_folder(vm_entry) == app_page.UNGROUPED
+    assert app_page._is_row_visible(vm_row)
