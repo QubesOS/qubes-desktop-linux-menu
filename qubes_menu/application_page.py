@@ -302,8 +302,8 @@ class AppPage(MenuPage):
 
     def _activate_scope_state(self):
         scope = self._current_scope()
-        self.folder_order = self.scope_folder_order[scope]
-        self.collapsed_folders = self.scope_collapsed_folders[scope]
+        self.folder_order = self.scope_folder_order[scope].copy()
+        self.collapsed_folders = self.scope_collapsed_folders[scope].copy()
         if self.UNGROUPED not in self.folder_order:
             self.folder_order.insert(0, self.UNGROUPED)
 
@@ -372,10 +372,19 @@ class AppPage(MenuPage):
         """
         Callback to be performed on all newly loaded VMEntry instances.
         """
-        if vm_entry:
-            # Full rebuild guarantees the VM list reflects current
-            # VMManager contents after any domain addition.
-            self._rebuild_vm_rows_from_manager()
+        if vm_entry and vm_entry.vm_name not in self.vm_rows:
+            vm_row = VMRow(
+                vm_entry,
+                show_dispvm_inheritance=not self.sort_running,
+                folder_menu_handler=self._show_vm_folder_menu,
+            )
+            vm_row.show_all()
+            self.vm_rows[vm_entry.vm_name] = vm_row
+            vm_entry.entries.append(vm_row)
+            self.vm_list.add(vm_row)
+            self._rebuild_folder_rows()
+            self.vm_list.invalidate_filter()
+            self.vm_list.invalidate_sort()
 
     def _rebuild_vm_rows_from_manager(self):
         selected = self.vm_list.get_selected_row()
@@ -404,8 +413,11 @@ class AppPage(MenuPage):
         self.vm_list.invalidate_filter()
         self.vm_list.invalidate_sort()
 
-        if selected_name and selected_name in self.vm_rows:
-            self.vm_list.select_row(self.vm_rows[selected_name])
+        if selected_name:
+            if selected_name in self.vm_rows:
+                self.vm_list.select_row(self.vm_rows[selected_name])
+            elif selected_name in self.folder_rows:
+                self.vm_list.select_row(self.folder_rows[selected_name])
 
     def _show_vm_folder_menu(self, row: VMRow, event):
         if event.button != 3:
@@ -762,9 +774,7 @@ class AppPage(MenuPage):
 
     def _is_row_visible(self, row):
         if isinstance(row, FolderRow):
-            if row.folder_name == self.UNGROUPED:
-                return self._folder_has_visible_vms(self.UNGROUPED)
-            return True
+            return self._folder_has_visible_vms(row.folder_name)
 
         if not isinstance(row, VMRow):
             return False

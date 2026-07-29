@@ -61,7 +61,7 @@ class VMEntry:
         else:
             self.parent_vm = None
 
-        self._folder = self._safe_feature_get(constants.FOLDER_FEATURE, "")
+        self._folder = self.safe_feature_get(constants.FOLDER_FEATURE, "")
         self.sort_name = ""
         self._update_sort_name()
 
@@ -98,14 +98,14 @@ class VMEntry:
         except Exception:  # pylint: disable=broad-except
             self._power_state = "Halted"
         try:
-            self.show_dispvm_template_in_apps = bool(
-                _to_bool(vm.features.get("appmenus-dispvm", False))
+            self.show_dispvm_template_in_apps = _to_bool(
+                vm.features.get("appmenus-dispvm", False)
             )
         except Exception:  # pylint: disable=broad-except
             self.show_dispvm_template_in_apps = False
         self.entries: List = []
 
-    def _safe_feature_get(self, feature_name: str, default=""):
+    def safe_feature_get(self, feature_name: str, default=""):
         try:
             return str(self.vm.features.get(feature_name, default)).strip()
         except Exception:  # pylint: disable=broad-except
@@ -420,7 +420,7 @@ class VMManager:
                 if "delete" in str(_event):
                     vm_entry.folder = ""
                 else:
-                    vm_entry.folder = vm_entry._safe_feature_get(
+                    vm_entry.folder = vm_entry.safe_feature_get(
                         constants.FOLDER_FEATURE, ""
                     )
             if feature in (
