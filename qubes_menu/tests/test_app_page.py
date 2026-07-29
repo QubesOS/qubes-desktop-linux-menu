@@ -250,9 +250,11 @@ def test_folder_move_and_collapsed_state_saved(
     assert app_page.collapsed_folders == set()
 
 
-def test_folder_state_is_scope_specific(test_desktop_file_path, test_qapp, test_builder):
-    test_qapp._qubes["dom0"].features[constants.FOLDERS_FEATURE_APPS] = json.dumps(
-        ["Ungrouped", "AppsOnly"]
+def test_folder_state_is_scope_specific(
+    test_desktop_file_path, test_qapp, test_builder
+):
+    test_qapp._qubes["dom0"].features[constants.FOLDERS_FEATURE_APPS] = (
+        json.dumps(["Ungrouped", "AppsOnly"])
     )
     test_qapp._qubes["dom0"].features[
         constants.FOLDERS_COLLAPSED_FEATURE_APPS
@@ -286,7 +288,9 @@ def test_folder_state_is_scope_specific(test_desktop_file_path, test_qapp, test_
     assert app_page.folder_order == ["Ungrouped", "SvcOnly"]
 
 
-def test_folder_selection_menu_entries(test_desktop_file_path, test_qapp, test_builder):
+def test_folder_selection_menu_entries(
+    test_desktop_file_path, test_qapp, test_builder
+):
     dispatcher = MockDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
 

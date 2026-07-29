@@ -20,6 +20,7 @@
 """
 Helper class that manages all events related to VMs.
 """
+
 import qubesadmin.events
 import qubesadmin.exc
 from qubesadmin.vm import QubesVM
@@ -397,7 +398,9 @@ class VMManager:
                 else:
                     try:
                         value = _to_bool(
-                            vm_entry.vm.features.check_with_template("internal", False)
+                            vm_entry.vm.features.check_with_template(
+                                "internal", False
+                            )
                         )
                     except Exception:  # pylint: disable=broad-except
                         value = vm_entry.internal

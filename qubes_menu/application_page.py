@@ -20,6 +20,7 @@
 """
 Application page and related widgets and logic
 """
+
 import json
 from typing import Optional, Dict, List, Set
 
@@ -313,7 +314,9 @@ class AppPage(MenuPage):
         feature_name = self.SCOPE_VM_FEATURE[scope]
         return self._safe_feature_get(vm_entry.vm, feature_name, "")
 
-    def _effective_vm_folder(self, vm_entry: VMEntry, scope: Optional[str] = None) -> str:
+    def _effective_vm_folder(
+        self, vm_entry: VMEntry, scope: Optional[str] = None
+    ) -> str:
         """Resolve VM folder name to an existing folder in current scope.
 
         Unknown/missing folder names are treated as Ungrouped to avoid
@@ -735,7 +738,9 @@ class AppPage(MenuPage):
         self.local_vm.features[feature_name] = json.dumps(self.folder_order)
 
     def _save_collapsed_state(self):
-        collapsed = [f for f in self.folder_order if f in self.collapsed_folders]
+        collapsed = [
+            f for f in self.folder_order if f in self.collapsed_folders
+        ]
         self.local_vm.features[
             self.SCOPE_COLLAPSED_FEATURE[self._current_scope()]
         ] = json.dumps(collapsed)
