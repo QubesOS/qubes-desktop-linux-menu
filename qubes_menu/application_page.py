@@ -753,6 +753,15 @@ class AppPage(MenuPage):
         self.folder_rows = {}
         folders = self.folder_order
 
+        # If only Ungrouped exists, don't show any folder headers at all;
+        # display VMs flat instead.
+        real_folders = [f for f in folders if f != self.UNGROUPED]
+        if not real_folders:
+            self.collapsed_folders.discard(self.UNGROUPED)
+            self.vm_list.invalidate_sort()
+            self.vm_list.invalidate_filter()
+            return
+
         for idx, folder_name in enumerate(folders):
             row = FolderRow(
                 folder_name=folder_name,
