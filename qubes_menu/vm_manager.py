@@ -20,12 +20,29 @@
 """
 Helper class that manages all events related to VMs.
 """
+
 import qubesadmin.events
 import qubesadmin.exc
 from qubesadmin.vm import QubesVM
 from typing import Optional, Dict, List, Callable
 
 from . import constants
+
+
+def _to_bool(value) -> bool:
+    """Convert various qrexec/event payload forms into boolean."""
+    if isinstance(value, bytes):
+        try:
+            value = value.decode("utf-8", errors="ignore")
+        except Exception:  # pylint: disable=broad-except
+            return bool(value)
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in ("", "0", "false", "none", "no", "off"):
+            return False
+        if normalized in ("1", "true", "yes", "on"):
+            return True
+    return bool(value)
 
 
 class VMEntry:
@@ -42,35 +59,68 @@ class VMEntry:
 
         if self.vm.klass == "DispVM" and self.vm.auto_cleanup:
             self.parent_vm = self.vm.template
-            self.sort_name = (
+        else:
+            self.parent_vm = None
+
+        self._folder = self.safe_feature_get(constants.FOLDER_FEATURE, "")
+        self.sort_name = ""
+        self._update_sort_name()
+
+        try:
+            self._internal = _to_bool(
+                self.vm.features.check_with_template("internal", False)
+            )
+        except Exception:  # pylint: disable=broad-except
+            self._internal = False
+        try:
+            self._servicevm = _to_bool(self.vm.features.get("servicevm", False))
+        except Exception:  # pylint: disable=broad-except
+            self._servicevm = False
+        try:
+            self._is_dispvm_template = bool(
+                getattr(self.vm, "template_for_dispvms", False)
+            )
+        except Exception:  # pylint: disable=broad-except
+            self._is_dispvm_template = False
+        try:
+            self._has_network = (
+                self.vm.is_networked() if vm.klass != "AdminVM" else False
+            )
+        except Exception:  # pylint: disable=broad-except
+            self._has_network = False
+        try:
+            self._vm_icon_name = getattr(
+                self.vm, "icon", getattr(self.vm.label, "icon", None)
+            )
+        except Exception:  # pylint: disable=broad-except
+            self._vm_icon_name = None
+        try:
+            self._power_state = self.vm.get_power_state()
+        except Exception:  # pylint: disable=broad-except
+            self._power_state = "Halted"
+        try:
+            self.show_dispvm_template_in_apps = _to_bool(
+                vm.features.get("appmenus-dispvm", False)
+            )
+        except Exception:  # pylint: disable=broad-except
+            self.show_dispvm_template_in_apps = False
+        self.entries: List = []
+
+    def safe_feature_get(self, feature_name: str, default=""):
+        try:
+            return str(self.vm.features.get(feature_name, default)).strip()
+        except Exception:  # pylint: disable=broad-except
+            return str(default).strip()
+
+    def _update_sort_name(self):
+        if self.parent_vm:
+            base_sort = (
                 f"{str(self.parent_vm.name).lower()} :{self.vm_name.lower()}"
             )
         else:
-            self.parent_vm = None
             # the space here is to assure correct sorting for dispvm children
-            self.sort_name = self.vm_name.lower() + " "
-
-        try:
-            self._internal = bool(
-                self.vm.features.check_with_template("internal", False)
-            )
-        except qubesadmin.exc.QubesDaemonAccessError:
-            self._internal = False
-        self._servicevm = bool(self.vm.features.get("servicevm", False))
-        self._is_dispvm_template = getattr(
-            self.vm, "template_for_dispvms", False
-        )
-        self._has_network = (
-            self.vm.is_networked() if vm.klass != "AdminVM" else False
-        )
-        self._vm_icon_name = getattr(
-            self.vm, "icon", getattr(self.vm.label, "icon", None)
-        )
-        self._power_state = self.vm.get_power_state()
-        self.show_dispvm_template_in_apps = bool(
-            vm.features.get("appmenus-dispvm", False)
-        )
-        self.entries: List = []
+            base_sort = self.vm_name.lower() + " "
+        self.sort_name = base_sort
 
     def update_entries(
         self,
@@ -161,6 +211,17 @@ class VMEntry:
         self.update_entries(update_type=True)
 
     @property
+    def folder(self):
+        """Folder name assigned to this VM for App menu grouping."""
+        return self._folder
+
+    @folder.setter
+    def folder(self, new_value):
+        self._folder = str(new_value or "").strip()
+        self._update_sort_name()
+        self.update_entries(update_label=True, update_type=True)
+
+    @property
     def show_in_apps(self):
         """Should this qube be shown in the Apps section of the menu?"""
         if self.internal:
@@ -225,6 +286,8 @@ class VMManager:
 
     def load_vm_from_name(self, vm_name: str) -> Optional[VMEntry]:
         """Get a VM entry corresponding to a VM name"""
+        if not isinstance(vm_name, str):
+            vm_name = self._vm_name(vm_name)
         if vm_name in self.vms:
             return self.vms[vm_name]
         try:
@@ -232,12 +295,19 @@ class VMManager:
         except KeyError:
             return None
         try:
-            if vm.features.check_with_template("internal", False):
+            if _to_bool(vm.features.check_with_template("internal", False)):
                 return None
-        except qubesadmin.exc.QubesDaemonAccessError:
+        except Exception:  # pylint: disable=broad-except
             pass
 
         return self._add_vm(vm)
+
+    @staticmethod
+    def _vm_name(vm_or_name) -> str:
+        """Normalize a VM-like event payload to VM name string."""
+        if isinstance(vm_or_name, str):
+            return vm_or_name
+        return str(getattr(vm_or_name, "name", vm_or_name))
 
     def _add_vm(self, vm) -> Optional[VMEntry]:
         try:
@@ -252,10 +322,23 @@ class VMManager:
         return entry
 
     def _add_domain(self, _submitter, _event, vm, **_kwargs):
-        self.load_vm_from_name(vm)
+        if isinstance(vm, str):
+            self.load_vm_from_name(vm)
+            return
+
+        vm_name = self._vm_name(vm)
+        if vm_name in self.vms:
+            return
+
+        if self._add_vm(vm):
+            return
+
+        # fallback path in case event payload object is incomplete
+        self.load_vm_from_name(vm_name)
 
     def _remove_domain(self, _submitter, _event, vm, **_kwargs):
-        vm_entry = self.vms.get(vm)
+        vm_name = self._vm_name(vm)
+        vm_entry = self.vms.get(vm_name)
         if vm_entry:
             for child in vm_entry.entries:
                 try:
@@ -264,7 +347,7 @@ class VMManager:
                     # a wrapper, to make absolutely sure dispatcher is not
                     # crashed by a rogue Exception
                     return
-            del self.vms[vm]
+            del self.vms[vm_name]
 
     def _update_domain_state(self, vm_name, event, **_kwargs):
         vm_entry = self.load_vm_from_name(vm_name)
@@ -306,12 +389,21 @@ class VMManager:
         if not vm_entry:
             return
 
-        if value == "False":
-            value = False
-        value = bool(value)
-
         try:
             if feature == "internal":
+                if "delete" in str(_event):
+                    value = False
+                elif value is not None:
+                    value = _to_bool(value)
+                else:
+                    try:
+                        value = _to_bool(
+                            vm_entry.vm.features.check_with_template(
+                                "internal", False
+                            )
+                        )
+                    except Exception:  # pylint: disable=broad-except
+                        value = vm_entry.internal
                 vm_entry.internal = value
                 for derived in self.qapp.domains:
                     if not getattr(derived, "template", None) == vm:
@@ -320,9 +412,21 @@ class VMManager:
                     if derived_vm_entry:
                         derived_vm_entry.internal = value
             if feature == "servicevm":
-                vm_entry.service_vm = value
+                vm_entry.service_vm = _to_bool(
+                    vm_entry.vm.features.get("servicevm", False)
+                )
             if feature == "appmenus-dispvm":
-                vm_entry.show_dispvm_template_in_apps = value
+                vm_entry.show_dispvm_template_in_apps = _to_bool(
+                    vm_entry.vm.features.get("appmenus-dispvm", False)
+                )
+            if feature == constants.FOLDER_FEATURE:
+                if "delete" in str(_event):
+                    vm_entry.folder = ""
+                else:
+                    vm_entry.folder = vm_entry.safe_feature_get(
+                        constants.FOLDER_FEATURE, ""
+                    )
+
         except Exception:  # pylint: disable=broad-except
             # dispatcher functions cannot raise any Exception, because
             # it will disable any future event handling
@@ -390,3 +494,12 @@ class VMManager:
         self.dispatcher.add_handler(
             "domain-feature-delete:internal", self._update_domain_feature
         )
+        self.dispatcher.add_handler(
+            "domain-feature-set:" + constants.FOLDER_FEATURE,
+            self._update_domain_feature,
+        )
+        self.dispatcher.add_handler(
+            "domain-feature-delete:" + constants.FOLDER_FEATURE,
+            self._update_domain_feature,
+        )
+

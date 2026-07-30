@@ -20,9 +20,11 @@
 
 import qubesadmin
 import qubesadmin.events
+from unittest import mock
 from ..vm_manager import VMManager
 from ..application_page import VMTypeToggle
-from qubesadmin.tests.mock_app import Property
+from .. import constants
+from qubesadmin.tests.mock_app import Property, MockQube
 
 
 def test_vm_manager(test_qapp):
@@ -113,6 +115,26 @@ def test_vm_manager(test_qapp):
     )
     assert entry_test.internal
 
+    test_qapp._qubes[vm_name].features[constants.FOLDER_FEATURE] = "Work"
+    test_qapp._qubes[vm_name].update_calls()
+    vm_manager._update_domain_feature(
+        vm_name,
+        f"feature-set:{constants.FOLDER_FEATURE}",
+        feature=constants.FOLDER_FEATURE,
+        value="Work",
+    )
+    assert entry_test.folder == "Work"
+    assert entry_test.sort_name == "test-vm "
+
+    del test_qapp._qubes[vm_name].features[constants.FOLDER_FEATURE]
+    test_qapp._qubes[vm_name].update_calls()
+    vm_manager._update_domain_feature(
+        vm_name,
+        f"feature-delete:{constants.FOLDER_FEATURE}",
+        feature=constants.FOLDER_FEATURE,
+    )
+    assert entry_test.folder == ""
+
 
 def test_filter(test_qapp):
     dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
@@ -142,3 +164,88 @@ def test_filter(test_qapp):
     assert VMTypeToggle._filter_appvms(entry_dvm_template)
     assert VMTypeToggle._filter_templatevms(entry_dvm_template)
     assert not VMTypeToggle._filter_service(entry_dvm_template)
+
+
+def test_folder_feature_events_update_entry(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    vm_name = "test-vm"
+    entry_test = vm_manager.load_vm_from_name(vm_name)
+    assert entry_test
+
+    with mock.patch.object(
+        entry_test, "safe_feature_get", return_value="Work"
+    ):
+        with mock.patch.object(entry_test, "update_entries") as update_entries:
+            vm_manager._update_domain_feature(
+                vm_name,
+                f"feature-set:{constants.FOLDER_FEATURE}",
+                feature=constants.FOLDER_FEATURE,
+                value="Work",
+            )
+            update_entries.assert_called_once_with(
+                update_label=True, update_type=True
+            )
+            assert entry_test.folder == "Work"
+
+    with mock.patch.object(entry_test, "update_entries") as update_entries:
+        vm_manager._update_domain_feature(
+            vm_name,
+            f"feature-delete:{constants.FOLDER_FEATURE}",
+            feature=constants.FOLDER_FEATURE,
+        )
+        update_entries.assert_called_once_with(
+            update_label=True, update_type=True
+        )
+        assert entry_test.folder == ""
+
+
+def test_domain_add_remove_accept_vm_objects(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    new_vm = MockQube(name="new-appvm", qapp=test_qapp)
+    test_qapp._qubes["new-appvm"] = new_vm
+    test_qapp.update_vm_calls()
+
+    vm_manager._add_domain(None, "domain-add", new_vm)
+    assert "new-appvm" in vm_manager.vms
+
+    vm_manager._remove_domain(None, "domain-delete", new_vm)
+    assert "new-appvm" not in vm_manager.vms
+
+
+def test_domain_add_receives_vm_object(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    # Simulate domain-add where the event delivers a QubesVM object
+    # instead of a string name, and the handler must extract the name.
+    new_vm = MockQube(name="new-test-vm", qapp=test_qapp)
+
+    vm_manager._add_domain(None, "domain-add", new_vm)
+
+    assert "new-test-vm" in vm_manager.vms
+
+
+def test_servicevm_feature_string_false_is_not_hidden_in_apps(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    vm_name = "test-vm"
+    entry = vm_manager.load_vm_from_name(vm_name)
+    assert entry
+
+    test_qapp._qubes[vm_name].features["servicevm"] = "False"
+    test_qapp._qubes[vm_name].update_calls()
+
+    vm_manager._update_domain_feature(
+        vm_name,
+        "feature-set:servicevm",
+        feature="servicevm",
+        value="False",
+    )
+
+    assert not entry.service_vm
+    assert VMTypeToggle._filter_appvms(entry)
