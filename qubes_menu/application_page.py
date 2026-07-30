@@ -161,21 +161,10 @@ class AppPage(MenuPage):
     UNGROUPED = "Ungrouped"
     SCOPES = ["apps", "templates", "service"]
 
-    SCOPE_VM_FEATURE = {
-        "apps": constants.FOLDER_FEATURE_APPS,
-        "templates": constants.FOLDER_FEATURE_TEMPLATES,
-        "service": constants.FOLDER_FEATURE_SERVICE,
-    }
-    SCOPE_FOLDERS_FEATURE = {
-        "apps": constants.FOLDERS_FEATURE_APPS,
-        "templates": constants.FOLDERS_FEATURE_TEMPLATES,
-        "service": constants.FOLDERS_FEATURE_SERVICE,
-    }
-    SCOPE_COLLAPSED_FEATURE = {
-        "apps": constants.FOLDERS_COLLAPSED_FEATURE_APPS,
-        "templates": constants.FOLDERS_COLLAPSED_FEATURE_TEMPLATES,
-        "service": constants.FOLDERS_COLLAPSED_FEATURE_SERVICE,
-    }
+    # Per-VM folder assignment uses a single feature on each VM.
+    # Scope-level state (folder order, collapsed folders) is stored
+    # in a single dom0 feature keyed by scope.
+    FOLDER_COLLAPSED_FEATURE = constants.FOLDER_COLLAPSED_FEATURE
 
     def __init__(
         self,
@@ -309,10 +298,26 @@ class AppPage(MenuPage):
             self.folder_order.insert(0, self.UNGROUPED)
 
     def _vm_folder(self, vm_entry: VMEntry, scope: Optional[str] = None) -> str:
+        """Return the folder assigned to *vm_entry* in *scope*.
+
+        The per-VM feature stores a JSON dict keyed by scope so that VMs
+        appearing in multiple scopes (e.g. DispVM templates shown in both
+        Apps and Templates) can carry different folder assignments.
+        """
         if not scope:
             scope = self._current_scope()
-        feature_name = self.SCOPE_VM_FEATURE[scope]
-        return self._safe_feature_get(vm_entry.vm, feature_name, "")
+        raw = self._safe_feature_get(
+            vm_entry.vm, constants.FOLDER_FEATURE, ""
+        )
+        if not raw:
+            return ""
+        try:
+            data = json.loads(raw)
+        except (TypeError, json.JSONDecodeError):
+            return ""
+        if isinstance(data, dict):
+            return data.get(scope, "")
+        return ""
 
     def _effective_vm_folder(
         self, vm_entry: VMEntry, scope: Optional[str] = None
@@ -329,6 +334,38 @@ class AppPage(MenuPage):
         if folder_name not in self.folder_order:
             return self.UNGROUPED
         return folder_name
+
+    @staticmethod
+    def _set_vm_folder(vm_entry: VMEntry, folder_name: str, scope: str):
+        """Set *folder_name* for *vm_entry* in *scope*.
+
+        Stores a JSON dict keyed by scope so that multi-scope VMs can carry
+        independent folder assignments per scope.
+        """
+        raw = AppPage._safe_feature_get(
+            vm_entry.vm, constants.FOLDER_FEATURE, "{}"
+        )
+        try:
+            data = json.loads(raw) if raw else {}
+        except (TypeError, json.JSONDecodeError):
+            data = {}
+        if not isinstance(data, dict):
+            data = {}
+
+        if folder_name:
+            data[scope] = folder_name
+            vm_entry.vm.features[constants.FOLDER_FEATURE] = json.dumps(data)
+        else:
+            data.pop(scope, None)
+            if data:
+                vm_entry.vm.features[constants.FOLDER_FEATURE] = json.dumps(
+                    data
+                )
+            else:
+                try:
+                    del vm_entry.vm.features[constants.FOLDER_FEATURE]
+                except KeyError:
+                    pass
 
     @staticmethod
     def _safe_feature_get(vm, feature_name: str, default=""):
@@ -507,19 +544,19 @@ class AppPage(MenuPage):
 
     def _assign_folder(self, vm_entry: VMEntry, folder_name: str):
         folder_name = folder_name.strip()
-        feature_name = self.SCOPE_VM_FEATURE[self._current_scope()]
         folder_added = False
         if folder_name:
             folder_added = folder_name not in self.folder_order
             self._ensure_folder_exists(folder_name)
-            vm_entry.vm.features[feature_name] = folder_name
+            self._set_vm_folder(
+                vm_entry, folder_name, self._current_scope()
+            )
         else:
-            try:
-                del vm_entry.vm.features[feature_name]
-            except KeyError:
-                pass
+            self._set_vm_folder(
+                vm_entry, "", self._current_scope()
+            )
         if folder_added:
-            self._save_folder_state()
+            self._save_scope_state()
             self._rebuild_folder_rows()
         self.vm_list.invalidate_sort()
         self.vm_list.invalidate_filter()
@@ -543,21 +580,15 @@ class AppPage(MenuPage):
             if new_name:
                 self.collapsed_folders.add(new_name)
 
+        scope = self._current_scope()
         for vm_entry in self.vm_manager.vms.values():
             if self._vm_folder(vm_entry) != old_name:
                 continue
-            if new_name:
-                feature_name = self.SCOPE_VM_FEATURE[self._current_scope()]
-                vm_entry.vm.features[feature_name] = new_name
-            else:
-                try:
-                    feature_name = self.SCOPE_VM_FEATURE[self._current_scope()]
-                    del vm_entry.vm.features[feature_name]
-                except KeyError:
-                    pass
+            self._set_vm_folder(
+                vm_entry, new_name if new_name else "", scope
+            )
 
-        self._save_folder_state()
-        self._save_collapsed_state()
+        self._save_scope_state()
         self._rebuild_folder_rows()
         self.vm_list.invalidate_filter()
         self.vm_list.invalidate_sort()
@@ -567,17 +598,13 @@ class AppPage(MenuPage):
             self.folder_order.remove(folder_name)
         self.collapsed_folders.discard(folder_name)
 
+        scope = self._current_scope()
         for vm_entry in self.vm_manager.vms.values():
             if self._vm_folder(vm_entry) != folder_name:
                 continue
-            try:
-                feature_name = self.SCOPE_VM_FEATURE[self._current_scope()]
-                del vm_entry.vm.features[feature_name]
-            except KeyError:
-                pass
+            self._set_vm_folder(vm_entry, "", scope)
 
-        self._save_folder_state()
-        self._save_collapsed_state()
+        self._save_scope_state()
         self._rebuild_folder_rows()
         self.vm_list.invalidate_filter()
         self.vm_list.invalidate_sort()
@@ -587,7 +614,7 @@ class AppPage(MenuPage):
         if not folder_name:
             return
         self._ensure_folder_exists(folder_name)
-        self._save_folder_state()
+        self._save_scope_state()
         self._rebuild_folder_rows()
         self.vm_list.invalidate_filter()
         self.vm_list.invalidate_sort()
@@ -609,7 +636,7 @@ class AppPage(MenuPage):
             folder_row.collapsed = True
 
         folder_row.update_contents()
-        self._save_collapsed_state()
+        self._save_scope_state()
         self.vm_list.invalidate_filter()
 
     def _show_folder_row_menu(self, row: FolderRow, event):
@@ -677,7 +704,7 @@ class AppPage(MenuPage):
         if new_index < 0 or new_index >= len(self.folder_order):
             return
         self.folder_order.insert(new_index, self.folder_order.pop(old_index))
-        self._save_folder_state()
+        self._save_scope_state()
         self._rebuild_folder_rows()
         self.vm_list.invalidate_sort()
 
@@ -691,59 +718,69 @@ class AppPage(MenuPage):
             folder_row.collapsed = collapsed
             folder_row.update_contents()
 
-        self._save_collapsed_state()
+        self._save_scope_state()
         self.vm_list.invalidate_filter()
 
     def _load_folder_state_all(self):
+        try:
+            raw = self.local_vm.features.get(
+                self.FOLDER_COLLAPSED_FEATURE, "{}"
+            )
+        except Exception:  # pylint: disable=broad-except
+            raw = "{}"
+        try:
+            parsed = json.loads(raw)
+        except (TypeError, json.JSONDecodeError):
+            parsed = {}
+
+        if not isinstance(parsed, dict):
+            parsed = {}
+
         for scope in self.SCOPES:
-            try:
-                raw_folders = self.local_vm.features.get(
-                    self.SCOPE_FOLDERS_FEATURE[scope], "[]"
-                )
-            except Exception:  # pylint: disable=broad-except
-                raw_folders = "[]"
-            try:
-                raw_collapsed = self.local_vm.features.get(
-                    self.SCOPE_COLLAPSED_FEATURE[scope], "[]"
-                )
-            except Exception:  # pylint: disable=broad-except
-                raw_collapsed = "[]"
+            scope_data = parsed.get(scope, {})
+            if not isinstance(scope_data, dict):
+                scope_data = {}
+            folders = scope_data.get("folders", [])
+            collapsed = scope_data.get("collapsed", [])
 
-            try:
-                parsed_folders = json.loads(raw_folders)
-            except (TypeError, json.JSONDecodeError):
-                parsed_folders = []
-
-            try:
-                parsed_collapsed = json.loads(raw_collapsed)
-            except (TypeError, json.JSONDecodeError):
-                parsed_collapsed = []
-
-            folders = [f for f in parsed_folders if isinstance(f, str) and f]
+            folders = [f for f in folders if isinstance(f, str) and f]
             if self.UNGROUPED not in folders:
                 folders.insert(0, self.UNGROUPED)
             allowed_collapsed = set(folders)
             allowed_collapsed.add(self.UNGROUPED)
-            collapsed = {
+            collapsed_set = {
                 f
-                for f in parsed_collapsed
+                for f in collapsed
                 if isinstance(f, str) and f in allowed_collapsed
             }
 
             self.scope_folder_order[scope] = folders
-            self.scope_collapsed_folders[scope] = collapsed
+            self.scope_collapsed_folders[scope] = collapsed_set
 
-    def _save_folder_state(self):
-        feature_name = self.SCOPE_FOLDERS_FEATURE[self._current_scope()]
-        self.local_vm.features[feature_name] = json.dumps(self.folder_order)
+    def _save_scope_state(self):
+        try:
+            raw = self.local_vm.features.get(
+                self.FOLDER_COLLAPSED_FEATURE, "{}"
+            )
+        except Exception:  # pylint: disable=broad-except
+            raw = "{}"
+        try:
+            state = json.loads(raw)
+        except (TypeError, json.JSONDecodeError):
+            state = {}
+        if not isinstance(state, dict):
+            state = {}
 
-    def _save_collapsed_state(self):
+        scope = self._current_scope()
         collapsed = [
             f for f in self.folder_order if f in self.collapsed_folders
         ]
+        state[scope] = {"folders": self.folder_order, "collapsed": collapsed}
         self.local_vm.features[
-            self.SCOPE_COLLAPSED_FEATURE[self._current_scope()]
-        ] = json.dumps(collapsed)
+            self.FOLDER_COLLAPSED_FEATURE
+        ] = json.dumps(state)
+        self.scope_folder_order[scope] = self.folder_order.copy()
+        self.scope_collapsed_folders[scope] = self.collapsed_folders.copy()
 
     def _rebuild_folder_rows(self):
         for child in list(self.vm_list.get_children()):

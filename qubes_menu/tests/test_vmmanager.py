@@ -166,7 +166,7 @@ def test_filter(test_qapp):
     assert not VMTypeToggle._filter_service(entry_dvm_template)
 
 
-def test_folder_scope_feature_events_refresh_entries(test_qapp):
+def test_folder_feature_events_update_entry(test_qapp):
     dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
     vm_manager = VMManager(test_qapp, dispatcher)
 
@@ -174,22 +174,31 @@ def test_folder_scope_feature_events_refresh_entries(test_qapp):
     entry_test = vm_manager.load_vm_from_name(vm_name)
     assert entry_test
 
-    with mock.patch.object(entry_test, "update_entries") as update_entries:
-        vm_manager._update_domain_feature(
-            vm_name,
-            f"feature-set:{constants.FOLDER_FEATURE_APPS}",
-            feature=constants.FOLDER_FEATURE_APPS,
-            value="Work",
-        )
-        update_entries.assert_called_once_with(update_type=True)
+    with mock.patch.object(
+        entry_test, "safe_feature_get", return_value="Work"
+    ):
+        with mock.patch.object(entry_test, "update_entries") as update_entries:
+            vm_manager._update_domain_feature(
+                vm_name,
+                f"feature-set:{constants.FOLDER_FEATURE}",
+                feature=constants.FOLDER_FEATURE,
+                value="Work",
+            )
+            update_entries.assert_called_once_with(
+                update_label=True, update_type=True
+            )
+            assert entry_test.folder == "Work"
 
     with mock.patch.object(entry_test, "update_entries") as update_entries:
         vm_manager._update_domain_feature(
             vm_name,
-            f"feature-delete:{constants.FOLDER_FEATURE_TEMPLATES}",
-            feature=constants.FOLDER_FEATURE_TEMPLATES,
+            f"feature-delete:{constants.FOLDER_FEATURE}",
+            feature=constants.FOLDER_FEATURE,
         )
-        update_entries.assert_called_once_with(update_type=True)
+        update_entries.assert_called_once_with(
+            update_label=True, update_type=True
+        )
+        assert entry_test.folder == ""
 
 
 def test_domain_add_remove_accept_vm_objects(test_qapp):

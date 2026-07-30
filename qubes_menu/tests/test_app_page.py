@@ -182,8 +182,7 @@ def test_folder_create_assign_rename_delete(
 
     app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
     app_page.toggle_buttons.apps_toggle.set_active(True)
-    app_page._save_folder_state = mock.Mock()
-    app_page._save_collapsed_state = mock.Mock()
+    app_page._save_scope_state = mock.Mock()
 
     vm_entry = vm_manager.load_vm_from_name("test-red")
     assert vm_entry
@@ -194,18 +193,22 @@ def test_folder_create_assign_rename_delete(
 
     app_page._assign_folder(vm_entry, "Work")
     assert app_page._vm_folder(vm_entry) == "Work"
-    assert vm_entry.vm.features[constants.FOLDER_FEATURE_APPS] == "Work"
+    assert json.loads(
+        vm_entry.vm.features[constants.FOLDER_FEATURE]
+    ) == {"apps": "Work"}
 
     app_page._rename_folder("Work", "Projects")
     assert "Work" not in app_page.folder_order
     assert "Projects" in app_page.folder_order
     assert app_page._vm_folder(vm_entry) == "Projects"
-    assert vm_entry.vm.features[constants.FOLDER_FEATURE_APPS] == "Projects"
+    assert json.loads(
+        vm_entry.vm.features[constants.FOLDER_FEATURE]
+    ) == {"apps": "Projects"}
 
     app_page._delete_folder("Projects")
     assert "Projects" not in app_page.folder_order
     assert app_page._vm_folder(vm_entry) == ""
-    assert constants.FOLDER_FEATURE_APPS not in vm_entry.vm.features
+    assert constants.FOLDER_FEATURE not in vm_entry.vm.features
 
 
 def test_folder_move_and_collapsed_state_saved(
@@ -221,8 +224,7 @@ def test_folder_move_and_collapsed_state_saved(
 
     app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
     app_page.toggle_buttons.apps_toggle.set_active(True)
-    app_page._save_folder_state = mock.Mock()
-    app_page._save_collapsed_state = mock.Mock()
+    app_page._save_scope_state = mock.Mock()
 
     app_page._create_folder("A")
     app_page._create_folder("B")
@@ -241,7 +243,7 @@ def test_folder_move_and_collapsed_state_saved(
 
     app_page._toggle_folder(folder_b)
     assert "B" in app_page.collapsed_folders
-    app_page._save_collapsed_state.assert_called()
+    app_page._save_scope_state.assert_called()
 
     app_page._set_all_folders_collapsed(None, True)
     assert set(app_page.folder_order) == app_page.collapsed_folders
@@ -253,17 +255,23 @@ def test_folder_move_and_collapsed_state_saved(
 def test_folder_state_is_scope_specific(
     test_desktop_file_path, test_qapp, test_builder
 ):
-    test_qapp._qubes["dom0"].features[constants.FOLDERS_FEATURE_APPS] = (
-        json.dumps(["Ungrouped", "AppsOnly"])
-    )
     test_qapp._qubes["dom0"].features[
-        constants.FOLDERS_COLLAPSED_FEATURE_APPS
-    ] = json.dumps(["AppsOnly"])
-    test_qapp._qubes["dom0"].features[constants.FOLDERS_FEATURE_TEMPLATES] = (
-        json.dumps(["Ungrouped", "TplOnly"])
-    )
-    test_qapp._qubes["dom0"].features[constants.FOLDERS_FEATURE_SERVICE] = (
-        json.dumps(["Ungrouped", "SvcOnly"])
+        constants.FOLDER_COLLAPSED_FEATURE
+    ] = json.dumps(
+        {
+            "apps": {
+                "folders": ["Ungrouped", "AppsOnly"],
+                "collapsed": ["AppsOnly"],
+            },
+            "templates": {
+                "folders": ["Ungrouped", "TplOnly"],
+                "collapsed": [],
+            },
+            "service": {
+                "folders": ["Ungrouped", "SvcOnly"],
+                "collapsed": [],
+            },
+        }
     )
     test_qapp.update_vm_calls()
 
@@ -301,8 +309,7 @@ def test_folder_selection_menu_entries(
 
     app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
     app_page.toggle_buttons.apps_toggle.set_active(True)
-    app_page._save_folder_state = mock.Mock()
-    app_page._save_collapsed_state = mock.Mock()
+    app_page._save_scope_state = mock.Mock()
 
     vm_entry = vm_manager.load_vm_from_name("test-red")
     assert vm_entry
@@ -337,7 +344,9 @@ def test_unknown_vm_folder_falls_back_to_ungrouped(
 
     vm_entry = vm_manager.load_vm_from_name("test-red")
     assert vm_entry
-    vm_entry.vm.features = {constants.FOLDER_FEATURE_APPS: "MissingFolder"}
+    vm_entry.vm.features = {
+        constants.FOLDER_FEATURE: json.dumps({"apps": "MissingFolder"})
+    }
 
     vm_row = app_page.vm_rows["test-red"]
 
