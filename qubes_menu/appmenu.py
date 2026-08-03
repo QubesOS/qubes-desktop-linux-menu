@@ -13,24 +13,6 @@ from typing import Optional, Dict, Any
 import importlib.resources
 import logging
 
-import qubesadmin
-import qubesadmin.events
-
-from .settings_page import SettingsPage
-from .application_page import AppPage
-from .search_page import SearchPage
-from .desktop_file_manager import DesktopFileManager
-from .favorites_page import FavoritesPage
-from .custom_widgets import SelfAwareMenu
-from .vm_manager import VMManager
-from .page_handler import MenuPage
-from .constants import (
-    INITIAL_PAGE_FEATURE,
-    SORT_RUNNING_FEATURE,
-    POSITION_FEATURE,
-    DISABLE_RECENT_FEATURE,
-)
-
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -48,6 +30,24 @@ except ImportError:
 
     gbulb.install()
     HAS_GBULB = True
+
+import qubesadmin
+import qubesadmin.events
+
+from .settings_page import SettingsPage
+from .application_page import AppPage
+from .search_page import SearchPage
+from .desktop_file_manager import DesktopFileManager
+from .favorites_page import FavoritesPage
+from .custom_widgets import SelfAwareMenu
+from .vm_manager import VMManager
+from .page_handler import MenuPage
+from .constants import (
+    INITIAL_PAGE_FEATURE,
+    SORT_RUNNING_FEATURE,
+    POSITION_FEATURE,
+    DISABLE_RECENT_FEATURE,
+)
 
 PAGE_LIST = ["search_page", "app_page", "favorites_page", "settings_page"]
 
