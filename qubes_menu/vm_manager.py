@@ -26,8 +26,6 @@ import qubesadmin.exc
 from qubesadmin.vm import QubesVM
 from typing import Optional, Dict, List, Callable
 
-from . import constants
-
 
 class VMEntry:
     """
@@ -268,13 +266,12 @@ class VMManager:
             del self.vms[vm]
 
     def _update_domain_state(self, vm_name, event, **_kwargs):
+        # pylint: disable=unused-argument
         vm_entry = self.load_vm_from_name(vm_name)
         if not vm_entry:
             return
 
-        if event in constants.STATE_DICTIONARY:
-            state = constants.STATE_DICTIONARY[event]
-            vm_entry.power_state = state
+        vm_entry.power_state = vm_entry.vm.get_power_state()
 
     def _update_domain_property(
         self, vm_name, event, newvalue, *_args, **_kwargs

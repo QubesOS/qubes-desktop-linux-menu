@@ -474,7 +474,7 @@ class StartControlItem(ControlRow):
     """
     Control Row item representing changing VM state: start if it's not running,
     shutdown if it's running, unpause if it's paused, and kill if it's
-    transient.
+    transient (Starting/Halting).
     """
 
     def __init__(self, desktop_file_manager):
@@ -530,7 +530,7 @@ class StartControlItem(ControlRow):
                 load_icon("qappmenu-start", size=None, pixel_size=15)
             )
             return
-        if self.state == "Transient":
+        if self.state in ["Transient", "Starting", "Halting"]:
             self.row_label.set_label("Kill qube")
             self.command = "qvm-kill"
             self.icon.set_from_pixbuf(

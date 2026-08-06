@@ -22,17 +22,6 @@ Qubes App Menu constants, like dictionary of events-to-vm-states, name of
 favorites feature etc.
 """
 
-STATE_DICTIONARY = {
-    "domain-pre-start": "Transient",
-    "domain-start": "Running",
-    "domain-start-failed": "Halted",
-    "domain-paused": "Paused",
-    "domain-unpaused": "Running",
-    "domain-shutdown": "Halted",
-    "domain-pre-shutdown": "Transient",
-    "domain-shutdown-failed": "Running",
-}
-
 INITIAL_PAGE_FEATURE = "menu-initial-page"
 SORT_RUNNING_FEATURE = "menu-sort-running"
 POSITION_FEATURE = "menu-position"
