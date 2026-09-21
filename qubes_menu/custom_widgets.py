@@ -392,6 +392,35 @@ class VMRow(HoverListBox):
         return self.vm_entry.sort_name
 
 
+class FolderRow(HoverListBox):
+    """Collapsible folder header row used on Apps VM list."""
+
+    def __init__(self, folder_name: str, collapsed: bool = False):
+        super().__init__()
+        self.folder_name = folder_name
+        self.collapsed = collapsed
+
+        self.get_style_context().add_class("vm_entry")
+        self.get_style_context().add_class("folder_entry")
+
+        self.arrow = Gtk.Label()
+        self.arrow.set_xalign(0)
+        self.main_box.pack_start(self.arrow, False, False, 2)
+
+        self.label = Gtk.Label()
+        self.label.set_xalign(0)
+        self.main_box.pack_start(self.label, False, False, 2)
+
+        self.update_contents()
+
+    def update_contents(self):
+        """Update the collapse arrow and folder label."""
+        arrow = "▸" if self.collapsed else "▾"
+        self.arrow.set_text(arrow)
+        escaped_folder = GLib.markup_escape_text(self.folder_name)
+        self.label.set_markup(f"<b>{escaped_folder}</b>")
+
+
 class SearchVMRow(VMRow):
     """VM Row used for the Search tab."""
 
