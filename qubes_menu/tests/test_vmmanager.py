@@ -18,11 +18,15 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 
+from unittest import mock
+
 import qubesadmin
 import qubesadmin.events
-from ..vm_manager import VMManager
-from ..application_page import VMTypeToggle
 from qubesadmin.tests.mock_app import Property
+
+from .. import constants
+from ..application_page import VMTypeToggle
+from ..vm_manager import VMManager
 
 
 def test_vm_manager(test_qapp):
@@ -142,3 +146,43 @@ def test_filter(test_qapp):
     assert VMTypeToggle._filter_appvms(entry_dvm_template)
     assert VMTypeToggle._filter_templatevms(entry_dvm_template)
     assert not VMTypeToggle._filter_service(entry_dvm_template)
+
+
+def test_folder_feature_events_update_entry_and_callbacks(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+    entry = vm_manager.load_vm_from_name("test-vm")
+    assert entry
+    callback = mock.Mock()
+    vm_manager.register_folder_changed_callback(callback)
+
+    vm_manager._update_domain_feature(
+        "test-vm",
+        f"feature-set:{constants.FOLDER_FEATURE}",
+        feature=constants.FOLDER_FEATURE,
+        value="Work",
+    )
+    assert entry.folder == "Work"
+    callback.assert_called_once_with(entry)
+
+    callback.reset_mock()
+    vm_manager._update_domain_feature(
+        "test-vm",
+        f"feature-delete:{constants.FOLDER_FEATURE}",
+        feature=constants.FOLDER_FEATURE,
+    )
+    assert entry.folder == ""
+    callback.assert_called_once_with(entry)
+
+
+def test_vm_removal_callback(test_qapp):
+    dispatcher = qubesadmin.events.EventsDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+    entry = vm_manager.load_vm_from_name("test-vm")
+    assert entry
+    callback = mock.Mock()
+    vm_manager.register_removed_vm_callback(callback)
+
+    vm_manager._remove_domain(None, "domain-delete", "test-vm")
+
+    callback.assert_called_once_with(entry)

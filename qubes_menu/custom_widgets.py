@@ -104,12 +104,10 @@ class HoverListBox(Gtk.ListBoxRow):
 
 
 class SelfAwareMenu(Gtk.Menu):
-    """
-    Gtk.Menu, but the class has a counter of number of currently opened menus.
-    There can be only one menu open at a time.
-    """
+    """Gtk.Menu that tracks open popups and deferred close callbacks."""
 
     OPEN_MENUS = 0
+    _CLOSE_CALLBACKS: List[Callable] = []
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -124,6 +122,22 @@ class SelfAwareMenu(Gtk.Menu):
     @staticmethod
     def _remove_from_open(*_args):
         SelfAwareMenu.OPEN_MENUS -= 1
+        if SelfAwareMenu.OPEN_MENUS > 0:
+            return
+
+        SelfAwareMenu.OPEN_MENUS = 0
+        callbacks = SelfAwareMenu._CLOSE_CALLBACKS
+        SelfAwareMenu._CLOSE_CALLBACKS = []
+        for callback in callbacks:
+            GLib.idle_add(callback)
+
+    @classmethod
+    def defer_until_closed(cls, callback: Callable):
+        """Run *callback* once from the main loop after all menus close."""
+        if cls.OPEN_MENUS <= 0:
+            GLib.idle_add(callback)
+        elif callback not in cls._CLOSE_CALLBACKS:
+            cls._CLOSE_CALLBACKS.append(callback)
 
 
 class FavoritesMenu(SelfAwareMenu):
@@ -296,7 +310,10 @@ class VMRow(HoverListBox):
     """
 
     def __init__(
-        self, vm_entry: VMEntry, show_dispvm_inheritance: Optional[bool] = True
+        self,
+        vm_entry: VMEntry,
+        show_dispvm_inheritance: Optional[bool] = True,
+        folder_menu_handler: Optional[Callable] = None,
     ):
         """
         :param vm_entry: VMEntry object, stored and managed by VMManager
@@ -307,6 +324,7 @@ class VMRow(HoverListBox):
         self.vm_entry = vm_entry
         self.vm_name = vm_entry.vm_name
         self.show_dispvm_inheritance = show_dispvm_inheritance
+        self.folder_menu_handler = folder_menu_handler
         self.get_style_context().add_class("vm_entry")
 
         self.icon_img = Gtk.Image()
@@ -324,12 +342,23 @@ class VMRow(HoverListBox):
         self.label = Gtk.Label(label=self.vm_entry.vm_name)
         self.main_box.pack_start(self.label, False, False, 2)
 
+        self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        self.event_box.connect("button-press-event", self._on_button_press)
+
         self.update_contents(
             update_power_state=True,
             update_label=True,
             update_has_network=True,
             update_type=True,
         )
+
+    def _on_button_press(self, _widget, event):
+        if event.button == Gdk.BUTTON_SECONDARY and self.folder_menu_handler:
+            self.folder_menu_handler(self, event)
+            # Stop GTK from also activating the row for this right click.
+            return True
+        # Let GTK perform its normal row selection for other buttons.
+        return False
 
     def update_style(self, update_power_state: bool = True):
         """Update own style, based on whether VM is running or not and
@@ -390,6 +419,60 @@ class VMRow(HoverListBox):
         Helper property exposing desired sort order.
         """
         return self.vm_entry.sort_name
+
+
+class FolderRow(HoverListBox):
+    """Collapsible folder header row used on Apps VM list."""
+
+    def __init__(
+        self,
+        folder_name: str,
+        collapsed: bool = False,
+        toggle_handler: Optional[Callable] = None,
+        menu_handler: Optional[Callable] = None,
+    ):
+        super().__init__()
+        self.folder_name = folder_name
+        self.collapsed = collapsed
+        self.toggle_handler = toggle_handler
+        self.menu_handler = menu_handler
+
+        self.get_style_context().add_class("vm_entry")
+        self.get_style_context().add_class("folder_entry")
+
+        self.arrow = Gtk.Label()
+        self.arrow.set_xalign(0)
+        self.main_box.pack_start(self.arrow, False, False, 2)
+
+        self.label = Gtk.Label()
+        self.label.set_xalign(0)
+        self.main_box.pack_start(self.label, False, False, 2)
+
+        self.event_box.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        self.event_box.connect("button-press-event", self._on_button_press)
+
+        self.update_contents()
+
+    def update_contents(self):
+        """Update the collapse arrow and folder label."""
+        arrow = "▸" if self.collapsed else "▾"
+        self.arrow.set_text(arrow)
+        escaped_folder = GLib.markup_escape_text(self.folder_name)
+        self.label.set_markup(f"<b>{escaped_folder}</b>")
+        self.main_box.show_all()
+
+    def _on_button_press(self, _widget, event):
+        """Handle left click for collapse toggling and right click menu."""
+        if event.button == Gdk.BUTTON_SECONDARY and self.menu_handler:
+            self.menu_handler(self, event)
+            # The context menu consumes the right click completely.
+            return True
+        if event.button == Gdk.BUTTON_PRIMARY and self.toggle_handler:
+            self.toggle_handler(self)
+            # Do not activate/select a folder as though it were a VM row.
+            return True
+        # Propagate buttons for which this row has no special behavior.
+        return False
 
 
 class SearchVMRow(VMRow):

@@ -33,6 +33,7 @@ Architecture: any
 Depends:
  python3-qubesadmin,
  python3-xdg,
+ qubes-desktop-linux-manager,
  gir1.2-gtklayershell-0.1,
  ${python3:Depends},
  ${misc:Depends}

@@ -71,6 +71,10 @@ class VMEntry:
         self.show_dispvm_template_in_apps = bool(
             vm.features.get("appmenus-dispvm", False)
         )
+        try:
+            self._folder = self.vm.features.get(constants.FOLDER_FEATURE, "")
+        except qubesadmin.exc.QubesDaemonAccessError:
+            self._folder = ""
         self.entries: List = []
 
     def update_entries(
@@ -162,6 +166,16 @@ class VMEntry:
         self.update_entries(update_type=True)
 
     @property
+    def folder(self):
+        """Folder name assigned to this VM for App menu grouping."""
+        return self._folder
+
+    @folder.setter
+    def folder(self, new_value):
+        self._folder = new_value or ""
+        self.update_entries(update_type=True)
+
+    @property
     def show_in_apps(self):
         """Should this qube be shown in the Apps section of the menu?"""
         if self.internal:
@@ -210,6 +224,8 @@ class VMManager:
         self.qapp = qapp
         self.dispatcher = dispatcher
         self.new_vm_callbacks: List[Callable] = []
+        self.removed_vm_callbacks: List[Callable] = []
+        self.folder_changed_callbacks: List[Callable] = []
 
         self.vms: Dict[str, VMEntry] = {}
 
@@ -223,6 +239,14 @@ class VMManager:
         self.new_vm_callbacks.append(func)
         for entry in self.vms.values():
             func(entry)
+
+    def register_removed_vm_callback(self, func):
+        """Register a callback to be executed whenever a VM is removed."""
+        self.removed_vm_callbacks.append(func)
+
+    def register_folder_changed_callback(self, func):
+        """Register a callback for changes to VM folder assignments."""
+        self.folder_changed_callbacks.append(func)
 
     def load_vm_from_name(self, vm_name: str) -> Optional[VMEntry]:
         """Get a VM entry corresponding to a VM name"""
@@ -266,6 +290,8 @@ class VMManager:
                     # crashed by a rogue Exception
                     return
             del self.vms[vm]
+            for func in self.removed_vm_callbacks:
+                func(vm_entry)
 
     def _update_domain_state(self, vm_name, event, **_kwargs):
         vm_entry = self.load_vm_from_name(vm_name)
@@ -307,23 +333,33 @@ class VMManager:
         if not vm_entry:
             return
 
-        if value == "False":
-            value = False
-        value = bool(value)
-
         try:
-            if feature == "internal":
-                vm_entry.internal = value
-                for derived in self.qapp.domains:
-                    if not getattr(derived, "template", None) == vm:
-                        continue
-                    derived_vm_entry = self.load_vm_from_name(derived)
-                    if derived_vm_entry:
-                        derived_vm_entry.internal = value
-            if feature == "servicevm":
-                vm_entry.service_vm = value
-            if feature == "appmenus-dispvm":
-                vm_entry.show_dispvm_template_in_apps = value
+            if feature == constants.FOLDER_FEATURE:
+                deleted_event = _event in (
+                    "feature-delete:" + constants.FOLDER_FEATURE,
+                    "domain-feature-delete:" + constants.FOLDER_FEATURE,
+                )
+                vm_entry.folder = "" if deleted_event else value or ""
+                for func in self.folder_changed_callbacks:
+                    func(vm_entry)
+            else:
+                if value == "False":
+                    value = False
+                value = bool(value)
+
+                if feature == "internal":
+                    vm_entry.internal = value
+                    for derived in self.qapp.domains:
+                        if not getattr(derived, "template", None) == vm:
+                            continue
+                        derived_vm_entry = self.load_vm_from_name(derived)
+                        if derived_vm_entry:
+                            derived_vm_entry.internal = value
+                if feature == "servicevm":
+                    vm_entry.service_vm = value
+                if feature == "appmenus-dispvm":
+                    vm_entry.show_dispvm_template_in_apps = value
+
         except Exception:  # pylint: disable=broad-except
             # dispatcher functions cannot raise any Exception, because
             # it will disable any future event handling
@@ -390,4 +426,12 @@ class VMManager:
         )
         self.dispatcher.add_handler(
             "domain-feature-delete:internal", self._update_domain_feature
+        )
+        self.dispatcher.add_handler(
+            "domain-feature-set:" + constants.FOLDER_FEATURE,
+            self._update_domain_feature,
+        )
+        self.dispatcher.add_handler(
+            "domain-feature-delete:" + constants.FOLDER_FEATURE,
+            self._update_domain_feature,
         )

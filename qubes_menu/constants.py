@@ -39,6 +39,9 @@ POSITION_FEATURE = "menu-position"
 DISABLE_RECENT_FEATURE = "menu-disable-recent"
 
 FAVORITES_FEATURE = "menu-favorites"
+FOLDER_FEATURE = "menu-folder"
+FOLDER_ORDER_FEATURE = "menu-folder-order"
+FOLDER_COLLAPSED_FEATURE = "menu-folder-collapsed"
 DISPOSABLE_PREFIX = "@disp:"
 
 RESTART_PARAM_LONG = "restart"
