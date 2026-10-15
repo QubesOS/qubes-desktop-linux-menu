@@ -315,7 +315,7 @@ class VMManager:
             if feature == "internal":
                 vm_entry.internal = value
                 for derived in self.qapp.domains:
-                    if not getattr(derived, "template", None) == vm:
+                    if not derived.get_active_template() == vm:
                         continue
                     derived_vm_entry = self.load_vm_from_name(derived)
                     if derived_vm_entry:
