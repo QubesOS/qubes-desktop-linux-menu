@@ -54,7 +54,7 @@ Requires:   python%{python3_pkgversion}-gobject >= 3.50.0
 %endif
 Requires:  gtk3
 Requires:  gtk-layer-shell
-Requires:  python%{python3_pkgversion}-qubesadmin >= 4.1.8
+Requires:  python%{python3_pkgversion}-qubesadmin >= 4.4.2
 Requires:  python%{python3_pkgversion}-pyxdg
 Requires:  qubes-artwork >= 4.1.5
 Requires:  qubes-desktop-linux-manager

@@ -31,7 +31,7 @@ Description: Qubes Application Menu
 Package: python3-qubes-menu
 Architecture: any
 Depends:
- python3-qubesadmin,
+ python3-qubesadmin (>= 4.4.2),
  python3-xdg,
  gir1.2-gtklayershell-0.1,
  ${python3:Depends},
