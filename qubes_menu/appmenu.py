@@ -7,7 +7,6 @@ Main Application Menu class and helpers.
 # pylint: disable=import-error
 import asyncio
 import os
-import subprocess
 import sys
 from typing import Optional, Dict, Any
 import importlib.resources
@@ -22,6 +21,7 @@ from .search_page import SearchPage
 from .desktop_file_manager import DesktopFileManager
 from .favorites_page import FavoritesPage
 from .custom_widgets import SelfAwareMenu
+from .utils import run_detached
 from .vm_manager import VMManager
 from .page_handler import MenuPage
 from .constants import (
@@ -207,7 +207,6 @@ class AppMenu(Gtk.Application):
         Run xfce4's default logout button. Possible enhancement would be
         providing our own tiny program.
         """
-        # pylint: disable=consider-using-with
         if self.kde:
             dbus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
             proxy = Gio.DBusProxy.new_sync(
@@ -226,7 +225,7 @@ class AppMenu(Gtk.Application):
                 0,  # timeout_msec
             )
         else:
-            subprocess.Popen("xfce4-session-logout", stdin=subprocess.DEVNULL)
+            run_detached(["xfce4-session-logout"])
 
     def reposition(self):
         """

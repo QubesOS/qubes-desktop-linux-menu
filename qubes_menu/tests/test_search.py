@@ -24,6 +24,8 @@ from ..vm_manager import VMManager
 from qubesadmin.tests.mock_app import MockDispatcher
 from ..search_page import SearchPage
 
+RUN_DETACHED = "qubes_menu.app_widgets.run_detached"
+
 
 def test_search(test_desktop_file_path, test_qapp, test_builder):
     dispatcher = MockDispatcher(test_qapp)
@@ -160,7 +162,7 @@ def test_recent_searches(
 
     for row in search_page.app_list.get_children():
         if search_page._is_app_fitting(row):
-            with mock.patch("subprocess.Popen") as mock_run, mock.patch.object(
+            with mock.patch(RUN_DETACHED) as mock_run, mock.patch.object(
                 row.get_toplevel(),
                 "get_application",
                 side_effect=mock_application,
@@ -189,7 +191,7 @@ def test_recent_searches(
 
     for row in search_page.app_list.get_children():
         if search_page._is_app_fitting(row):
-            with mock.patch("subprocess.Popen") as mock_run, mock.patch.object(
+            with mock.patch(RUN_DETACHED) as mock_run, mock.patch.object(
                 row.get_toplevel(),
                 "get_application",
                 side_effect=mock_application,
@@ -207,7 +209,7 @@ def test_recent_searches(
 
     for row in search_page.app_list.get_children():
         if search_page._is_app_fitting(row):
-            with mock.patch("subprocess.Popen") as mock_run, mock.patch.object(
+            with mock.patch(RUN_DETACHED) as mock_run, mock.patch.object(
                 row.get_toplevel(),
                 "get_application",
                 side_effect=mock_application,
