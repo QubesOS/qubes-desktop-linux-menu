@@ -537,7 +537,7 @@ class AppMenu(Gtk.Application):
         )
 
     def load_settings(self):
-        """Load settings from dom0 features."""
+        """Load settings from interface qube features."""
         local_vm = self.qapp.domains[self.qapp.local_name]
 
         initial_page = local_vm.features.get(INITIAL_PAGE_FEATURE, "app_page")
