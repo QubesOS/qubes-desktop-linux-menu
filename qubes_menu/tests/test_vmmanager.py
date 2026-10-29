@@ -85,6 +85,17 @@ def test_vm_manager(test_qapp):
     )
     assert entry_test.is_dispvm_template
 
+    test_qapp._qubes[vm_name].properties["icon"] = Property(
+        "templatevm-red", "str", False
+    )
+    test_qapp._qubes[vm_name].update_calls()
+    vm_manager._update_domain_property(
+        vm_name,
+        "property-reset:icon",
+        name="icon",
+    )
+    assert entry_test.vm_icon_name == "templatevm-red"
+
     test_qapp._qubes[vm_name].features["servicevm"] = 1
     test_qapp._qubes[vm_name].update_calls()
     vm_manager._update_domain_feature(
