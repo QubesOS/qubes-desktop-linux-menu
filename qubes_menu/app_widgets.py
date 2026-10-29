@@ -21,7 +21,6 @@
 A collection of custom Gtk widgets used elsewhere in the App Menu
 """
 
-import subprocess
 import logging
 import urllib.parse
 from typing import Optional, List
@@ -35,7 +34,13 @@ from .custom_widgets import (
 )
 from .desktop_file_manager import ApplicationInfo
 from .vm_manager import VMManager, VMEntry
-from .utils import load_icon, text_search, highlight_words, remove_from_feature
+from .utils import (
+    load_icon,
+    text_search,
+    highlight_words,
+    remove_from_feature,
+    run_detached,
+)
 from . import constants
 
 import gi
@@ -105,9 +110,8 @@ class AppEntry(Gtk.ListBoxRow):
         Run application from related .desktop file for a given VM.
         :param vm: QubesVM
         """
-        # pylint: disable=consider-using-with
         command = self.app_info.get_command_for_vm(vm)
-        subprocess.Popen(command, stdin=subprocess.DEVNULL)
+        run_detached(command)
         self.get_toplevel().get_application().emit(
             "app-started", self.app_info.file_path.name
         )

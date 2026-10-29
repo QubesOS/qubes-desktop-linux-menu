@@ -28,7 +28,15 @@ import gi
 import qubesadmin.vm
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GdkPixbuf, GLib
+from gi.repository import Gtk, GdkPixbuf, GLib, Gio
+
+
+def run_detached(command: List[str]) -> Gio.Subprocess:
+    """Start a command without waiting for it to finish. Unlike a
+    discarded subprocess.Popen, Gio.Subprocess reaps the child when it
+    exits, so a closed application does not stay a zombie. stdin is
+    /dev/null, stdout and stderr are inherited."""
+    return Gio.Subprocess.new(command, Gio.SubprocessFlags.NONE)
 
 
 def load_icon(

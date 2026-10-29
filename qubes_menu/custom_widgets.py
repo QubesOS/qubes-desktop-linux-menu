@@ -21,11 +21,10 @@
 Various custom Gtk widgets used in Qubes App Menu.
 """
 
-import subprocess
 from typing import Optional, List, Callable
 
 from . import constants
-from .utils import load_icon, get_visible_child, add_to_feature
+from .utils import load_icon, get_visible_child, add_to_feature, run_detached
 from .vm_manager import VMEntry
 from .desktop_file_manager import ApplicationInfo
 
@@ -259,10 +258,7 @@ class SettingsEntry(Gtk.ListBoxRow):
 
     def run_app(self, vm):
         """Run settings for specified vm."""
-        # pylint: disable=consider-using-with
-        subprocess.Popen(
-            ["qubes-vm-settings", vm.name], stdin=subprocess.DEVNULL
-        )
+        run_detached(["qubes-vm-settings", vm.name])
         self.get_toplevel().get_application().hide_menu()
 
     def get_appinfo(self) -> ApplicationInfo:
@@ -466,8 +462,7 @@ class ControlRow(Gtk.ListBoxRow):
         Run related app/script.
         """
         if self.command and self.is_sensitive():
-            # pylint: disable=consider-using-with
-            subprocess.Popen([self.command, str(vm)], stdin=subprocess.DEVNULL)
+            run_detached([self.command, str(vm)])
 
 
 class StartControlItem(ControlRow):

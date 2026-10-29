@@ -17,7 +17,10 @@
 #
 # You should have received a copy of the GNU Lesser General Public License along
 # with this program; if not, see <http://www.gnu.org/licenses/>.
-from ..utils import highlight_words
+import os
+import time
+
+from ..utils import highlight_words, run_detached
 
 import gi
 
@@ -73,3 +76,31 @@ def test_highlight_words():
         label_3.get_label()
         == "A shape with <span>lion</span> body and the head of a man"
     )
+
+
+def _wait_until(condition, timeout=5):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if condition():
+            return True
+        time.sleep(0.05)
+    return False
+
+
+def test_run_detached_reaps_child():
+    # The menu drops the handle while the child is still running. Once the
+    # child exits it must not stay a zombie until the next launch, as it did
+    # with a discarded Popen.
+    proc = run_detached(["sleep", "0.5"])
+    pid = int(proc.get_identifier())
+    del proc
+    assert _wait_until(lambda: not os.path.exists(f"/proc/{pid}"))
+
+
+def test_run_detached_stdin_is_devnull():
+    proc = run_detached(["sleep", "10"])
+    try:
+        pid = int(proc.get_identifier())
+        assert os.readlink(f"/proc/{pid}/fd/0") == "/dev/null"
+    finally:
+        proc.force_exit()

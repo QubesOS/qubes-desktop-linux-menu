@@ -19,7 +19,6 @@
 # with this program; if not, see <http://www.gnu.org/licenses/>.
 """Search page for App Menu"""
 
-import subprocess
 from typing import Dict, Optional, Set, Union
 
 from .desktop_file_manager import DesktopFileManager
@@ -33,7 +32,7 @@ from .custom_widgets import (
 from .app_widgets import SearchAppEntry
 from .vm_manager import VMEntry, VMManager
 from .page_handler import MenuPage
-from .utils import load_icon, parse_search
+from .utils import load_icon, parse_search, run_detached
 
 import gi
 
@@ -333,8 +332,7 @@ class SearchPage(MenuPage):
             row.run_app(row.app_info.vm)
 
     def _run_settings(self, widget, *_args):
-        # pylint: disable=consider-using-with
-        subprocess.Popen(["qubes-appmenu-settings"], stdin=subprocess.DEVNULL)
+        run_detached(["qubes-appmenu-settings"])
         widget.get_toplevel().get_application().hide_menu()
 
     def _app_info_callback(self, app_info):
