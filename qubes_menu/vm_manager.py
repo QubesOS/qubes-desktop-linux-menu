@@ -277,7 +277,7 @@ class VMManager:
             vm_entry.power_state = state
 
     def _update_domain_property(
-        self, vm_name, event, newvalue, *_args, **_kwargs
+        self, vm_name, event, *_args, newvalue=None, **_kwargs
     ):
         vm_entry = self.load_vm_from_name(vm_name)
 
@@ -294,6 +294,10 @@ class VMManager:
                 vm_entry.has_network = vm_entry.vm.is_networked()
             elif event == "property-set:template_for_dispvms":
                 vm_entry.is_dispvm_template = newvalue
+            elif event == "property-reset:icon":
+                # icon also depends on other properties than label, for
+                # example template_for_dispvms
+                vm_entry.vm_icon_name = None
         except Exception:  # pylint: disable=broad-except
             # dispatcher functions cannot raise any Exception, because
             # it will disable any future event handling
@@ -372,6 +376,9 @@ class VMManager:
         )
         self.dispatcher.add_handler(
             "property-set:template_for_dispvms", self._update_domain_property
+        )
+        self.dispatcher.add_handler(
+            "property-reset:icon", self._update_domain_property
         )
         self.dispatcher.add_handler(
             "domain-feature-set:servicevm", self._update_domain_feature
