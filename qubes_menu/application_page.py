@@ -21,9 +21,9 @@
 Application page and related widgets and logic
 """
 
-from typing import Optional
+from typing import Dict, Optional
 
-from .desktop_file_manager import DesktopFileManager
+from .desktop_file_manager import ApplicationInfo, DesktopFileManager
 from .custom_widgets import (
     NetworkIndicator,
     VMRow,
@@ -180,11 +180,14 @@ class AppPage(MenuPage):
         self.vm_right_pane.pack_start(self.network_indicator, False, False, 0)
         self.vm_right_pane.reorder_child(self.network_indicator, 0)
 
+        # rows of all qubes' apps; only those fitting the selected qube are in
+        # app_list, see _update_app_list
+        self.app_rows: Dict[ApplicationInfo, BaseAppEntry] = {}
         desktop_file_manager.register_callback(self._app_info_callback)
+        desktop_file_manager.register_removal_callback(self._app_info_removed)
         self.toggle_buttons = VMTypeToggle(builder)
         self.toggle_buttons.connect_to_toggle(self._button_toggled)
 
-        self.app_list.set_filter_func(self._is_app_fitting)
         self.app_list.connect("row-activated", self._app_clicked)
         self.app_list.set_sort_func(
             lambda x, y: x.app_info.sort_name > y.app_info.sort_name
@@ -221,10 +224,12 @@ class AppPage(MenuPage):
         # workaround for https://gitlab.gnome.org/GNOME/gtk/-/issues/4977
         # doesn't always fix it on the first try, but improves behavior in
         # case of unexpected focus chain changes, like pgup in some cases
+        selected_row = self.vm_list.get_selected_row()
         self.vm_list.select_row(self.vm_list.get_row_at_y(0))
-        self.app_list.set_filter_func(None)
-        self.app_list.invalidate_filter()
-        self.app_list.set_filter_func(self._is_app_fitting)
+        if self.vm_list.get_selected_row() is selected_row:
+            # _selection_changed did not run, but qubes or apps may have
+            # changed while the menu was hidden
+            self._update_app_list()
 
         focus_child = get_visible_child(self.vm_list)
         focus_child.grab_focus()
@@ -277,7 +282,31 @@ class AppPage(MenuPage):
         """
         if app_info.vm:
             entry = BaseAppEntry(app_info)
-            self.app_list.add(entry)
+            self.app_rows[app_info] = entry
+            if self._is_app_fitting(entry):
+                self.app_list.add(entry)
+
+    def _app_info_removed(self, app_info):
+        """
+        Callback to be performed on all removed ApplicationInfo instances.
+        """
+        self.app_rows.pop(app_info, None)
+
+    def _update_app_list(self):
+        """
+        Put in app_list exactly the rows fitting the current selection.
+        Other rows are kept out of the list rather than filtered out: GTK
+        restyles every widget of the window, hidden ones included, each time
+        the menu is shown and gets focus, so with many apps hidden rows made
+        the menu slow to open.
+        """
+        for row in self.app_rows.values():
+            in_list = row.get_parent() is not None
+            if self._is_app_fitting(row):
+                if not in_list:
+                    self.app_list.add(row)
+            elif in_list:
+                self.app_list.remove(row)
 
     def _vm_callback(self, vm_entry: VMEntry):
         """
@@ -339,7 +368,7 @@ class AppPage(MenuPage):
         if not widget.get_active():
             return
         self.vm_list.unselect_all()
-        self.app_list.invalidate_filter()
+        self._update_app_list()
         self.vm_list.invalidate_filter()
 
     def initialize_page(self):
@@ -367,7 +396,7 @@ class AppPage(MenuPage):
             self.app_list.ephemeral_vm = bool(
                 self.selected_vm_entry.vm_entry.parent_vm
             )
-        self.app_list.invalidate_filter()
+        self._update_app_list()
 
     def _set_right_visibility(self, visibility: bool):
         self.vm_right_pane.set_visible(visibility)
