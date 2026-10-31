@@ -73,10 +73,12 @@ class HoverEventBox(Gtk.EventBox):
         self.mouse = False
 
     def _select_me(self, *_args):
-        if not self.mouse:
-            return False
-        self.focus_widget.grab_focus()
-        return True
+        if self.mouse:
+            self.focus_widget.grab_focus()
+        # Returning False makes this a one-shot timeout. With True, GLib
+        # would call it again every HOVER_TIMEOUT ms while the mouse stays
+        # over the widget, moving focus back here after each arrow key press.
+        return False
 
 
 class HoverListBox(Gtk.ListBoxRow):
