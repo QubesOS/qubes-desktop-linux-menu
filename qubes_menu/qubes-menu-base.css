@@ -78,6 +78,50 @@ list :not(:selected) {
   font-weight: 900;
 }
 
+/* templates and service sections of the app page get their own colors,
+ so that they cannot be mistaken for the apps section */
+.templates_section .toplevel_left_pane,
+.templates_section .left_pane {
+  background: @templates-left-background;
+}
+
+.templates_section .right_pane,
+.templates_section .control_panel {
+  background: @templates-right-background;
+}
+
+.templates_section .vm_list,
+.templates_section .vm_buttons {
+  background: @templates-accent;
+  border-color: @templates-accent;
+  color: @templates-accent-text;
+}
+
+.templates_section .vm_buttons:checked {
+  border-color: @templates-accent-text;
+}
+
+.service_section .toplevel_left_pane,
+.service_section .left_pane {
+  background: @service-left-background;
+}
+
+.service_section .right_pane,
+.service_section .control_panel {
+  background: @service-right-background;
+}
+
+.service_section .vm_list,
+.service_section .vm_buttons {
+  background: @service-accent;
+  border-color: @service-accent;
+  color: @service-accent-text;
+}
+
+.service_section .vm_buttons:checked {
+  border-color: @service-accent-text;
+}
+
 .sort_buttons {
   background: @left-background;
   opacity: 0.9;
