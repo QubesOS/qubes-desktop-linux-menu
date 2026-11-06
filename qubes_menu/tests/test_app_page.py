@@ -110,6 +110,77 @@ def test_app_page_vm_state(test_desktop_file_path, test_qapp, test_builder):
     )
 
 
+def test_app_page_rows_of_selected_vm(
+    test_desktop_file_path, test_qapp, test_builder
+):
+    # only rows of the selected qube are in the list, other rows are kept
+    # out of it (not just filtered out)
+    dispatcher = MockDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
+        desktop_file_manager = DesktopFileManager(test_qapp)
+
+    app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
+    app_page.toggle_buttons.apps_toggle.set_active(True)
+
+    def select(vm_name):
+        app_page.vm_list.select_row(
+            [
+                row
+                for row in app_page.vm_list.get_children()
+                if row.vm_name == vm_name
+            ][0]
+        )
+
+    def listed_apps():
+        return [
+            (row.app_info.vm.name, row.app_info.app_name)
+            for row in app_page.app_list.get_children()
+        ]
+
+    rows = {
+        app_info.vm.name: row
+        for app_info in desktop_file_manager.get_app_infos()
+        for row in app_info.entries
+        if app_info.vm
+    }
+    assert set(rows) == {"test-vm", "test-red"}
+    assert not app_page.app_list.get_children()
+
+    select("test-vm")
+    assert listed_apps() == [("test-vm", "XTerm")]
+    assert rows["test-red"].get_parent() is None
+
+    select("test-red")
+    assert listed_apps() == [("test-red", "Firefox")]
+    assert rows["test-vm"].get_parent() is None
+
+    app_page.vm_list.unselect_all()
+    assert not app_page.app_list.get_children()
+
+    # a new app is listed only if its qube is selected
+    select("test-vm")
+    new_file = test_desktop_file_path / "test4.desktop"
+    new_file.write_text(
+        (test_desktop_file_path / "test1.desktop")
+        .read_text()
+        .replace("XTerm", "UXTerm")
+    )
+    desktop_file_manager.load_file(new_file)
+    assert sorted(listed_apps()) == [
+        ("test-vm", "UXTerm"),
+        ("test-vm", "XTerm"),
+    ]
+
+    # removing an app of a qube that is not selected (so out of the list)
+    desktop_file_manager.remove_file(test_desktop_file_path / "test2.desktop")
+    select("test-red")
+    assert not app_page.app_list.get_children()
+
+
 def test_dispvm_parent_sorting(test_desktop_file_path, test_qapp, test_builder):
     # check if dispvm child is sorted after the parent
     test_qapp._qubes["disp1233"] = MockQube(
