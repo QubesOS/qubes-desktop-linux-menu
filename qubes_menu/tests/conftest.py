@@ -33,7 +33,13 @@ from gi.repository import Gtk
 
 @pytest.fixture
 def test_qapp():
-    return MockQubesComplete()
+    qapp = MockQubesComplete()
+    for qube in qapp._qubes.values():
+        qube.features.setdefault("menu-folder", "")
+    qapp._qubes["dom0"].features["menu-folder-order"] = ""
+    qapp._qubes["dom0"].features["menu-folder-collapsed"] = ""
+    qapp.update_vm_calls()
+    return qapp
 
 
 @pytest.fixture

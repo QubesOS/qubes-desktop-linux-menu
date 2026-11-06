@@ -25,6 +25,13 @@ from qubesadmin.tests.mock_app import (
 )
 
 
+def _add_empty_folder_features(qapp):
+    for qube in qapp._qubes.values():
+        qube.features.setdefault("menu-folder", "")
+    qapp._qubes["dom0"].features["menu-folder-order"] = ""
+    qapp._qubes["dom0"].features["menu-folder-collapsed"] = ""
+
+
 def test_app_menu_conffeatures():
     qapp = MockQubesComplete()
 
@@ -35,6 +42,7 @@ def test_app_menu_conffeatures():
     qapp._qubes["dom0"].features["menu-sort-running"] = "1"
     qapp._qubes["dom0"].features["menu-position"] = ""
     qapp._qubes["dom0"].features["menu-disable-recent"] = "1"
+    _add_empty_folder_features(qapp)
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
@@ -64,6 +72,7 @@ def test_app_menu_conffeatures_default():
             "menu-disable-recent": "",
         },
     )
+    _add_empty_folder_features(qapp)
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
@@ -88,6 +97,7 @@ def test_appmenu_options():
     qapp._qubes["dom0"].features["menu-sort-running"] = "1"
     qapp._qubes["dom0"].features["menu-position"] = "top-left"
     qapp._qubes["dom0"].features["menu-disable-recent"] = ""
+    _add_empty_folder_features(qapp)
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
@@ -116,6 +126,7 @@ def test_appmenu_positioning():
     qapp._qubes["dom0"].features["menu-sort-running"] = "1"
     qapp._qubes["dom0"].features["menu-position"] = ""
     qapp._qubes["dom0"].features["menu-disable-recent"] = ""
+    _add_empty_folder_features(qapp)
     qapp.update_vm_calls()
 
     dispatcher = MockDispatcher(qapp)
