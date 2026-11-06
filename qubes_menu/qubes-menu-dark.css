@@ -8,5 +8,13 @@
 @define-color text-highlight #ffffff;
 @define-color buttons-bg #9b9b9b;
 @define-color separator #262626;
+@define-color templates-left-background #5e4210;
+@define-color templates-right-background #6e5018;
+@define-color templates-accent #c98a12;
+@define-color templates-accent-text #1e1e1e;
+@define-color service-left-background #1d3b5e;
+@define-color service-right-background #264b75;
+@define-color service-accent #5b8fcc;
+@define-color service-accent-text #1e1e1e;
 
 @import "qubes-menu-base.css";
