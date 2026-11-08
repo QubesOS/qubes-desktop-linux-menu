@@ -224,3 +224,34 @@ background: inherit;
 .favorite_entry grid {
 background: none;
 }
+
+/* RTL: mirror the asymmetric spacing above */
+#main_notebook:dir(rtl) {
+    border-width: 0 0 0 7px;
+}
+
+.vm_buttons:dir(rtl) {
+  margin: 4px 2px 4px 10px;
+}
+
+.sort_buttons:dir(rtl) {
+  border-width: 0px 2px 0px 0px;
+  margin: 4px 2px 4px 10px;
+}
+
+.dispvm_icon:dir(rtl) {
+    padding-left: 0;
+    padding-right: 40px;
+}
+
+.favorite_entry:dir(rtl) {
+  padding: 4px 5px 4px 0;
+}
+
+.favorite_app_name:dir(rtl) {
+  padding: 0px 5px 3px 0
+}
+
+.app_entry:dir(rtl) {
+  padding: 3px 20px 3px 0;
+}

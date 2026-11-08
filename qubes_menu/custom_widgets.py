@@ -33,6 +33,11 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GLib, Pango
 
+import gettext
+
+t = gettext.translation("qubes-desktop-linux-menu", fallback=True)
+_ = t.gettext
+
 
 class LimitedWidthLabel(Gtk.Label):
     """
@@ -134,7 +139,7 @@ class FavoritesMenu(SelfAwareMenu):
         super().__init__()
         self.app_info_getter = app_info_getter
 
-        self.add_menu_item = Gtk.CheckMenuItem(label="Add to favorites")
+        self.add_menu_item = Gtk.CheckMenuItem(label=_("Add to favorites"))
         self.add_menu_item.connect("activate", self._add_to_favorites)
         self.add(self.add_menu_item)
         self.show_all()
@@ -206,15 +211,15 @@ class NetworkIndicator(Gtk.Box):
             load_icon("qappmenu-networking-no", self.icon_size)
         )
 
-        _, height, _ = Gtk.icon_size_lookup(self.icon_size)
+        _valid, height, _unused = Gtk.icon_size_lookup(self.icon_size)
         self.network_on.set_size_request(-1, height * 1.3)
         self.network_off.set_size_request(-1, height * 1.3)
 
         self.pack_end(self.network_on, False, True, 10)
         self.pack_end(self.network_off, False, True, 10)
 
-        self.network_on.set_tooltip_text("Qube is networked")
-        self.network_off.set_tooltip_text("Qube is not networked")
+        self.network_on.set_tooltip_text(_("Qube is networked"))
+        self.network_off.set_tooltip_text(_("Qube is not networked"))
 
         self.network_on.set_no_show_all(True)
         self.network_off.set_no_show_all(True)
@@ -246,7 +251,7 @@ class SettingsEntry(Gtk.ListBoxRow):
             load_icon("settings-black")
         )
         self.hbox.pack_start(self.settings_icon, False, False, 5)
-        self.settings_label = Gtk.Label(label="Settings", xalign=0)
+        self.settings_label = Gtk.Label(label=_("Settings"), xalign=0)
         self.hbox.pack_start(self.settings_label, False, False, 5)
         self.get_style_context().add_class("app_entry")
         self.add(self.event_box)
@@ -310,6 +315,9 @@ class VMRow(HoverListBox):
         # add the icon for dispvm parent existing
         if self.vm_entry.parent_vm:
             dispvm_icon_img = load_icon("qappmenu-dispvm-child", None, 15)
+            if Gtk.Widget.get_default_direction() == Gtk.TextDirection.RTL:
+                # the icon is an arrow pointing from parent to child
+                dispvm_icon_img = dispvm_icon_img.flip(True)
             self.dispvm_icon.set_from_pixbuf(dispvm_icon_img)
             self.dispvm_icon.get_style_context().add_class("dispvm_icon")
             self.dispvm_icon.set_valign(Gtk.Align.START)
@@ -424,7 +432,9 @@ class AnyVMRow(HoverListBox):
         self.main_box.pack_start(icon_img, False, False, 2)
 
         self.label = Gtk.Label()
-        self.label.set_markup("<b>Any qube</b>")
+        self.label.set_markup(
+            "<b>{}</b>".format(GLib.markup_escape_text(_("Any qube")))
+        )
         self.main_box.pack_start(self.label, False, False, 2)
         self.show_all()
 
@@ -519,28 +529,28 @@ class StartControlItem(ControlRow):
         self.set_sensitive(True)
         self.icon.show()
         if self.state == "Halted" and not (is_dispvm_template and apps_tab):
-            self.row_label.set_label("Start qube")
+            self.row_label.set_label(_("Start qube"))
             self.command = "qvm-start"
             self.icon.set_from_pixbuf(
                 load_icon("qappmenu-start", size=None, pixel_size=15)
             )
             return
         if self.state == "Transient":
-            self.row_label.set_label("Kill qube")
+            self.row_label.set_label(_("Kill qube"))
             self.command = "qvm-kill"
             self.icon.set_from_pixbuf(
                 load_icon("qappmenu-shutdown", size=None, pixel_size=15)
             )
             return
         if self.state == "Running":
-            self.row_label.set_label("Shutdown qube")
+            self.row_label.set_label(_("Shutdown qube"))
             self.command = "qvm-shutdown"
             self.icon.set_from_pixbuf(
                 load_icon("qappmenu-shutdown", size=None, pixel_size=15)
             )
             return
         if self.state == "Paused":
-            self.row_label.set_label("Unpause qube")
+            self.row_label.set_label(_("Unpause qube"))
             self.command = "qvm-unpause"
             self.icon.set_from_pixbuf(
                 load_icon("qappmenu-start", size=None, pixel_size=15)
@@ -570,7 +580,7 @@ class PauseControlItem(ControlRow):
         self.state = vm_entry.power_state
 
         if self.state == "Running" and vm_name != "dom0":
-            self.row_label.set_label("Pause qube")
+            self.row_label.set_label(_("Pause qube"))
             self.set_sensitive(True)
             self.command = "qvm-pause"
             self.icon.show()

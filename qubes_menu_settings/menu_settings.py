@@ -40,32 +40,59 @@ from qubes_menu.constants import (
     DISABLE_RECENT_FEATURE,
 )
 
+import gettext
+
+t = gettext.translation("qubes-desktop-linux-menu", fallback=True)
+_ = t.gettext
+
+# feature value -> visible name; the visible name is also the combobox id
 MENU_PAGES = {
-    "search_page": "Search",
-    "app_page": "Applications",
-    "favorites_page": "Favorites",
+    "search_page": _("Search"),
+    "app_page": _("Applications"),
+    "favorites_page": _("Favorites"),
 }
 
 MENU_PAGES_DICT = {
-    "Search": {"icon": "qappmenu-search", "object": "search_page"},
-    "Applications": {"icon": "qappmenu-qube", "object": "app_page"},
-    "Favorites": {"icon": "qappmenu-favorites", "object": "favorites_page"},
+    MENU_PAGES["search_page"]: {
+        "icon": "qappmenu-search",
+        "object": "search_page",
+    },
+    MENU_PAGES["app_page"]: {"icon": "qappmenu-qube", "object": "app_page"},
+    MENU_PAGES["favorites_page"]: {
+        "icon": "qappmenu-favorites",
+        "object": "favorites_page",
+    },
 }
 
 MENU_POSITIONS = {
-    "top-left": "Top Left",
-    "top-right": "Top Right",
-    "bottom-left": "Bottom Left",
-    "bottom-right": "Bottom Right",
-    "mouse": "Mouse",
+    "top-left": _("Top Left"),
+    "top-right": _("Top Right"),
+    "bottom-left": _("Bottom Left"),
+    "bottom-right": _("Bottom Right"),
+    "mouse": _("Mouse"),
 }
 
 MENU_POSITIONS_DICT = {
-    "Top Left": {"icon": "qappmenu-top-left", "object": "top-left"},
-    "Top Right": {"icon": "qappmenu-top-right", "object": "top-right"},
-    "Bottom Left": {"icon": "qappmenu-bottom-left", "object": "bottom-left"},
-    "Bottom Right": {"icon": "qappmenu-bottom-right", "object": "bottom-right"},
-    "Mouse": {"icon": "input-mouse-symbolic", "object": "mouse"},
+    MENU_POSITIONS["top-left"]: {
+        "icon": "qappmenu-top-left",
+        "object": "top-left",
+    },
+    MENU_POSITIONS["top-right"]: {
+        "icon": "qappmenu-top-right",
+        "object": "top-right",
+    },
+    MENU_POSITIONS["bottom-left"]: {
+        "icon": "qappmenu-bottom-left",
+        "object": "bottom-left",
+    },
+    MENU_POSITIONS["bottom-right"]: {
+        "icon": "qappmenu-bottom-right",
+        "object": "bottom-right",
+    },
+    MENU_POSITIONS["mouse"]: {
+        "icon": "input-mouse-symbolic",
+        "object": "mouse",
+    },
 }
 
 
@@ -99,6 +126,7 @@ class AppMenuSettings(Gtk.Application):
         The function that performs actual widget realization and setup.
         """
         self.builder = Gtk.Builder()
+        self.builder.set_translation_domain("qubes-desktop-linux-menu")
 
         glade_path = (
             importlib.resources.files("qubes_menu_settings")

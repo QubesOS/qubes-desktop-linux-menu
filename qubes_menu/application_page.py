@@ -263,8 +263,15 @@ class AppPage(MenuPage):
 
         self.vm_list.connect("key-press-event", self._vm_key_pressed)
 
-    def _vm_key_pressed(self, _widget, event):
-        if event.keyval == Gdk.KEY_Right:
+    def _vm_key_pressed(self, widget, event):
+        # the application list is on the far side of the qube list,
+        # which is on the left in LTR and on the right in RTL
+        forward = (
+            Gdk.KEY_Left
+            if widget.get_direction() == Gtk.TextDirection.RTL
+            else Gdk.KEY_Right
+        )
+        if event.keyval == forward:
             child = get_visible_child(self.app_list)
             if child:
                 child.grab_focus()
@@ -323,9 +330,14 @@ class AppPage(MenuPage):
         if direction == Gtk.DirectionType.UP:
             self.toggle_buttons.grab_focus()
 
-    def _focus_vm_list(self, _widget, event):
+    def _focus_vm_list(self, widget, event):
         """Move focus to VM list"""
-        if event.keyval == Gdk.KEY_Left:
+        back = (
+            Gdk.KEY_Right
+            if widget.get_direction() == Gtk.TextDirection.RTL
+            else Gdk.KEY_Left
+        )
+        if event.keyval == back:
             self.vm_list.get_selected_row().grab_focus()
             return True
         return False

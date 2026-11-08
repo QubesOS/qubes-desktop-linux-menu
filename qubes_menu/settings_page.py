@@ -33,6 +33,11 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
+import gettext
+
+t = gettext.translation("qubes-desktop-linux-menu", fallback=True)
+_ = t.gettext
+
 
 class SettingsCategoryRow(custom_widgets.HoverListBox):
     """
@@ -81,12 +86,16 @@ class SettingsPage(MenuPage):
 
         self.category_list.connect("row-selected", self._category_clicked)
         self.category_list.add(
-            SettingsCategoryRow("Qubes Tools", self._filter_qubes_tools)
+            SettingsCategoryRow(_("Qubes Tools"), self._filter_qubes_tools)
         )
         self.category_list.add(
-            SettingsCategoryRow("System Settings", self._filter_system_settings)
+            SettingsCategoryRow(
+                _("System Settings"), self._filter_system_settings
+            )
         )
-        self.category_list.add(SettingsCategoryRow("Other", self._filter_other))
+        self.category_list.add(
+            SettingsCategoryRow(_("Other"), self._filter_other)
+        )
 
         self.desktop_file_manager.register_callback(self._app_info_callback)
 

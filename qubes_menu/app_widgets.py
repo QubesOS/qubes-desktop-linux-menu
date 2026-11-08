@@ -48,9 +48,20 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
 
+import gettext
+
+t = gettext.translation("qubes-desktop-linux-menu", fallback=True)
+_ = t.gettext
+
 logger = logging.getLogger("qubes-appmenu")
 
-DISP_TEXT = "New disposable qube from "
+# English words are always searchable, translated ones are added on top
+DISP_SEARCH_TEXT = "New disposable qube from"
+
+
+def disp_text(vm_name: str) -> str:
+    """Visible description of an app that starts a new disposable qube"""
+    return _("New disposable qube from {vm}").format(vm=vm_name)
 
 
 class AppEntry(Gtk.ListBoxRow):
@@ -233,7 +244,7 @@ class AppEntryWithVM(AppEntry):
         self.app_icon.set_from_pixbuf(app_icon)
 
         if self.app_info.disposable:
-            self.vm_label.set_text(DISP_TEXT + str(self.app_info.vm))
+            self.vm_label.set_text(disp_text(str(self.app_info.vm)))
         elif self.app_info.vm:
             self.vm_label.set_text(str(self.app_info.vm))
         else:
@@ -255,7 +266,7 @@ class FavoritesAppEntry(AppEntryWithVM):
         self, app_info: ApplicationInfo, vm_manager: VMManager, **properties
     ):
         super().__init__(app_info, vm_manager, **properties)
-        self.remove_item = Gtk.MenuItem(label="Remove from favorites")
+        self.remove_item = Gtk.MenuItem(label=_("Remove from favorites"))
         self.remove_item.connect("activate", self._remove_from_favorites)
         self.menu.add(self.remove_item)
         self.menu.show_all()
@@ -304,7 +315,11 @@ class SearchAppEntry(AppEntryWithVM):
             self.search_words.append("dom0")
 
         if self.app_info.disposable:
-            self.search_words.extend(DISP_TEXT.lower().split())
+            self.search_words.extend(DISP_SEARCH_TEXT.lower().split())
+            translated = disp_text("").lower().split()
+            self.search_words.extend(
+                w for w in translated if w not in self.search_words
+            )
 
         if self.app_info.app_name:
             self.search_words.extend(

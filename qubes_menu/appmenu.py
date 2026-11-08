@@ -11,6 +11,10 @@ import sys
 from typing import Optional, Dict, Any
 import importlib.resources
 import logging
+import gettext
+
+t = gettext.translation("qubes-desktop-linux-menu", fallback=True)
+_ = t.gettext
 
 import qubesadmin
 import qubesadmin.events
@@ -155,7 +159,7 @@ class AppMenu(Gtk.Application):
             ord("k"),
             GLib.OptionFlags.NONE,
             GLib.OptionArg.NONE,
-            "Do not hide the menu after action",
+            _("Do not hide the menu after action"),
             None,
         )
 
@@ -164,8 +168,11 @@ class AppMenu(Gtk.Application):
             ord("p"),
             GLib.OptionFlags.NONE,
             GLib.OptionArg.INT,
-            "Open menu at selected page; 1 is the apps page 1 is the favorites "
-            "page and 2 is the system tools page",
+            _(
+                "Open menu at selected page; 0 is the search page, 1 is the "
+                "apps page, 2 is the favorites page and 3 is the system "
+                "tools page"
+            ),
         )
 
         self.add_main_option(
@@ -173,8 +180,10 @@ class AppMenu(Gtk.Application):
             ord("b"),
             GLib.OptionFlags.NONE,
             GLib.OptionArg.NONE,
-            "Do not show the menu at start, run in the background; useful "
-            "for initial autostart",
+            _(
+                "Do not show the menu at start, run in the background; useful "
+                "for initial autostart"
+            ),
             None,
         )
 
@@ -428,6 +437,7 @@ class AppMenu(Gtk.Application):
         """
         # build the frontend
         self.builder = Gtk.Builder()
+        self.builder.set_translation_domain("qubes-desktop-linux-menu")
 
         self.fav_app_list = self.builder.get_object("fav_app_list")
         self.sys_tools_list = self.builder.get_object("sys_tools_list")

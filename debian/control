@@ -5,6 +5,7 @@ Maintainer: Marek Marczykowski-Górecki <marmarek@invisiblethingslab.com>
 Build-Depends:
  debhelper (>= 9),
  dh-python,
+ gettext,
  python3-all,
  python3-gi (>= 3.50.0) | python3-gbulb,
  python3-setuptools,

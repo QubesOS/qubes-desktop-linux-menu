@@ -164,5 +164,7 @@ gtk-update-icon-cache %{_datadir}/icons/hicolor &>/dev/null || :
 /lib/systemd/user/qubes-app-menu.service
 /usr/share/dbus-1/services/dbus-qubes-app-menu.service
 
+/usr/share/locale/he/LC_MESSAGES/qubes-desktop-linux-menu.mo
+
 %changelog
 @CHANGELOG@

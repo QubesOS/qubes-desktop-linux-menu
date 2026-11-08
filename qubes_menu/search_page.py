@@ -39,6 +39,11 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
 
+import gettext
+
+t = gettext.translation("qubes-desktop-linux-menu", fallback=True)
+_ = t.gettext
+
 
 class RecentSearchRow(Gtk.ListBoxRow):
     """
@@ -103,10 +108,13 @@ class RecentSearchManager:
         label.set_valign(Gtk.Align.START)
 
         if state:
-            label.set_text("No recent searches")
+            label.set_text(_("No recent searches"))
         else:
             label.set_text(
-                "Recent searches saving disabled.\nUse Menu Settings to enable."
+                _(
+                    "Recent searches saving disabled.\n"
+                    "Use Menu Settings to enable."
+                )
             )
 
         self.recent_list_box.set_placeholder(label)
@@ -185,10 +193,13 @@ class RecentAppsManager:
         label.set_valign(Gtk.Align.START)
 
         if state:
-            label.set_text("No recent applications")
+            label.set_text(_("No recent applications"))
         else:
             label.set_text(
-                "Recent application saving disabled.\nUse Menu Settings to enable."
+                _(
+                    "Recent application saving disabled.\n"
+                    "Use Menu Settings to enable."
+                )
             )
 
         self.recent_list_box.set_placeholder(label)
@@ -496,18 +507,29 @@ class SearchPage(MenuPage):
 
         if state:
             app_label.set_text(
-                "No recent applications. \nUse Menu Settings to "
-                "disable recent applications."
+                _(
+                    "No recent applications. \nUse Menu Settings to "
+                    "disable recent applications."
+                )
             )
             search_label.set_text(
-                "No recent searches. \nUse Menu Settings to disable recent searches."
+                _(
+                    "No recent searches. \nUse Menu Settings to disable "
+                    "recent searches."
+                )
             )
         else:
             app_label.set_text(
-                "Recent application saving disabled.\nUse Menu Settings to enable."
+                _(
+                    "Recent application saving disabled.\n"
+                    "Use Menu Settings to enable."
+                )
             )
             search_label.set_text(
-                "Recent searches saving disabled.\nUse Menu Settings to enable."
+                _(
+                    "Recent searches saving disabled.\n"
+                    "Use Menu Settings to enable."
+                )
             )
 
         self.recent_app_list.set_placeholder(app_label)
