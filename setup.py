@@ -1,7 +1,47 @@
 #!/usr/bin/env python3
 """Setup.py file"""
 
+import os
+import subprocess
 import setuptools.command.install
+
+
+# create and install translation files
+class InstallWithLocale(setuptools.command.install.install):
+    """Install command that also compiles and installs .mo files"""
+
+    def create_mo_files(self):
+        """Compile locale/*/LC_MESSAGES/*.po into the install root"""
+        data_files = []
+        localedir = "locale"
+        po_dirs = [
+            localedir + "/" + l + "/LC_MESSAGES/"
+            for l in next(os.walk(localedir))[1]
+        ]
+        for d in po_dirs:
+            mo_dir = os.path.join(self.root or "/", "usr/share", d)
+            os.makedirs(mo_dir, exist_ok=True)
+            mo_files = []
+            po_files = [
+                f
+                for f in next(os.walk(d))[2]
+                if os.path.splitext(f)[1] == ".po"
+            ]
+            for po_file in po_files:
+                filename, _extension = os.path.splitext(po_file)
+                mo_file = filename + ".mo"
+                subprocess.check_call(
+                    ["msgfmt", d + po_file, "-o", os.path.join(mo_dir, mo_file)]
+                )
+                mo_files.append(d + mo_file)
+            data_files.append((d, mo_files))
+        return data_files
+
+    def run(self):
+        """Compile translations, then run the regular install"""
+        self.create_mo_files()
+        super().run()
+
 
 setuptools.setup(
     name="qubes_menu",
@@ -27,4 +67,5 @@ setuptools.setup(
         ],
         "qubes_menu_settings": ["menu_settings.glade", "menu_settings.css"],
     },
+    cmdclass={"install": InstallWithLocale},
 )
