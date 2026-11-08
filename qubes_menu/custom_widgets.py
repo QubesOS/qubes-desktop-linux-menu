@@ -432,9 +432,8 @@ class AnyVMRow(HoverListBox):
         self.main_box.pack_start(icon_img, False, False, 2)
 
         self.label = Gtk.Label()
-        self.label.set_markup(
-            "<b>{}</b>".format(GLib.markup_escape_text(_("Any qube")))
-        )
+        any_qube = GLib.markup_escape_text(_("Any qube"))
+        self.label.set_markup(f"<b>{any_qube}</b>")
         self.main_box.pack_start(self.label, False, False, 2)
         self.show_all()
 

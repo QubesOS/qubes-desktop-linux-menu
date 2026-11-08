@@ -8,7 +8,10 @@ import setuptools.command.install
 
 # create and install translation files
 class InstallWithLocale(setuptools.command.install.install):
+    """Install command that also compiles and installs .mo files"""
+
     def create_mo_files(self):
+        """Compile locale/*/LC_MESSAGES/*.po into the install root"""
         data_files = []
         localedir = "locale"
         po_dirs = [
@@ -35,6 +38,7 @@ class InstallWithLocale(setuptools.command.install.install):
         return data_files
 
     def run(self):
+        """Compile translations, then run the regular install"""
         self.create_mo_files()
         super().run()
 
