@@ -1,0 +1,280 @@
+# Hebrew translation for qubes-desktop-linux-menu.
+# This file is distributed under the same license as the qubes-desktop-linux-menu package.
+msgid ""
+msgstr ""
+"Project-Id-Version: qubes-desktop-linux-menu\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-08 02:33+0200\n"
+"PO-Revision-Date: 2026-11-08 02:30+0200\n"
+"Last-Translator: David wacholder <185147826+David-wacholder@users.noreply.github.com>\n"
+"Language-Team: Hebrew\n"
+"Language: he\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: qubes_menu/app_widgets.py:64
+#, python-brace-format
+msgid "New disposable qube from {vm}"
+msgstr "‏qube זמני חדש מתוך {vm}"
+
+#: qubes_menu/app_widgets.py:269
+msgid "Remove from favorites"
+msgstr "הסרה מהמועדפים"
+
+#: qubes_menu/appmenu.py:162
+msgid "Do not hide the menu after action"
+msgstr "לא להסתיר את התפריט אחרי פעולה"
+
+#: qubes_menu/appmenu.py:172
+msgid ""
+"Open menu at selected page; 0 is the search page, 1 is the apps page, 2 is "
+"the favorites page and 3 is the system tools page"
+msgstr ""
+"פתיחת התפריט בעמוד שנבחר; 0 הוא עמוד החיפוש, 1 הוא עמוד היישומים, 2 הוא עמוד "
+"המועדפים ו-3 הוא עמוד כלי המערכת"
+
+#: qubes_menu/appmenu.py:184
+msgid ""
+"Do not show the menu at start, run in the background; useful for initial "
+"autostart"
+msgstr "לא להציג את התפריט בהפעלה, לרוץ ברקע; שימושי להפעלה אוטומטית ראשונית"
+
+#: qubes_menu/custom_widgets.py:142
+msgid "Add to favorites"
+msgstr "הוספה למועדפים"
+
+#: qubes_menu/custom_widgets.py:221
+msgid "Qube is networked"
+msgstr "ל-qube יש חיבור לרשת"
+
+#: qubes_menu/custom_widgets.py:222
+msgid "Qube is not networked"
+msgstr "ל-qube אין חיבור לרשת"
+
+#: qubes_menu/custom_widgets.py:254
+msgid "Settings"
+msgstr "הגדרות"
+
+#: qubes_menu/custom_widgets.py:436
+msgid "Any qube"
+msgstr "כל qube"
+
+#: qubes_menu/custom_widgets.py:532
+msgid "Start qube"
+msgstr "הפעלת ה-qube"
+
+#: qubes_menu/custom_widgets.py:539
+msgid "Kill qube"
+msgstr "עצירה בכוח של ה-qube"
+
+#: qubes_menu/custom_widgets.py:546
+msgid "Shutdown qube"
+msgstr "כיבוי ה-qube"
+
+#: qubes_menu/custom_widgets.py:553
+msgid "Unpause qube"
+msgstr "ביטול השהיה של ה-qube"
+
+#: qubes_menu/custom_widgets.py:583
+msgid "Pause qube"
+msgstr "השהיית ה-qube"
+
+#: qubes_menu/qubes-menu.glade:34
+msgid "Start typing to search"
+msgstr "יש להתחיל להקליד כדי לחפש"
+
+#: qubes_menu/qubes-menu.glade:97
+msgid "No matches found"
+msgstr "לא נמצאו התאמות"
+
+#: qubes_menu/qubes-menu.glade:134
+msgid "Recent applications"
+msgstr "יישומים אחרונים"
+
+#: qubes_menu/qubes-menu.glade:200 qubes_menu/search_page.py:196
+msgid "No recent applications"
+msgstr "אין יישומים אחרונים"
+
+#: qubes_menu/qubes-menu.glade:232
+msgid "Recently searched"
+msgstr "חיפושים אחרונים"
+
+#: qubes_menu/qubes-menu.glade:298 qubes_menu/search_page.py:111
+msgid "No recent searches"
+msgstr "אין חיפושים אחרונים"
+
+#: qubes_menu/qubes-menu.glade:363
+msgid "APPS"
+msgstr "יישומים"
+
+#: qubes_menu/qubes-menu.glade:381
+msgid "TEMPLATES"
+msgstr "תבניות"
+
+#: qubes_menu/qubes-menu.glade:400
+msgid "SERVICE"
+msgstr "שירות"
+
+#: qubes_menu/qubes-menu.glade:495
+msgid ""
+"No applications found.\n"
+"You can add them using Settings."
+msgstr ""
+"לא נמצאו יישומים.\n"
+"אפשר להוסיף אותם דרך ההגדרות."
+
+#: qubes_menu/qubes-menu.glade:602
+msgid ""
+"No favorites found.\n"
+"\n"
+"To add an application to favorites, right-click on it in the application "
+"list."
+msgstr ""
+"לא נמצאו מועדפים.\n"
+"\n"
+"כדי להוסיף יישום למועדפים, יש ללחוץ עליו לחיצה ימנית ברשימת היישומים."
+
+#: qubes_menu/qubes-menu.glade:640
+msgid "Sort by application name (A-Z)"
+msgstr "מיון לפי שם היישום (A-Z)"
+
+#: qubes_menu/qubes-menu.glade:664
+msgid "Sort by application name (Z-A)"
+msgstr "מיון לפי שם היישום (Z-A)"
+
+#: qubes_menu/qubes-menu.glade:688
+msgid "Sort by qube and application name (A-Z)"
+msgstr "מיון לפי שם ה-qube ושם היישום (A-Z)"
+
+#: qubes_menu/qubes-menu.glade:712
+msgid "Sort by qube and application name (Z-A)"
+msgstr "מיון לפי שם ה-qube ושם היישום (Z-A)"
+
+#: qubes_menu/search_page.py:115 qubes_menu/search_page.py:530
+msgid ""
+"Recent searches saving disabled.\n"
+"Use Menu Settings to enable."
+msgstr ""
+"שמירת החיפושים האחרונים כבויה.\n"
+"אפשר להפעיל אותה בהגדרות התפריט."
+
+#: qubes_menu/search_page.py:200 qubes_menu/search_page.py:524
+msgid ""
+"Recent application saving disabled.\n"
+"Use Menu Settings to enable."
+msgstr ""
+"שמירת היישומים האחרונים כבויה.\n"
+"אפשר להפעיל אותה בהגדרות התפריט."
+
+#: qubes_menu/search_page.py:511
+msgid ""
+"No recent applications. \n"
+"Use Menu Settings to disable recent applications."
+msgstr ""
+"אין יישומים אחרונים. \n"
+"אפשר לכבות את היישומים האחרונים בהגדרות התפריט."
+
+#: qubes_menu/search_page.py:517
+msgid ""
+"No recent searches. \n"
+"Use Menu Settings to disable recent searches."
+msgstr ""
+"אין חיפושים אחרונים. \n"
+"אפשר לכבות את החיפושים האחרונים בהגדרות התפריט."
+
+#: qubes_menu/settings_page.py:89
+msgid "Qubes Tools"
+msgstr "כלי Qubes"
+
+#: qubes_menu/settings_page.py:93
+msgid "System Settings"
+msgstr "הגדרות מערכת"
+
+#: qubes_menu/settings_page.py:97
+msgid "Other"
+msgstr "אחר"
+
+#: qubes_menu_settings/menu_settings.glade:7
+msgid "Qubes App Menu Settings"
+msgstr "הגדרות תפריט היישומים של Qubes"
+
+#: qubes_menu_settings/menu_settings.glade:25
+msgid "The settings below apply to default Qubes App Menu."
+msgstr "ההגדרות שלמטה חלות על תפריט היישומים של Qubes שמוגדר כברירת מחדל."
+
+#: qubes_menu_settings/menu_settings.glade:43
+msgid "Starting menu page: "
+msgstr "עמוד הפתיחה של התפריט: "
+
+#: qubes_menu_settings/menu_settings.glade:55
+msgid "This page will be shown when you open the menu."
+msgstr "העמוד הזה יוצג כשפותחים את התפריט."
+
+#: qubes_menu_settings/menu_settings.glade:97
+msgid "Default menu position: "
+msgstr "מיקום ברירת המחדל של התפריט: "
+
+#: qubes_menu_settings/menu_settings.glade:109
+msgid "Where to show Appmenu (useful for Hotkeys)."
+msgstr "איפה להציג את תפריט היישומים (שימושי לקיצורי מקשים)."
+
+#: qubes_menu_settings/menu_settings.glade:149
+msgid "Show running qubes at the top"
+msgstr "הצגת qubes פועלים בראש הרשימה"
+
+#: qubes_menu_settings/menu_settings.glade:166
+msgid ""
+"In the qube list in search and in the app page, the running qubes will be "
+"sorted to top."
+msgstr ""
+"ברשימת ה-qubes בחיפוש ובעמוד היישומים, ה-qubes הפועלים ימוינו לראש הרשימה."
+
+#: qubes_menu_settings/menu_settings.glade:191
+msgid "Show recent applications/search queries"
+msgstr "הצגת יישומים וחיפושים אחרונים"
+
+#: qubes_menu_settings/menu_settings.glade:213
+msgid "Cancel"
+msgstr "ביטול"
+
+#: qubes_menu_settings/menu_settings.glade:230
+msgid "Apply"
+msgstr "החלה"
+
+#: qubes_menu_settings/menu_settings.glade:247
+msgid "Confirm"
+msgstr "אישור"
+
+#: qubes_menu_settings/menu_settings.py:50
+msgid "Search"
+msgstr "חיפוש"
+
+#: qubes_menu_settings/menu_settings.py:51
+msgid "Applications"
+msgstr "יישומים"
+
+#: qubes_menu_settings/menu_settings.py:52
+msgid "Favorites"
+msgstr "מועדפים"
+
+#: qubes_menu_settings/menu_settings.py:68
+msgid "Top Left"
+msgstr "למעלה משמאל"
+
+#: qubes_menu_settings/menu_settings.py:69
+msgid "Top Right"
+msgstr "למעלה מימין"
+
+#: qubes_menu_settings/menu_settings.py:70
+msgid "Bottom Left"
+msgstr "למטה משמאל"
+
+#: qubes_menu_settings/menu_settings.py:71
+msgid "Bottom Right"
+msgstr "למטה מימין"
+
+#: qubes_menu_settings/menu_settings.py:72
+msgid "Mouse"
+msgstr "ליד סמן העכבר"
