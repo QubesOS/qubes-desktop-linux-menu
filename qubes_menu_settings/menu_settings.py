@@ -21,7 +21,10 @@
 Settings for Qubes App Menu.
 """
 
+import os
+import subprocess
 import sys
+from typing import List, Optional
 
 import gi
 import importlib.resources
@@ -31,7 +34,7 @@ import qubesadmin
 from qubes_config.widgets.gtk_widgets import ImageListModeler
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GLib
 
 from qubes_menu.constants import (
     INITIAL_PAGE_FEATURE,
@@ -67,6 +70,55 @@ MENU_POSITIONS_DICT = {
     "Bottom Right": {"icon": "qappmenu-bottom-right", "object": "bottom-right"},
     "Mouse": {"icon": "input-mouse-symbolic", "object": "mouse"},
 }
+
+
+SHORTCUTS_CHANNEL = "xfce4-keyboard-shortcuts"
+
+
+def get_menu_shortcuts() -> Optional[List[str]]:
+    """
+    Get the Xfce keyboard shortcuts that open the menu, as labels like
+    "Super+M". Returns None if not running Xfce.
+    """
+    if "XFCE" not in os.environ.get("XDG_CURRENT_DESKTOP", "").upper():
+        return None
+    try:
+        output = subprocess.run(
+            ["xfconf-query", "-c", SHORTCUTS_CHANNEL, "-l", "-v"],
+            capture_output=True,
+            check=True,
+            text=True,
+        ).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+    properties = {}
+    for line in output.splitlines():
+        path, _, value = line.partition(" ")
+        properties[path] = value.strip()
+
+    # Xfce uses either the default list or the user's own (custom) list
+    if properties.get("/commands/custom/override") == "true":
+        prefix = "/commands/custom/"
+    else:
+        prefix = "/commands/default/"
+
+    shortcuts = []
+    for path, command in properties.items():
+        if not path.startswith(prefix):
+            continue
+        accelerator = path[len(prefix) :]
+        if "/" in accelerator or accelerator == "override":
+            continue
+        if not (
+            command.split(" ", 1)[0].endswith("qubes-app-menu")
+            or "org.qubesos.appmenu" in command
+        ):
+            continue
+        key, mods = Gtk.accelerator_parse(accelerator)
+        if key:
+            shortcuts.append(Gtk.accelerator_get_label(key, mods))
+    return sorted(shortcuts)
 
 
 class AppMenuSettings(Gtk.Application):
@@ -134,6 +186,17 @@ class AppMenuSettings(Gtk.Application):
         self.show_recent_check: Gtk.CheckButton = self.builder.get_object(
             "show_recent_apps_check"
         )
+        self.shortcut_box: Gtk.Box = self.builder.get_object("shortcut_box")
+        self.shortcut_label: Gtk.Label = self.builder.get_object(
+            "shortcut_label"
+        )
+        self.keyboard_settings_button: Gtk.Button = self.builder.get_object(
+            "keyboard_settings_button"
+        )
+        self.keyboard_settings_button.connect(
+            "clicked", self._open_keyboard_settings
+        )
+
         screen = Gdk.Screen.get_default()
         provider = Gtk.CssProvider()
 
@@ -187,6 +250,39 @@ class AppMenuSettings(Gtk.Application):
             self.vm.features.get(DISABLE_RECENT_FEATURE, False)
         )
         self.show_recent_check.set_active(not disable_recent)
+
+        self.load_shortcuts()
+
+    def load_shortcuts(self):
+        """
+        Show the keyboard shortcuts that open the menu, and where to change
+        them. Only on Xfce, where they can be read.
+        """
+        shortcuts = get_menu_shortcuts()
+        if shortcuts is None:
+            self.shortcut_box.hide()
+            return
+        if shortcuts:
+            names = ", ".join(
+                f"<b>{GLib.markup_escape_text(s)}</b>" for s in shortcuts
+            )
+            text = (
+                f"Keyboard shortcut to open the menu: {names}. To change it, "
+                "go to Keyboard settings → Application Shortcuts."
+            )
+        else:
+            text = (
+                "No keyboard shortcut opens the menu. To add one, go to "
+                "Keyboard settings → Application Shortcuts and use the "
+                "command <tt>qubes-app-menu</tt>."
+            )
+        self.shortcut_label.set_markup(text)
+        self.shortcut_box.set_no_show_all(False)
+        self.shortcut_box.show_all()
+
+    def _open_keyboard_settings(self, *_args):
+        # pylint: disable=consider-using-with
+        subprocess.Popen(["xfce4-keyboard-settings"])
 
     def _quit(self, *_args):
         self.quit()

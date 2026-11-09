@@ -201,6 +201,46 @@
           </packing>
         </child>
         <child>
+          <object class="GtkBox" id="shortcut_box">
+            <property name="can-focus">False</property>
+            <property name="no-show-all">True</property>
+            <property name="spacing">10</property>
+            <child>
+              <object class="GtkLabel" id="shortcut_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="wrap">True</property>
+                <property name="xalign">0</property>
+                <property name="max-width-chars">50</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="keyboard_settings_button">
+                <property name="label" translatable="yes">Keyboard settings</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="valign">center</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
           <object class="GtkButtonBox" id="window_buttons">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
@@ -264,7 +304,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="position">5</property>
+            <property name="position">6</property>
           </packing>
         </child>
       </object>
