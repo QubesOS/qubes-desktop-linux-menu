@@ -164,3 +164,34 @@ def test_settings_app_page(test_desktop_file_path, test_qapp, test_builder):
 
     for row in settings_page.app_list.get_children():
         assert not row.app_info.vm
+
+
+def test_app_page_section_style(
+    test_desktop_file_path, test_qapp, test_builder
+):
+    dispatcher = MockDispatcher(test_qapp)
+    vm_manager = VMManager(test_qapp, dispatcher)
+
+    with mock.patch.object(
+        DesktopFileManager, "desktop_dirs", [test_desktop_file_path]
+    ):
+        desktop_file_manager = DesktopFileManager(test_qapp)
+
+    app_page = AppPage(vm_manager, test_builder, desktop_file_manager)
+    style_context = app_page.page_widget.get_style_context()
+
+    app_page.toggle_buttons.apps_toggle.set_active(True)
+    assert not style_context.has_class("templates_section")
+    assert not style_context.has_class("service_section")
+
+    app_page.toggle_buttons.templates_toggle.set_active(True)
+    assert style_context.has_class("templates_section")
+    assert not style_context.has_class("service_section")
+
+    app_page.toggle_buttons.system_toggle.set_active(True)
+    assert not style_context.has_class("templates_section")
+    assert style_context.has_class("service_section")
+
+    app_page.toggle_buttons.apps_toggle.set_active(True)
+    assert not style_context.has_class("templates_section")
+    assert not style_context.has_class("service_section")

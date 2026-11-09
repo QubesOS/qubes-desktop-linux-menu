@@ -183,6 +183,7 @@ class AppPage(MenuPage):
         desktop_file_manager.register_callback(self._app_info_callback)
         self.toggle_buttons = VMTypeToggle(builder)
         self.toggle_buttons.connect_to_toggle(self._button_toggled)
+        self._update_section_style()
 
         self.app_list.set_filter_func(self._is_app_fitting)
         self.app_list.connect("row-activated", self._app_clicked)
@@ -338,9 +339,23 @@ class AppPage(MenuPage):
     def _button_toggled(self, widget: Gtk.ToggleButton):
         if not widget.get_active():
             return
+        self._update_section_style()
         self.vm_list.unselect_all()
         self.app_list.invalidate_filter()
         self.vm_list.invalidate_filter()
+
+    def _update_section_style(self):
+        """Add a style class for the selected section (templates or service)
+        to the page."""
+        style_context = self.page_widget.get_style_context()
+        for button, style_class in (
+            (self.toggle_buttons.templates_toggle, "templates_section"),
+            (self.toggle_buttons.system_toggle, "service_section"),
+        ):
+            if button.get_active():
+                style_context.add_class(style_class)
+            else:
+                style_context.remove_class(style_class)
 
     def initialize_page(self):
         """
