@@ -190,6 +190,7 @@ class DesktopFileManager:
         self.notifier = None
         self.watches = []
         self._callbacks: List[Callable] = []
+        self._removal_callbacks: List[Callable] = []
 
         # directories used by Qubes menu tools, not necessarily all possible
         # XDG directories
@@ -221,6 +222,13 @@ class DesktopFileManager:
         for info in self.app_entries.values():
             func(info)
 
+    def register_removal_callback(self, func):
+        """
+        Register callbacks to be executed with an ApplicationInfo removed from
+        the cache (after its entries have been removed from their parents).
+        """
+        self._removal_callbacks.append(func)
+
     def get_app_infos(self):
         """Get all available ApplicationInfos. Needed for initial loading
         of favorites."""
@@ -245,9 +253,13 @@ class DesktopFileManager:
         if app_info:
             for child in app_info.entries:
                 parent = child.get_parent()
-                parent.remove(child)
-                parent.invalidate_filter()
+                # entries can be kept out of their list while not shown
+                if parent:
+                    parent.remove(child)
+                    parent.invalidate_filter()
             del self.app_entries[path]
+            for func in self._removal_callbacks:
+                func(app_info)
 
     def load_file(self, path: Union[str, Path]):
         """
